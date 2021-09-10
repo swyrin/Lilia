@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Lilia.Services;
 
 namespace Lilia
 {
-    class Program
+    static class Program
     {
-        static void Main()
+        private static void Main()
         {
-            Console.WriteLine("Hello World!");
+            new LiliaClient().Run().ConfigureAwait(false).GetAwaiter().GetResult();
         }
     }
 }
