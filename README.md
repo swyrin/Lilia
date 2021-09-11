@@ -1,4 +1,4 @@
-﻿# Lilia
+# Lilia
 
 Just create an `.env` file with the following content:
 ```ini
