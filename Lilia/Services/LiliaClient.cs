@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetEnv;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
+using DSharpPlus.SlashCommands;
+using Lilia.Commands;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Lilia.Services
@@ -31,12 +33,22 @@ namespace Lilia.Services
                 MinimumLogLevel = LogLevel.Debug
             });
 
+            SlashCommandsExtension slashCmd = client.UseSlashCommands(new SlashCommandsConfiguration
+            {
+                Services = new ServiceCollection().AddSingleton(this).BuildServiceProvider()
+            });
+
             client.Ready += this.OnReady;
             client.GuildAvailable += this.OnGuildAvailable;
             client.ClientErrored += this.OnClientError;
 
+            slashCmd.RegisterCommands<Test>();
+
             await client.ConnectAsync();
-            if (!Cts.IsCancellationRequested) await Task.Delay(2000);
+            await Task.Delay(-1);
+
+            while (!Cts.IsCancellationRequested) await Task.Delay(2000);
+
             await client.DisconnectAsync();
         }
 
