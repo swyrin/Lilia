@@ -1,25 +1,29 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using DotNetEnv;
+﻿using DotNetEnv;
 using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
-using Lilia.Commands;
+using Lilia.Commands.Slash;
+using Lilia.Database;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lilia.Services
 {
     public class LiliaClient
     {
-        public Dictionary<string, string> Configurations;
         public CancellationTokenSource Cts;
+        public LiliaDbContext DbCtx;
 
         private void InitialSetup()
         {
-            this.Configurations = Env.Load().ToDictionary();
+            Env.Load();
             this.Cts = new CancellationTokenSource();
+            this.DbCtx = new LiliaDbContext();
         }
 
         public async Task Run()
@@ -28,21 +32,31 @@ namespace Lilia.Services
 
             DiscordClient client = new(new DiscordConfiguration
             {
-                Token = Configurations["DISCORD_TOKEN"],
+                Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN"),
                 TokenType = TokenType.Bot,
                 MinimumLogLevel = LogLevel.Debug
             });
 
-            SlashCommandsExtension slashCmd = client.UseSlashCommands(new SlashCommandsConfiguration
+            ServiceProvider services = new ServiceCollection().AddSingleton(this).BuildServiceProvider();
+
+            CommandsNextExtension commandNext = client.UseCommandsNext(new CommandsNextConfiguration
             {
-                Services = new ServiceCollection().AddSingleton(this).BuildServiceProvider()
+                StringPrefixes = new[] { "l." },
+                DmHelp = true,
+                Services = services
+            });
+
+            SlashCommandsExtension slash = client.UseSlashCommands(new SlashCommandsConfiguration
+            {
+                Services = services
             });
 
             client.Ready += this.OnReady;
             client.GuildAvailable += this.OnGuildAvailable;
             client.ClientErrored += this.OnClientError;
 
-            slashCmd.RegisterCommands<Test>();
+            commandNext.RegisterCommands(Assembly.GetExecutingAssembly());
+            slash.RegisterCommands<Test>();
 
             await client.ConnectAsync();
             await Task.Delay(-1);
@@ -60,7 +74,7 @@ namespace Lilia.Services
 
         private Task OnGuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
         {
-            sender.Logger.Log(LogLevel.Warning, $"Guild cached : {e.Guild.Name}");
+            sender.Logger.Log(LogLevel.Information, $"Guild cached : {e.Guild.Name}");
             return Task.CompletedTask;
         }
 

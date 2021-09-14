@@ -3,8 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# Ignore the .env too
+# Files created throughout the project
 *.env
+database.db
 
 # User-specific files
 *.rsuser
