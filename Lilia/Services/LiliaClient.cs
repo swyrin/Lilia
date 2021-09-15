@@ -39,7 +39,7 @@ namespace Lilia.Services
 
             ServiceProvider services = new ServiceCollection().AddSingleton(this).BuildServiceProvider();
 
-            CommandsNextExtension commandNext = client.UseCommandsNext(new CommandsNextConfiguration
+            CommandsNextExtension commandsNext = client.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { "l." },
                 DmHelp = true,
@@ -51,12 +51,12 @@ namespace Lilia.Services
                 Services = services
             });
 
+            commandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
+            slash.RegisterCommands<Test>();
+
             client.Ready += this.OnReady;
             client.GuildAvailable += this.OnGuildAvailable;
             client.ClientErrored += this.OnClientError;
-
-            commandNext.RegisterCommands(Assembly.GetExecutingAssembly());
-            slash.RegisterCommands<Test>();
 
             await client.ConnectAsync();
             await Task.Delay(-1);
@@ -64,6 +64,11 @@ namespace Lilia.Services
             while (!Cts.IsCancellationRequested) await Task.Delay(2000);
 
             await client.DisconnectAsync();
+        }
+
+        private Task OnCommandsNextCommandErrored()
+        {
+
         }
 
         private Task OnReady(DiscordClient sender, ReadyEventArgs e)
