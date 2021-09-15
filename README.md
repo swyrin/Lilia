@@ -15,11 +15,25 @@ then head to the directory where `.csproj` file exists, we will use this until t
 cd your-path-containing-csproj-file-here
 ```
 ### Step 2: Making configuration files
-Create an `.env` file with the following content:
-```ini
-DISCORD_TOKEN=your-discord-token
-DB_PASSWORD=your-db-password-here
+Create an `config.json` file with the following content:
+> Guides for JSON configurations data filling can be seen [here](https://github.com/Swyreee/Lilia/wiki/JSON-Configurations)
+```json
+{
+  "client": {
+    "prefixes": ["l."],
+    "activity": {
+      "type": 3,
+      "name": "you",
+      "status": 4
+    }
+  },
+  "credentials": {
+    "discord_token": "",
+    "db_password": ""
+  }
+}
 ```
+
 ### Step 3: Doing stuffs
 Execute this command to install prequistes:
 ```bat
