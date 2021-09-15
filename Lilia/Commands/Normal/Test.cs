@@ -16,7 +16,7 @@ namespace Lilia.Commands.Normal
         public Test(LiliaClient client)
         {
             this._client = client;
-            this._dbCtx = client.DbCtx;
+            this._dbCtx = client.Database.GetContext();
         }
 
         [Command("test")]
