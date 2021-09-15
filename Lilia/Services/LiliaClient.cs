@@ -2,9 +2,6 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.EventArgs;
-using Lilia.Commands.Slash;
 using Lilia.Commons;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -50,20 +47,13 @@ namespace Lilia.Services
                 Services = services
             });
 
-            SlashCommandsExtension slash = client.UseSlashCommands(new SlashCommandsConfiguration
-            {
-                Services = services
-            });
-
             commandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
-            slash.RegisterCommands<Test>();
 
             client.Ready += this.OnReady;
             client.GuildAvailable += this.OnGuildAvailable;
             client.ClientErrored += this.OnClientErrored;
 
             commandsNext.CommandErrored += this.OnCommandsNextCommandErrored;
-            slash.SlashCommandErrored += this.OnSlashCommandErrored;
 
             await client.ConnectAsync();
             await Task.Delay(-1);
@@ -100,11 +90,6 @@ namespace Lilia.Services
         }
 
         private Task OnCommandsNextCommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
-        {
-            throw e.Exception;
-        }
-
-        private Task OnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
         {
             throw e.Exception;
         }
