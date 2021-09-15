@@ -1,7 +1,7 @@
-﻿using Lilia.Database;
+﻿using Lilia.Commons;
+using Lilia.Database;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Data.Common;
 using System.Linq;
 
@@ -14,7 +14,7 @@ namespace Lilia.Services
         public LiliaDatabase()
         {
             DbContextOptionsBuilder<LiliaDbContext> optionsBuilder = new DbContextOptionsBuilder<LiliaDbContext>();
-            SqliteConnectionStringBuilder connStringBuilder = new SqliteConnectionStringBuilder($"Data Source=database.db;Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}");
+            SqliteConnectionStringBuilder connStringBuilder = new SqliteConnectionStringBuilder($"Data Source=database.db;Password={JsonConfigurationsManager.Configurations.Credentials.DbPassword}");
 
             optionsBuilder.UseSqlite(connStringBuilder.ToString());
             this.options = optionsBuilder.Options;
