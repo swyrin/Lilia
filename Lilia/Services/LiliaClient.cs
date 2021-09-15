@@ -3,8 +3,8 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.EventArgs;
 using Lilia.Commands.Slash;
-using Lilia.Database;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -17,13 +17,13 @@ namespace Lilia.Services
     public class LiliaClient
     {
         public CancellationTokenSource Cts;
-        public LiliaDbContext DbCtx;
+        public LiliaDatabase Database;
 
         private void InitialSetup()
         {
             Env.Load();
             this.Cts = new CancellationTokenSource();
-            this.DbCtx = new LiliaDbContext();
+            this.Database = new LiliaDatabase();
         }
 
         public async Task Run()
@@ -37,9 +37,11 @@ namespace Lilia.Services
                 MinimumLogLevel = LogLevel.Debug
             });
 
-            ServiceProvider services = new ServiceCollection().AddSingleton(this).BuildServiceProvider();
+            ServiceProvider services = new ServiceCollection()
+                .AddSingleton(this)
+                .BuildServiceProvider();
 
-            CommandsNextExtension commandNext = client.UseCommandsNext(new CommandsNextConfiguration
+            CommandsNextExtension commandsNext = client.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { "l." },
                 DmHelp = true,
@@ -51,12 +53,15 @@ namespace Lilia.Services
                 Services = services
             });
 
+            commandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
+            slash.RegisterCommands<Test>();
+
             client.Ready += this.OnReady;
             client.GuildAvailable += this.OnGuildAvailable;
-            client.ClientErrored += this.OnClientError;
+            client.ClientErrored += this.OnClientErrored;
 
-            commandNext.RegisterCommands(Assembly.GetExecutingAssembly());
-            slash.RegisterCommands<Test>();
+            commandsNext.CommandErrored += this.OnCommandsNextCommandErrored;
+            slash.SlashCommandErrored += this.OnSlashCommandErrored;
 
             await client.ConnectAsync();
             await Task.Delay(-1);
@@ -78,7 +83,17 @@ namespace Lilia.Services
             return Task.CompletedTask;
         }
 
-        private Task OnClientError(DiscordClient sender, ClientErrorEventArgs e)
+        private Task OnClientErrored(DiscordClient sender, ClientErrorEventArgs e)
+        {
+            throw e.Exception;
+        }
+
+        private Task OnCommandsNextCommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
+        {
+            throw e.Exception;
+        }
+
+        private Task OnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
         {
             throw e.Exception;
         }

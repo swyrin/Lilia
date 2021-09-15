@@ -5,7 +5,7 @@
 
 # Files created throughout the project
 *.env
-database.db
+database.*
 
 # User-specific files
 *.rsuser

@@ -21,14 +21,12 @@ DISCORD_TOKEN=your-discord-token
 DB_PASSWORD=your-db-password-here
 ```
 ### Step 3: Doing stuffs
-Execute these commands **one-by-one**:
-```cmd
+Execute this command to install prequistes:
+```bat
 dotnet restore
-dotnet tool install --global dotnet-ef
-dotnet ef database update
 ```
 ### Step 4: We are done!!!
 Just run this one then enjoy
-```cmd
+```bat
 dotnet run
 ```

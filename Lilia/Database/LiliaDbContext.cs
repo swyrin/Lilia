@@ -1,25 +1,36 @@
 ﻿using Lilia.Database.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using System;
 
 namespace Lilia.Database
 {
+    public class LiliaDbContextFactory : IDesignTimeDbContextFactory<LiliaDbContext>
+    {
+        public LiliaDbContext CreateDbContext(string[] args)
+        {
+            DbContextOptionsBuilder<LiliaDbContext> optionsBuilder = new DbContextOptionsBuilder<LiliaDbContext>();
+            SqliteConnectionStringBuilder connStringBuilder = new SqliteConnectionStringBuilder($"Data Source=database.db;Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}");
+
+            optionsBuilder.UseSqlite(connStringBuilder.ToString());
+            LiliaDbContext ctx = new LiliaDbContext(optionsBuilder.Options);
+            ctx.Database.SetCommandTimeout(30);
+            return ctx;
+        }
+    }
+
     public class LiliaDbContext : DbContext
     {
         public DbSet<Guild> Guilds { get; set; }
         public DbSet<User> Users { get; set; }
 
+        public LiliaDbContext(DbContextOptions<LiliaDbContext> options) : base(options)
+        {
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            var connection = new SqliteConnection("Data Source=database.db;");
-            connection.Open();
-
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = $"PRAGMA key = \"{Environment.GetEnvironmentVariable("DB_PASSWORD")}\";";
-
-            cmd.ExecuteNonQuery();
-            options.UseSqlite(connection);
         }
     }
 }
