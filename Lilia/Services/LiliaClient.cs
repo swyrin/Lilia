@@ -68,13 +68,13 @@ namespace Lilia.Services
         {
             ClientActivityData activityData = this.Configurations.Client.Activity;
 
-            DiscordActivity activity = new DiscordActivity 
+            DiscordActivity activity = new DiscordActivity
             {
-                ActivityType = (ActivityType) activityData.Type,
+                ActivityType = (ActivityType)activityData.Type,
                 Name = activityData.Name
             };
 
-            sender.UpdateStatusAsync(activity, (UserStatus) activityData.Status);
+            sender.UpdateStatusAsync(activity, (UserStatus)activityData.Status);
             sender.Logger.Log(LogLevel.Information, "Client is ready to serve.");
             return Task.CompletedTask;
         }
