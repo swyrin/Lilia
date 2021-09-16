@@ -6,16 +6,16 @@ namespace Lilia.Database
 {
     public static class UserDbAccess
     {
-        public static User GetOrCreateUserRecord(this LiliaDbContext ctx, ulong userId)
+        public static DbUser GetOrCreateUserRecord(this LiliaDbContext ctx, ulong userId)
         {
-            DbSet<User> users = ctx.Users;
-            User user = users.FirstOrDefault(entity => entity.UserIndex == userId);
+            DbSet<DbUser> users = ctx.Users;
+            DbUser user = users.FirstOrDefault(entity => entity.UserId == userId);
 
-            if (user == default(User))
+            if (user == default(DbUser))
             {
-                user = new User
+                user = new DbUser
                 {
-                    UserIndex = userId,
+                    UserId = userId,
                     Shards = 0
                 };
 

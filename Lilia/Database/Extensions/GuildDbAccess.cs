@@ -6,16 +6,16 @@ namespace Lilia.Database
 {
     public static class GuildDbAccess
     {
-        public static Guild GetOrCreateGuildRecord(this LiliaDbContext ctx, ulong guildId)
+        public static DbGuild GetOrCreateGuildRecord(this LiliaDbContext ctx, ulong guildId)
         {
-            DbSet<Guild> guilds = ctx.Guilds;
-            Guild guild = guilds.FirstOrDefault(entity => entity.GuildIndex == guildId);
+            DbSet<DbGuild> guilds = ctx.Guilds;
+            DbGuild guild = guilds.FirstOrDefault(entity => entity.GuildId == guildId);
 
-            if (guild == default(Guild))
+            if (guild == default(DbGuild))
             {
-                guild = new Guild
+                guild = new DbGuild
                 {
-                    GuildIndex = guildId,
+                    GuildId = guildId,
                     Ranking = 1
                 };
 
