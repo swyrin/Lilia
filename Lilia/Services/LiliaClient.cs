@@ -43,7 +43,6 @@ namespace Lilia.Services
             CommandsNextExtension commandsNext = client.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = this.Configurations.Client.StringPrefixes,
-                DmHelp = true,
                 Services = services
             });
 
