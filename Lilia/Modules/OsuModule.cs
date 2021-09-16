@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace Lilia.Modules
 {
 	[Group("osu")]
-	[Description("Represents for osu! commands (only works in Bancho server, other servers will be supported soon.")]
+	[Description("Represents for osu! commands. Only works in official server.")]
 	public class OsuModule : BaseCommandModule
 	{
 		private LiliaClient _client;
@@ -40,7 +40,7 @@ namespace Lilia.Modules
 		[Description("Link your osu! profile data to my database for future searches.")]
 		public async Task SetOsuProfileCommand(CommandContext ctx,
 			[Description("Your osu! username, IN QUOTES.")] string username,
-			[Description("Mode number: 0 - osu!, 1 - Taiko, 2 - osu!catch, 3 - osu!mania. Defaults to 0 (osu!).")] int mode = 0)
+			[Description("Mode number: 0 - osu!, 1 - Taiko, 2 - osu!catch, 3 - osu!mania.")] int mode = 0)
 		{
 			DbUser user = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
 
@@ -109,7 +109,7 @@ namespace Lilia.Modules
 		[Command("user")]
 		public async Task GetOsuUserCommand(CommandContext ctx,
 			[Description("Username to get data, IN QUOTES.")] string username,
-			[Description("Mode number: 0 - osu!, 1 - Taiko, 2 - osu!catch, 3 - osu!mania. Defaults to 0 (osu!).")] int mode = 0)
+			[Description("Mode number to get data: 0 - osu!, 1 - Taiko, 2 - osu!catch, 3 - osu!mania.")] int mode = 0)
 		{
 			User user = await this._osuApiClient.GetUserByUsernameAsync(username.Replace("\"", ""), (GameMode)mode);
 
@@ -178,7 +178,7 @@ namespace Lilia.Modules
 		[Command("recent")]
 		public async Task GetRecentScoreCommand(CommandContext ctx,
 			[Description("Username to get data, IN QUOTES.")] string username,
-			[Description("Mode to get data. Default to 0 (std).")] int mode = 0)
+			[Description("Mode number to get data: 0 - osu!, 1 - Taiko, 2 - osu!catch, 3 - osu!mania.")] int mode = 0)
 		{
 			User user = await this._osuApiClient.GetUserByUsernameAsync(username, (GameMode)mode);
 
@@ -226,7 +226,7 @@ namespace Lilia.Modules
 		[Aliases("top")]
 		[Description("Get best record(s) of an user.")]
 		public async Task GetBestRecordsCommand(CommandContext ctx,
-			[Description("Number of best records to get data. Defaults to 1.")] int amount = 1)
+			[Description("Number of best records to get data.")] int amount = 1)
 		{
 			DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
 
@@ -239,7 +239,7 @@ namespace Lilia.Modules
 		[Command("best")]
 		public async Task GetBestRecordsCommand(CommandContext ctx,
 			[Description("Discord user mention to get data. Might be annoying.")] DiscordMember mentionedMember,
-			[Description("Number of best records to get data. Defaults to 1.")] int amount = 1)
+			[Description("Number of best records to get data.")] int amount = 1)
 		{
 			DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(mentionedMember.Id);
 
@@ -252,7 +252,7 @@ namespace Lilia.Modules
 		[Command("best")]
 		public async Task GetBestRecordsCommand(CommandContext ctx,
 			[Description("Discord user ID to get data.")] ulong userId,
-			[Description("Number of best records to get data. Defaults to 1.")] int amount = 1)
+			[Description("Number of best records to get data.")] int amount = 1)
         {
 			DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(userId);
 
@@ -265,8 +265,8 @@ namespace Lilia.Modules
 		[Command("best")]
 		public async Task GetBestRecordsCommand(CommandContext ctx,
 			[Description("Username to get best records, IN QUOTES.")] string username,
-			[Description("Mode to get best records. Default to 0 (std)")] int mode = 0,
-			[Description("Number of best records to get data. Defaults to 1.")] int amount = 1)
+			[Description("Mode number to get data: 0 - osu!, 1 - Taiko, 2 - osu!catch, 3 - osu!mania.")] int mode = 0,
+			[Description("Number of best records to get data.")] int amount = 1)
 		{
 			User user = await this._osuApiClient.GetUserByUsernameAsync(username, (GameMode)mode);
 
