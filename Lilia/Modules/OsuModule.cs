@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nalia.Modules
+namespace Lilia.Modules
 {
 	[Group("osu")]
 	[Description("Represents for osu! commands (only works in Bancho server, other servers will be supported soon.")]
