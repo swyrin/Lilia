@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Lilia.Commons;
+using Lilia.Modules;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
@@ -47,6 +48,7 @@ namespace Lilia.Services
             });
 
             commandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
+            commandsNext.SetHelpFormatter<HelpCommandFormatter>();
 
             client.Ready += this.OnReady;
             client.GuildAvailable += this.OnGuildAvailable;
