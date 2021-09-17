@@ -22,8 +22,8 @@ namespace Lilia.Database
 
     public class LiliaDbContext : DbContext
     {
-        public DbSet<Guild> Guilds { get; set; }
-        public DbSet<User> Users { get; set; }
+        public DbSet<DbGuild> Guilds { get; set; }
+        public DbSet<DbUser> Users { get; set; }
 
         public LiliaDbContext(DbContextOptions<LiliaDbContext> options) : base(options)
         {

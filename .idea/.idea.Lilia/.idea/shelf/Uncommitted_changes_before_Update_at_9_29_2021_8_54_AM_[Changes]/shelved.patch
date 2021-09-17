@@ -1,0 +1,125 @@
+Index: Lilia/Modules/ModerationModule.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Lilia/Modules/ModerationModule.cs b/Lilia/Modules/ModerationModule.cs
+new file mode 100644
+--- /dev/null	(date 1632879999522)
++++ b/Lilia/Modules/ModerationModule.cs	(date 1632879999522)
+@@ -0,0 +1,50 @@
++using System.Threading.Tasks;
++using DSharpPlus;
++using DSharpPlus.CommandsNext;
++using DSharpPlus.CommandsNext.Attributes;
++using DSharpPlus.Entities;
++using Lilia.Database;
++using Lilia.Services;
++
++public class ModerationModule : BaseCommandModule
++{
++    private LiliaClient _client;
++    private LiliaDbContext _dbCtx;
++    
++    public ModerationModule(LiliaClient client)
++    {
++        this._client = client;
++        this._dbCtx = client.Database.GetContext();
++    }
++
++    [Command("ban")]
++    [RequirePermissions(Permissions.BanMembers)]
++    public async Task BanMembersCommand(CommandContext ctx,
++        [Description("List of members to ban.")] params DiscordMember[] members)
++    {
++        await ctx.RespondAsync("Banning mischievous people...");
++        
++        foreach (DiscordMember member in members)
++        {
++            await ctx.Guild.BanMemberAsync(member, 0, $"[{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}] batch banning.");
++            await ctx.RespondAsync($"Banned {member.DisplayName}#{member.Discriminator} from this server.");
++            await Task.Delay(1000);
++        }
++    }
++
++    [Command("kick")]
++    [RequirePermissions(Permissions.KickMembers)]
++    public async Task KickMembersCommand(CommandContext ctx,
++        [Description("List of members to kick.")] params DiscordMember[] members)
++    {
++        await ctx.RespondAsync("Kicking mischievous people...");
++
++        foreach (DiscordMember member in members)
++        {
++            await ctx.Guild.BanMemberAsync(member, 0,
++                $"[{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}] batch kicking.");
++            await ctx.RespondAsync($"Kicked {member.DisplayName}#{member.Discriminator} from this server.");
++            await Task.Delay(1000);
++        }
++    }
++}
+\ No newline at end of file
+Index: Lilia/Modules/HelpCommandFormatter.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>using DSharpPlus;\r\nusing DSharpPlus.CommandsNext;\r\nusing DSharpPlus.CommandsNext.Converters;\r\nusing DSharpPlus.CommandsNext.Entities;\r\nusing DSharpPlus.Entities;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\nusing System.Text;\r\n\r\nnamespace Lilia.Modules\r\n{\r\n    public class HelpCommandFormatter : BaseHelpFormatter\r\n    {\r\n        private readonly DiscordEmbedBuilder _helpEmbedBuilder;\r\n        private Command _currentCommand;\r\n        private readonly CommandContext _currentCommandContext;\r\n\r\n        public HelpCommandFormatter(CommandContext ctx) : base(ctx)\r\n        {\r\n            this._currentCommandContext = ctx;\r\n\r\n            this._helpEmbedBuilder = new DiscordEmbedBuilder()\r\n                .WithColor(DiscordColor.Red)\r\n                .WithTimestamp(DateTime.Now)\r\n                .WithTitle(\"Bot Help Message\")\r\n                .WithDescription(\"This is a list of available commands, groups or details of a command\")\r\n                .WithFooter($\"Requested by {this._currentCommandContext.Member.DisplayName}#{this._currentCommandContext.Member.Discriminator}\", this._currentCommandContext.Member.AvatarUrl);\r\n        }\r\n\r\n        public override BaseHelpFormatter WithCommand(Command command)\r\n        {\r\n            if (this._currentCommand is CommandGroup) return this;\r\n\r\n            this._currentCommand = command;\r\n\r\n            this._helpEmbedBuilder\r\n                .AddField(\"Explanations\", \"`<argument>`: required argument\\n`[argument]`: optional argument\\n`argument..`: take the rest of it.\")\r\n                .AddField(\"Command description\", this._currentCommand.Description ?? \"No description provided\");\r\n\r\n            int overloadCount = 1;\r\n\r\n            foreach (CommandOverload overload in this._currentCommand.Overloads)\r\n            {\r\n                StringBuilder argsBuilder = new StringBuilder();\r\n                StringBuilder commandNameWithAliases = new StringBuilder($\" {this._currentCommand.Name}\");\r\n                StringBuilder usageBuilder = new StringBuilder($\"{this._currentCommandContext.Prefix}{this._currentCommand.Parent?.Name ?? string.Empty}\");\r\n\r\n                foreach (string alias in this._currentCommand.Aliases) commandNameWithAliases.Append($\"|{alias}\");\r\n\r\n                usageBuilder.Append($\"{commandNameWithAliases} \");\r\n\r\n                foreach (CommandArgument argument in overload.Arguments)\r\n                {\r\n                    StringBuilder argName = new StringBuilder(argument.Name);\r\n\r\n                    if (argument.IsOptional)\r\n                        usageBuilder.Append($\"[{argument.Name}] \");\r\n                    else if (argument.IsCatchAll)\r\n                        usageBuilder.Append($\"<{argument.Name}...> \");\r\n                    else if (argument.IsOptional && argument.IsCatchAll)\r\n                        usageBuilder.Append($\"[{argument.Name}...] \");\r\n                    else\r\n                        usageBuilder.Append($\"<{argument.Name}> \");\r\n\r\n                    argName.Append(\"\\n\" + \"\\t\" + \"Description: \" + argument.Description ?? \"No description provided\")\r\n                        .Append(\"\\n\" + \"\\t\" + \"Type: \" + this._currentCommandContext.CommandsNext.GetUserFriendlyTypeName(argument.Type))\r\n                        .Append(\"\\n\" + \"\\t\" + \"Default value: \" + (argument.DefaultValue ?? \"None\"));\r\n\r\n                    argsBuilder.Append(argName + \"\\n\");\r\n                }\r\n\r\n                usageBuilder.Append(\"\\n\\n\");\r\n\r\n                this._helpEmbedBuilder\r\n                    .AddField($\"Usage ({overloadCount})\", Formatter.BlockCode(usageBuilder.ToString()))\r\n                    .AddField($\"Arguments ({overloadCount})\", Formatter.BlockCode(string.IsNullOrWhiteSpace(argsBuilder.ToString()) ? \"Wow, such empty\" : argsBuilder.ToString()));\r\n\r\n                ++overloadCount;\r\n            }\r\n\r\n            return this;\r\n        }\r\n\r\n        public override BaseHelpFormatter WithSubcommands(IEnumerable<Command> subcommands)\r\n        {\r\n            List<(string, string, string)> subgroups = new List<(string, string, string)>();\r\n\r\n            foreach (Command subcommand in subcommands)\r\n            {\r\n                string description;\r\n\r\n                if (subcommand is CommandGroup)\r\n                    description =\r\n                        $\"Type `{this._currentCommandContext.Prefix}help {subcommand.Name}` for more commands\";\r\n                else\r\n                    description = subcommand.Description ?? \"No description provided\";\r\n\r\n                subgroups.Add((subcommand.Module.ModuleType.Name.Replace(\"Module\", \"\"), subcommand.Name, description));\r\n            }\r\n\r\n            foreach (var sg in subgroups.Select(x => x.Item1).Distinct())\r\n            {\r\n                this._helpEmbedBuilder.AddField(this._currentCommand != null ? $\"{sg} (subcommands)\" : $\"{sg}\",\r\n                    string.Join(Environment.NewLine,\r\n                        subgroups.Where(x => x.Item1 == sg)\r\n                            .Select(x => Formatter.InlineCode(x.Item2) + \" - \" + x.Item3)));\r\n            }\r\n\r\n            return this;\r\n        }\r\n\r\n        public override CommandHelpMessage Build()\r\n        {\r\n            return new CommandHelpMessage(embed: this._helpEmbedBuilder.Build());\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Lilia/Modules/HelpCommandFormatter.cs b/Lilia/Modules/HelpCommandFormatter.cs
+--- a/Lilia/Modules/HelpCommandFormatter.cs	(revision d387f445195652708d5e768490b575eb1c401fa0)
++++ b/Lilia/Modules/HelpCommandFormatter.cs	(date 1632878800750)
+@@ -12,9 +12,9 @@
+ {
+     public class HelpCommandFormatter : BaseHelpFormatter
+     {
+-        private readonly DiscordEmbedBuilder _helpEmbedBuilder;
++        private DiscordEmbedBuilder _helpEmbedBuilder;
+         private Command _currentCommand;
+-        private readonly CommandContext _currentCommandContext;
++        private CommandContext _currentCommandContext;
+ 
+         public HelpCommandFormatter(CommandContext ctx) : base(ctx)
+         {
+@@ -23,8 +23,8 @@
+             this._helpEmbedBuilder = new DiscordEmbedBuilder()
+                 .WithColor(DiscordColor.Red)
+                 .WithTimestamp(DateTime.Now)
+-                .WithTitle("Bot Help Message")
+-                .WithDescription("This is a list of available commands, groups or details of a command")
++                .WithTitle("This is a help message")
++                .WithDescription("This is a list of available commands, groups or details of a command.")
+                 .WithFooter($"Requested by {this._currentCommandContext.Member.DisplayName}#{this._currentCommandContext.Member.Discriminator}", this._currentCommandContext.Member.AvatarUrl);
+         }
+ 
+@@ -35,8 +35,11 @@
+             this._currentCommand = command;
+ 
+             this._helpEmbedBuilder
+-                .AddField("Explanations", "`<argument>`: required argument\n`[argument]`: optional argument\n`argument..`: take the rest of it.")
+-                .AddField("Command description", this._currentCommand.Description ?? "No description provided");
++                .AddField("Explanations",
++                    "`<argument>`: required argument\n" +
++                    "`[argument]`: optional argument\n" +
++                    "`argument..`: take the rest of it.")
++                .AddField("Command description", this._currentCommand.Description ?? "No description provided.");
+ 
+             int overloadCount = 1;
+ 
+@@ -86,13 +89,14 @@
+         {
+             List<(string, string, string)> subgroups = new List<(string, string, string)>();
+ 
++            this._helpEmbedBuilder.AddField("Usage", $"{this._currentCommandContext.Prefix}{this._currentCommandContext.Command.QualifiedName + " " + this._currentCommandContext.RawArgumentString?? string.Empty} ");
++
+             foreach (Command subcommand in subcommands)
+             {
+                 string description;
+ 
+                 if (subcommand is CommandGroup)
+-                    description =
+-                        $"Type `{this._currentCommandContext.Prefix}help {subcommand.Name}` for more commands";
++                    description =$"Type `{this._currentCommandContext.Prefix}help {subcommand.Name}` for more commands";
+                 else
+                     description = subcommand.Description ?? "No description provided";
+ 
