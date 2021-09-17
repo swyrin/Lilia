@@ -231,7 +231,7 @@ namespace Lilia.Modules
                             $"**Accuracy** : {Math.Round(recentScore.Accuracy, 2, MidpointRounding.AwayFromZero)}%\n" +
                             $"**Max Combo** : {recentScore.MaxCombo}x/{beatmap.MaxCombo}x\n" +
                             $"**Hit Count** : [{recentScore.Count300}/{recentScore.Count100}/{recentScore.Count50}/{recentScore.Miss}]\n" +
-                            $"**PP** : {Math.Round(currentProgress.Pp, 2, MidpointRounding.AwayFromZero)}pp - **{Math.Round(fc.Pp, 2, MidpointRounding.AwayFromZero)}pp** for {Math.Round(score.Accuracy)}% FC")
+                            $"**PP** : {Math.Round(currentProgress.Pp, 2, MidpointRounding.AwayFromZero)}pp - **{Math.Round(fc.Pp, 2, MidpointRounding.AwayFromZero)}pp** for {Math.Round(recentScore.Accuracy)}% FC")
                         .WithThumbnail(beatmap.CoverUri);
 
                     await ctx.RespondAsync(embed: embedBuilder.Build());
@@ -254,7 +254,7 @@ namespace Lilia.Modules
             if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
                 await ctx.RespondAsync("You have not linked your osu! account yet.");
             else
-                await this.GetBestRecordsCommand(ctx, dbUser.OsuUsername, dbUser.OsuMode, amount);
+                await this.GetBestScoresCommand(ctx, dbUser.OsuUsername, dbUser.OsuMode, amount);
         }
 
         [Command("best")]
@@ -267,7 +267,7 @@ namespace Lilia.Modules
             if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
                 await ctx.RespondAsync("You have not linked your osu! account yet.");
             else
-                await this.GetBestRecordsCommand(ctx, dbUser.OsuUsername, dbUser.OsuMode, amount);
+                await this.GetBestScoresCommand(ctx, dbUser.OsuUsername, dbUser.OsuMode, amount);
         }
 
         [Command("best")]
@@ -280,7 +280,7 @@ namespace Lilia.Modules
             if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
                 await ctx.RespondAsync("That user has not linked their osu! account yet.");
             else
-                await this.GetBestRecordsCommand(ctx, dbUser.OsuUsername, dbUser.OsuMode, amount);
+                await this.GetBestScoresCommand(ctx, dbUser.OsuUsername, dbUser.OsuMode, amount);
         }
 
         [Command("best")]
