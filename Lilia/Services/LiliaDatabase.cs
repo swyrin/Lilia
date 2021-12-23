@@ -26,7 +26,7 @@ namespace Lilia.Services
         {
             using (LiliaDbContext context = new LiliaDbContext(this.options))
             {
-                if (context.Database.GetPendingMigrations().Any())
+                while (context.Database.GetPendingMigrations().Any())
                 {
                     using (LiliaDbContext migrationContext = new LiliaDbContext(this.options))
                     {
@@ -53,6 +53,7 @@ namespace Lilia.Services
                 com.CommandText = "PRAGMA journal_mode=WAL; PRAGMA synchronous=OFF";
                 com.ExecuteNonQuery();
             }
+            
             return context;
         }
     }
