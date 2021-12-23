@@ -211,7 +211,7 @@ namespace Lilia.Modules
                 await ctx.RespondAsync("User not found.");
             else
             {
-                Score? recentScore = (await this._osuApiClient.GetUserRecentsByUsernameAsync(username, (GameMode)mode, 1)).FirstOrDefault();
+                Score recentScore = (await this._osuApiClient.GetUserRecentsByUsernameAsync(username, (GameMode)mode, 1)).FirstOrDefault();
 
                 if (recentScore == null)
                     await ctx.RespondAsync("This user have not played anything recently.");

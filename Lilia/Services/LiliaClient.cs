@@ -17,7 +17,7 @@ namespace Lilia.Services
     {
         public CancellationTokenSource Cts;
         public LiliaDatabase Database;
-        public JsonConfigurations? Configurations;
+        public JsonConfigurations Configurations;
 
         private void InitialSetup()
         {

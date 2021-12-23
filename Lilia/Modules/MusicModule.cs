@@ -14,7 +14,7 @@ namespace Lilia.Modules
         [RequireOwner]
         public async Task SummonToVoiceCommand(CommandContext ctx)
         {
-            DiscordChannel? channel = ctx.Member.VoiceState?.Channel;
+            DiscordChannel channel = ctx.Member.VoiceState?.Channel;
 
             if (channel == null)
             {
@@ -45,7 +45,7 @@ namespace Lilia.Modules
             VoiceNextConnection conn = ext.GetConnection(ctx.Guild);
             VoiceTransmitSink sink = conn.GetTransmitSink();
 
-            Process? ffmpeg = Process.Start(new ProcessStartInfo
+            Process ffmpeg = Process.Start(new ProcessStartInfo
             {
                 FileName = "ffmpeg",
                 Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i {uri} -f f32le -ar 48000 -vn -ac 2 pipe:1 -loglevel error", 
