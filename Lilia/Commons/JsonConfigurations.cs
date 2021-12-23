@@ -6,7 +6,7 @@ namespace Lilia.Commons
 {
     public static class JsonConfigurationsManager
     {
-        public static JsonConfigurations? Configurations { get; set; }
+        public static JsonConfigurations Configurations { get; set; }
         public const string ConfigFileName = "config.json";
 
         static JsonConfigurationsManager()
@@ -36,12 +36,15 @@ namespace Lilia.Commons
 
         [JsonProperty("credentials")]
         public CredentialsData Credentials = new CredentialsData();
+
+        [JsonProperty("lavalink")]
+        public LavalinkData Lavalink = new LavalinkData();
     }
 
     public class ClientData
     {
         [JsonProperty("data")]
-        public string[] StringPrefixes { get; set; } = new[] { "l." };
+        public string[] StringPrefixes { get; } = new[] { "l." };
 
         [JsonProperty("activity")]
         public ClientActivityData Activity = new ClientActivityData();
@@ -50,24 +53,36 @@ namespace Lilia.Commons
     public class ClientActivityData
     {
         [JsonProperty("type")]
-        public int Type { get; set; } = 3;
+        public int Type { get; } = 3;
 
         [JsonProperty("name")]
-        public string Name { get; set; } = "you";
+        public string Name { get; } = "you";
 
         [JsonProperty("status")]
-        public int Status { get; set; } = 4;
+        public int Status { get; } = 4;
     }
 
     public class CredentialsData
     {
         [JsonProperty("discord_token")]
-        public string DiscordToken { get; set; }
+        public string DiscordToken { get; }
 
         [JsonProperty("db_password")]
-        public string DbPassword { get; set; } = "thisisliterallynotapassword";
+        public string DbPassword { get; } = "thisisliterallynotapassword";
 
         [JsonProperty("osu_api_key")]
-        public string OsuApiKey { get; set; }
+        public string OsuApiKey { get; }
+    }
+
+    public class LavalinkData
+    {
+        [JsonProperty("host")]
+        public string Hostname { get; } = "localhost";
+        
+        [JsonProperty("port")]
+        public int Port { get; } = 2333;
+        
+        [JsonProperty("password")]
+        public string Password { get; } = "youshallnotpass";
     }
 }

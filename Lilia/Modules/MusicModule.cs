@@ -1,18 +1,49 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.VoiceNext;
+using DSharpPlus.Lavalink;
 
 namespace Lilia.Modules
 {
     public class MusicModule : BaseCommandModule
     {
-        [Command("summon")]
+        [Command("join")]
         [RequireOwner]
-        public async Task SummonToVoiceCommand(CommandContext ctx)
+        public async Task JoinVoiceCommand(CommandContext ctx)
+        {
+            DiscordChannel channel = ctx.Member.VoiceState?.Channel;
+
+            if (channel == null)
+            {
+                await ctx.RespondAsync("Join a voice channel please.");
+                return;
+            }
+
+            LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
+            LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
+            
+            await node.ConnectAsync(channel);
+            await ctx.RespondAsync("Connected.");
+        }
+        
+        [Command("leave")]
+        [RequireOwner]
+        public async Task LeaveVoiceCommand(CommandContext ctx)
+        {
+            LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
+            LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
+            LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
+            
+            await connection.DisconnectAsync();
+            await ctx.RespondAsync("Disconnected.");
+        }
+
+        [Command("radio")]
+        [RequireOwner]
+        public async Task TransmitRadioCommand(CommandContext ctx, string search = "https://listen.moe/stream")
         {
             DiscordChannel channel = ctx.Member.VoiceState?.Channel;
 
@@ -22,41 +53,18 @@ namespace Lilia.Modules
                 return;
             }
             
-            await channel.ConnectAsync();
-            await ctx.RespondAsync("Connected.");
-        }
-        
-        [Command("leave")]
-        [RequireOwner]
-        public async Task LeaveVoiceCommand(CommandContext ctx)
-        {
-            VoiceNextExtension ext = ctx.Client.GetVoiceNext();
-            VoiceNextConnection conn = ext.GetConnection(ctx.Guild);
+            LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
+            LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
+            LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
+            LavalinkLoadResult loadResult;
             
-            conn.Disconnect();
-            await ctx.RespondAsync("Disconnected.");
-        }
+            if (search.ToLower().Contains("youtube")) loadResult = await node.Rest.GetTracksAsync(search);
+            else if (search.ToLower().Contains("soundcloud")) loadResult = await node.Rest.GetTracksAsync(search, LavalinkSearchType.SoundCloud);
+            else loadResult = await node.Rest.GetTracksAsync(new Uri(search, UriKind.RelativeOrAbsolute));
 
-        [Command("radio")]
-        [RequireOwner]
-        public async Task TransmitRadioCommand(CommandContext ctx, string uri = "https://listen.moe/stream")
-        {
-            VoiceNextExtension ext = ctx.Client.GetVoiceNext();
-            VoiceNextConnection conn = ext.GetConnection(ctx.Guild);
-            VoiceTransmitSink sink = conn.GetTransmitSink();
-
-            Process ffmpeg = Process.Start(new ProcessStartInfo
-            {
-                FileName = "ffmpeg",
-                Arguments = $"-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -err_detect ignore_err -i {uri} -f f32le -ar 48000 -vn -ac 2 pipe:1 -loglevel error", 
-                RedirectStandardOutput = true,
-                UseShellExecute = false
-            });
-            
-            Stream output = ffmpeg.StandardOutput.BaseStream;
-            
-            await output.CopyToAsync(sink);
-            await output.DisposeAsync();
+            LavalinkTrack track = loadResult.Tracks.First();
+            await connection.PlayAsync(track);
+            await ctx.RespondAsync($"Now playing {track.Uri}");
         }
     }
 }
