@@ -50,9 +50,9 @@ namespace Lilia.Modules
             DbUser user = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
             user.OsuUsername = username;
             this._dbCtx.Update(user);
-            this._dbCtx.SaveChanges();
+            await this._dbCtx.SaveChangesAsync();
 
-            await ctx.RespondAsync($"Successfully set your osu! username to **{username}.**");
+            await ctx.RespondAsync($"Successfully set your osu! username to **{username}**");
         }
 
         [Command("setmode")]
@@ -62,14 +62,15 @@ namespace Lilia.Modules
         {
             if (!(0 <= mode && mode <= 3))
             {
-                await ctx.RespondAsync("Invalid mode required. Available modes are: `0 - Standard; 1 - Taiko; 2 - Catch; 3 - Mania.`");
+                await ctx.RespondAsync("Invalid mode. Available modes are: `0 - Standard; 1 - Taiko; 2 - Catch; 3 - Mania.`");
                 return;
             }
 
             DbUser user = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
             user.OsuMode = mode;
+            
             this._dbCtx.Update(user);
-            this._dbCtx.SaveChanges();
+            await this._dbCtx.SaveChangesAsync();
 
             await ctx.RespondAsync($"Successfully set your osu! mode to **{(GameMode) mode}**.");
         }
@@ -90,10 +91,10 @@ namespace Lilia.Modules
             await ctx.RespondAsync(embed: embedBuilder.Build());
         }
 
-        #region "user"/"profile" command overloads
+        #region "user"/"profile"/"player" command overloads
 
         [Command("user")]
-        [Aliases("profile")]
+        [Aliases("profile", "player")]
         [Description("Get osu! detailed profile information.")]
         public async Task GetOsuUserCommand(CommandContext ctx)
         {
@@ -161,10 +162,10 @@ namespace Lilia.Modules
 
         #endregion "user"/"profile" command overloads
 
-        #region "recent"/"r" command overloads
+        #region "recent"/"r"/"latest" command overloads
 
         [Command("recent")]
-        [Aliases("r")]
+        [Aliases("r", "latest")]
         [Description("Get most recent score of an user.")]
         public async Task GetRecentScoreCommand(CommandContext ctx)
         {
