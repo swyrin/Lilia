@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <StartupObject>Lilia.Program</StartupObject>
     <LangVersion>latestmajor</LangVersion>
     <Nullable>enable</Nullable>
@@ -19,15 +19,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01045" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01045" />
-    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.2.0-nightly-01045" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.10">
+    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01054" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01054" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.2.0-nightly-01054" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.10">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
