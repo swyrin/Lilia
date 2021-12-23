@@ -33,7 +33,7 @@ namespace Lilia.Services
 
             DiscordClient client = new(new DiscordConfiguration
             {
-                Token = this.Configurations.Credentials.DiscordToken,
+                Token = this.Configurations?.Credentials.DiscordToken,
                 TokenType = TokenType.Bot,
                 MinimumLogLevel = LogLevel.Debug
             });

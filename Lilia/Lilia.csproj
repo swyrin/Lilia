@@ -5,16 +5,15 @@
     <TargetFramework>net6.0</TargetFramework>
     <StartupObject>Lilia.Program</StartupObject>
     <LangVersion>latestmajor</LangVersion>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <PlatformTarget>x86</PlatformTarget>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <PlatformTarget>x86</PlatformTarget>
     <Optimize>true</Optimize>
   </PropertyGroup>
 
