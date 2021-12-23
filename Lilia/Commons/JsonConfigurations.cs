@@ -6,7 +6,7 @@ namespace Lilia.Commons
 {
     public static class JsonConfigurationsManager
     {
-        public static JsonConfigurations Configurations { get; set; }
+        public static JsonConfigurations? Configurations { get; set; }
         public const string ConfigFileName = "config.json";
 
         static JsonConfigurationsManager()

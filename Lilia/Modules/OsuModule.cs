@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lilia.Database.Extensions;
 
 namespace Lilia.Modules
 {
@@ -30,7 +31,7 @@ namespace Lilia.Modules
             this._dbCtx = client.Database.GetContext();
             this._osuApiClient = new OsuClient(new OsuSharpConfiguration
             {
-                ApiKey = this._client.Configurations.Credentials.OsuApiKey,
+                ApiKey = this._client.Configurations?.Credentials.OsuApiKey,
                 ModeSeparator = string.Empty
             });
         }
@@ -210,7 +211,7 @@ namespace Lilia.Modules
                 await ctx.RespondAsync("User not found.");
             else
             {
-                Score recentScore = (await this._osuApiClient.GetUserRecentsByUsernameAsync(username, (GameMode)mode, 1)).FirstOrDefault();
+                Score? recentScore = (await this._osuApiClient.GetUserRecentsByUsernameAsync(username, (GameMode)mode, 1)).FirstOrDefault();
 
                 if (recentScore == null)
                     await ctx.RespondAsync("This user have not played anything recently.");

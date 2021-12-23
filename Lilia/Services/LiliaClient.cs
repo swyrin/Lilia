@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using DSharpPlus.VoiceNext;
 
 namespace Lilia.Services
 {
@@ -16,7 +17,7 @@ namespace Lilia.Services
     {
         public CancellationTokenSource Cts;
         public LiliaDatabase Database;
-        public JsonConfigurations Configurations;
+        public JsonConfigurations? Configurations;
 
         private void InitialSetup()
         {
@@ -47,7 +48,10 @@ namespace Lilia.Services
                 Services = services
             });
 
+            client.UseVoiceNext();
+
             commandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
+
             commandsNext.SetHelpFormatter<HelpCommandFormatter>();
 
             client.Ready += this.OnReady;
