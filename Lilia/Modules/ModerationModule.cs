@@ -34,12 +34,36 @@ namespace Lilia.Modules
                 }
                 else
                 {
-                    await ctx.Guild.BanMemberAsync(member, 0, $"[{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}] - Batch banning.");
+                    await ctx.Guild.BanMemberAsync(member, 0, "Batch banning.");
                     await ctx.RespondAsync($"Banned {member.DisplayName}#{member.Discriminator} from this server.");    
                 }
             
                 await Task.Delay(1000);
             }
         }
+        
+        [Command("kick")]
+        [RequirePermissions(Permissions.KickMembers)]
+        public async Task KickMembersCommand(CommandContext ctx,
+            [Description("List of members to kick.")] params DiscordMember[] members)
+        {
+            await ctx.RespondAsync("Kicking mischievous people...");
+        
+            foreach (DiscordMember member in members)
+            {
+                if (member == ctx.Message.Author)
+                {
+                    await ctx.RespondAsync("Imagine kicking yourself, smh.");
+                }
+                else
+                {
+                    await member.RemoveAsync("Batch kicking");
+                    await ctx.RespondAsync($"Kicked {member.DisplayName}#{member.Discriminator} from this server.");    
+                }
+            
+                await Task.Delay(1000);
+            }
+        }
+        
     }
 }
