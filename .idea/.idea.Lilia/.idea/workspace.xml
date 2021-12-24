@@ -7,9 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Lilia/Modules/ModerationModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" afterDir="false" />
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Packages update">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/shelf/Uncommitted_changes_before_Update_at_9_29_2021_8_54_AM__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/shelf/Uncommitted_changes_before_Update_at_9_29_2021_8_54_AM__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,6 +31,11 @@
         </map>
       </branch-storage>
     </excluded-from-favorite>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="secret-uwu" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
   </component>
@@ -42,9 +48,12 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/HelpCommandFormatter.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OsuModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OsuModule.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="1ynCgyB2aA0goTk0uyRlhbOpr7l" />
   <component name="ProjectViewState">
@@ -91,6 +100,10 @@
       <option name="presentableId" value="Default" />
       <updated>1632878079798</updated>
       <workItem from="1632878147032" duration="2376000" />
+      <workItem from="1635750964875" duration="203000" />
+      <workItem from="1636452858325" duration="542000" />
+      <workItem from="1638268957068" duration="2631000" />
+      <workItem from="1640222511916" duration="796000" />
     </task>
     <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
       <created>1632880432287</created>
@@ -106,7 +119,7 @@
     <option name="version" value="3" />
   </component>
   <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
-  <component name="UnityProjectConfiguration" hasMinimizedUI="null" />
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -160,5 +173,12 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="I hate you, Visual Studio." />
     <option name="LAST_COMMIT_MESSAGE" value="I hate you, Visual Studio." />
+  </component>
+  <component name="XDebuggerManager">
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="Type#Lilia.Commons.ClientData" memberName="Activity" />
+      </pinned-members>
+    </pin-to-top-manager>
   </component>
 </project>
