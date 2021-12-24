@@ -7,9 +7,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment=":thinking:">
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Just. Use. One.">
       <change beforePath="$PROJECT_DIR$/.github/workflows/dotnet.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/dotnet.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia.sln" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +53,7 @@
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
@@ -207,7 +211,28 @@
       <option name="project" value="LOCAL" />
       <updated>1640314267169</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="edit something something">
+      <created>1640314620630</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1640314620630</updated>
+    </task>
+    <task id="LOCAL-00016" summary=":thinking:">
+      <created>1640314628295</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1640314628295</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Just. Use. One.">
+      <created>1640315170140</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1640315170140</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -276,8 +301,10 @@
     <MESSAGE value="Reformat code, use better logging client" />
     <MESSAGE value="Add Serilog, upgrade D#+ and OsuSharp" />
     <MESSAGE value="stuffs" />
+    <MESSAGE value="edit something something" />
     <MESSAGE value=":thinking:" />
-    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
+    <MESSAGE value="Just. Use. One." />
+    <option name="LAST_COMMIT_MESSAGE" value="Just. Use. One." />
   </component>
   <component name="XDebuggerManager">
     <pin-to-top-manager>
