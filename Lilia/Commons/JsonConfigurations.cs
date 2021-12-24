@@ -6,7 +6,7 @@ namespace Lilia.Commons
 {
     public static class JsonConfigurationsManager
     {
-        public static JsonConfigurations Configurations { get; set; }
+        public static JsonConfigurations Configurations;
         public const string ConfigFileName = "config.json";
 
         static JsonConfigurationsManager()
@@ -44,7 +44,7 @@ namespace Lilia.Commons
     public class ClientData
     {
         [JsonProperty("data")]
-        public string[] StringPrefixes { get; } = new[] { "l." };
+        public string[] StringPrefixes = new[] { "l." };
 
         [JsonProperty("activity")]
         public ClientActivityData Activity = new ClientActivityData();
@@ -53,36 +53,36 @@ namespace Lilia.Commons
     public class ClientActivityData
     {
         [JsonProperty("type")]
-        public int Type { get; } = 3;
+        public int Type = 3;
 
         [JsonProperty("name")]
-        public string Name { get; } = "you";
+        public string Name = "you";
 
         [JsonProperty("status")]
-        public int Status { get; } = 4;
+        public int Status = 4;
     }
 
     public class CredentialsData
     {
         [JsonProperty("discord_token")]
-        public string DiscordToken { get; }
+        public string DiscordToken;
 
         [JsonProperty("db_password")]
-        public string DbPassword { get; } = "thisisliterallynotapassword";
+        public string DbPassword = "thisisliterallynotapassword";
 
         [JsonProperty("osu_api_key")]
-        public string OsuApiKey { get; }
+        public string OsuApiKey;
     }
 
     public class LavalinkData
     {
         [JsonProperty("host")]
-        public string Hostname { get; } = "localhost";
+        public string Hostname = "localhost";
         
         [JsonProperty("port")]
-        public int Port { get; } = 2333;
+        public int Port = 2333;
         
         [JsonProperty("password")]
-        public string Password { get; } = "youshallnotpass";
+        public string Password = "youshallnotpass";
     }
 }
