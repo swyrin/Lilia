@@ -1,8 +1,8 @@
-﻿using Lilia.Database.Models;
+﻿using System.Linq;
+using Lilia.Database.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
-namespace Lilia.Database
+namespace Lilia.Database.Extensions
 {
     public static class GuildDbAccess
     {

@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using DSharpPlus.Lavalink;
+using DSharpPlus.Net;
 
 namespace Lilia.Services
 {
@@ -17,6 +19,8 @@ namespace Lilia.Services
         public CancellationTokenSource Cts;
         public LiliaDatabase Database;
         public JsonConfigurations Configurations;
+
+        private LavalinkExtension _lavalinkExtension;
 
         private void InitialSetup()
         {
@@ -47,6 +51,8 @@ namespace Lilia.Services
                 Services = services
             });
 
+            this._lavalinkExtension = client.UseLavalink();
+
             commandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
             commandsNext.SetHelpFormatter<HelpCommandFormatter>();
 
@@ -64,7 +70,7 @@ namespace Lilia.Services
             await client.DisconnectAsync();
         }
 
-        private Task OnReady(DiscordClient sender, ReadyEventArgs e)
+        private async Task OnReady(DiscordClient sender, ReadyEventArgs e)
         {
             ClientActivityData activityData = this.Configurations.Client.Activity;
 
@@ -74,9 +80,21 @@ namespace Lilia.Services
                 Name = activityData.Name
             };
 
-            sender.UpdateStatusAsync(activity, (UserStatus)activityData.Status);
+            ConnectionEndpoint endpoint = new ConnectionEndpoint
+            {
+                Hostname = this.Configurations.Lavalink.Hostname,
+                Port = this.Configurations.Lavalink.Port
+            };
+            
+            await this._lavalinkExtension.ConnectAsync(new LavalinkConfiguration
+            {
+                Password = this.Configurations.Lavalink.Password,
+                RestEndpoint = endpoint,
+                SocketEndpoint = endpoint
+            });
+
+            await sender.UpdateStatusAsync(activity, (UserStatus)activityData.Status);
             sender.Logger.Log(LogLevel.Information, "Client is ready to serve.");
-            return Task.CompletedTask;
         }
 
         private Task OnGuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
