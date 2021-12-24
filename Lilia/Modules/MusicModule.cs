@@ -26,6 +26,7 @@ namespace Lilia.Modules
             LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
             
             await node.ConnectAsync(channel);
+            await (await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id)).SetDeafAsync(true, "Self deaf");
             await ctx.RespondAsync("Connected.");
         }
         
