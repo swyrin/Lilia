@@ -40,12 +40,6 @@ dotnet build
 ```
 
 ### Step 4: Run the bot
-- For Windows users, use `dotnet run` is enough
-```shell
-dotnet run
-```
-- But for Linux users, I can't find a way after suffering with SEGVs for a long time.
-- Remember to replace `6.0` with your currently installed .NET version
 ```shell
 dotnet ./bin/Debug/net6.0/Lilia.dll
 ```
