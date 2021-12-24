@@ -7,10 +7,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Packages update">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/shelf/Uncommitted_changes_before_Update_at_9_29_2021_8_54_AM__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/shelf/Uncommitted_changes_before_Update_at_9_29_2021_8_54_AM__Changes_.xml" afterDir="false" />
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Better README">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,6 +47,8 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
@@ -112,7 +112,42 @@
       <option name="project" value="LOCAL" />
       <updated>1632880432287</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary=":thinking:">
+      <created>1640308206832</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1640308206832</updated>
+    </task>
+    <task id="LOCAL-00003" summary="oofed">
+      <created>1640308522398</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1640308522398</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Add example config file">
+      <created>1640308533432</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1640308533432</updated>
+    </task>
+    <task id="LOCAL-00005" summary="self mute is good">
+      <created>1640310171593</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1640310171593</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Better README">
+      <created>1640310188469</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1640310188469</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -172,7 +207,12 @@
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="I hate you, Visual Studio." />
-    <option name="LAST_COMMIT_MESSAGE" value="I hate you, Visual Studio." />
+    <MESSAGE value=":thinking:" />
+    <MESSAGE value="oofed" />
+    <MESSAGE value="Add example config file" />
+    <MESSAGE value="self mute is good" />
+    <MESSAGE value="Better README" />
+    <option name="LAST_COMMIT_MESSAGE" value="Better README" />
   </component>
   <component name="XDebuggerManager">
     <pin-to-top-manager>
