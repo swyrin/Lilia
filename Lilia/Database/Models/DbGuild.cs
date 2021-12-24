@@ -1,9 +1,8 @@
-﻿namespace Lilia.Database.Models
+﻿namespace Lilia.Database.Models;
+
+public class DbGuild
 {
-    public class DbGuild
-    {
-        public ulong DbGuildId { get; set; }
-        public ulong GuildId { get; set; }
-        public int Ranking { get; set; }
-    }
+    public ulong DbGuildId { get; set; }
+    public ulong GuildId { get; set; }
+    public int Ranking { get; set; }
 }

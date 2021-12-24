@@ -1,12 +1,11 @@
 ﻿using Lilia.Services;
 
-namespace Lilia
+namespace Lilia;
+
+internal static class Program
 {
-    internal static class Program
+    private static void Main()
     {
-        private static void Main()
-        {
-            new LiliaClient().Run().ConfigureAwait(false).GetAwaiter().GetResult();
-        }
+        new LiliaClient().Run().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 }
