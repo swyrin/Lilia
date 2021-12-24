@@ -1,0 +1,20 @@
+﻿{
+  "client": {
+    "prefixes": [ "l." ],
+    "activity": {
+      "type": 3,
+      "name": "you",
+      "status": 4
+    }
+  },
+  "credentials": {
+    "discord_token": "",
+    "db_password": "",
+    "osu_api_key": ""
+  },
+  "lavalink": {
+    "host": "localhost",
+    "port": 2333,
+    "password": "youshallnotpass"
+  }
+}
