@@ -43,7 +43,7 @@ namespace Lilia.Commons
 
     public class ClientData
     {
-        [JsonProperty("data")]
+        [JsonProperty("prefixes")]
         public string[] StringPrefixes = new[] { "l." };
 
         [JsonProperty("activity")]
