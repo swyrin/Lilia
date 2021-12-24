@@ -24,6 +24,8 @@ public class LiliaDatabase
 
     private void Setup()
     {
+        Log.Logger.Information("Executing database migrations, if any.");
+        
         using (LiliaDbContext context = new LiliaDbContext(this.options))
         {
             while (context.Database.GetPendingMigrations().Any())

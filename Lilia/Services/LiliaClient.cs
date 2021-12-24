@@ -26,7 +26,7 @@ public class LiliaClient
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
-            .MinimumLevel.Information()
+            .MinimumLevel.Debug()
             .CreateLogger();
             
         Log.Logger.Information("Loading configurations");
@@ -48,7 +48,6 @@ public class LiliaClient
             
         ServiceProvider services = new ServiceCollection()
             .AddSingleton(this)
-            .AddSingleton(Log.Logger)
             .BuildServiceProvider();
 
         CommandsNextExtension commandsNext = client.UseCommandsNext(new CommandsNextConfiguration
@@ -91,7 +90,7 @@ public class LiliaClient
             Hostname = this.Configurations.Lavalink.Hostname,
             Port = this.Configurations.Lavalink.Port
         };
-            
+
         await this._lavalinkExtension.ConnectAsync(new LavalinkConfiguration
         {
             Password = this.Configurations.Lavalink.Password,
@@ -105,7 +104,7 @@ public class LiliaClient
 
     private Task OnGuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
     {
-        Log.Logger.Debug($"Guild cached : {e.Guild.Name}");
+        Log.Logger.Information($"Guild cached : {e.Guild.Name}");
         return Task.CompletedTask;
     }
 
