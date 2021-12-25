@@ -6,7 +6,6 @@ using Lilia.Database;
 using Lilia.Database.Models;
 using Lilia.Services;
 using OsuSharp;
-using OsuSharp.Oppai;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +30,7 @@ public class OsuModule : BaseCommandModule
         this._dbCtx = client.Database.GetContext();
         this._osuApiClient = new OsuClient(new OsuSharpConfiguration
         {
-            ApiKey = this._client.Configurations?.Credentials.OsuApiKey,
+            ApiKey = this._client.Configurations.Credentials.OsuApiKey,
             ModeSeparator = string.Empty
         });
     }
@@ -172,18 +171,6 @@ public class OsuModule : BaseCommandModule
         DbUser user = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
 
         if (string.IsNullOrWhiteSpace(user.OsuUsername))
-            await ctx.RespondAsync("You have not linked your osu! account yet.");
-        else
-            await this.GetRecentScoreCommand(ctx, user.OsuUsername, user.OsuMode);
-    }
-
-    [Command("recent")]
-    public async Task GetRecentScoreCommand(CommandContext ctx,
-        [Description("Discord user mention to get data. Might be annoying.")] DiscordMember mentionedMember)
-    {
-        DbUser user = this._dbCtx.GetOrCreateUserRecord(mentionedMember.Id);
-
-        if (string.IsNullOrWhiteSpace(user.OsuUsername))
             await ctx.RespondAsync("That user has not linked their osu! account yet.");
         else
             await this.GetRecentScoreCommand(ctx, user.OsuUsername, user.OsuMode);
@@ -204,7 +191,8 @@ public class OsuModule : BaseCommandModule
     [Command("recent")]
     public async Task GetRecentScoreCommand(CommandContext ctx,
         [Description("Username to get data, IN QUOTES.")] string username,
-        [Description("Mode number to get data: 0 - Standard; 1 - Taiko; 2 - Catch; 3 - Mania.")] int mode = 0)
+        [Description("Mode number to get data: 0 - Standard; 1 - Taiko; 2 - Catch; 3 - Mania.")] int mode = 0,
+        [Description("Number of plays. Defaults to 1.")] int lim = 1)
     {
         User user = await this._osuApiClient.GetUserByUsernameAsync(username, (GameMode) mode);
 
@@ -212,31 +200,33 @@ public class OsuModule : BaseCommandModule
             await ctx.RespondAsync("User not found.");
         else
         {
-            Score recentScore = (await this._osuApiClient.GetUserRecentsByUsernameAsync(username, (GameMode)mode, 1)).FirstOrDefault();
+            IReadOnlyList<Score> recentScores = await this._osuApiClient.GetUserRecentsByUsernameAsync(username, (GameMode)mode, lim);
 
-            if (recentScore == null)
+            if (!recentScores.Any())
                 await ctx.RespondAsync("This user have not played anything recently.");
             else
             {
-                Beatmap beatmap = await this._osuApiClient.GetBeatmapByIdAsync(recentScore.BeatmapId, (GameMode)mode);
-                PerformanceData fc = await beatmap.GetPPAsync(recentScore.Mods, (float)Math.Round(recentScore.Accuracy, 2, MidpointRounding.AwayFromZero));
-                PerformanceData currentProgress = await recentScore.GetPPAsync();
+                foreach (Score recentScore in recentScores)
+                {
+                    Beatmap beatmap = await this._osuApiClient.GetBeatmapByIdAsync(recentScore.BeatmapId, (GameMode)mode);
 
-                DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-                    .WithTimestamp(DateTime.Now)
-                    .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
-                    .WithAuthor($"Recent play of {user.Username} in mode {(GameMode)mode}", $"https://osu.ppy.sh/users/{user.UserId}", $"https://a.ppy.sh/{user.UserId}")
-                    .WithColor(this.OsuEmbedColor)
-                    .WithDescription($"Map: {Formatter.MaskedUrl($"{beatmap.Artist} - {beatmap.Title} [{beatmap.Difficulty}] **+{recentScore.Mods.ToModeString(this._osuApiClient)}**", beatmap.BeatmapUri)}")
-                    .AddField("Record data",
-                        $"**Ranking** : {recentScore.Rank}\n" +
-                        $"**Accuracy** : {Math.Round(recentScore.Accuracy, 2, MidpointRounding.AwayFromZero)}%\n" +
-                        $"**Max Combo** : {recentScore.MaxCombo}x/{beatmap.MaxCombo}x\n" +
-                        $"**Hit Count** : [{recentScore.Count300}/{recentScore.Count100}/{recentScore.Count50}/{recentScore.Miss}]\n" +
-                        $"**PP** : {Math.Round(currentProgress.Pp, 2, MidpointRounding.AwayFromZero)}pp - **{Math.Round(fc.Pp, 2, MidpointRounding.AwayFromZero)}pp** for {Math.Round(recentScore.Accuracy)}% FC")
-                    .WithThumbnail(beatmap.CoverUri);
+                    DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
+                        .WithTimestamp(DateTime.Now)
+                        .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
+                        .WithAuthor($"Recent play of {user.Username} in mode {(GameMode)mode}", $"https://osu.ppy.sh/users/{user.UserId}", $"https://a.ppy.sh/{user.UserId}")
+                        .WithColor(this.OsuEmbedColor)
+                        .WithDescription($"Map: {Formatter.MaskedUrl($"{beatmap.Artist} - {beatmap.Title} [{beatmap.Difficulty}] **+{recentScore.Mods.ToModeString(this._osuApiClient)}**", beatmap.BeatmapUri)}")
+                        .AddField("Record data",
+                            $"**Ranking** : {recentScore.Rank}\n" +
+                            $"**Accuracy** : {Math.Round(recentScore.Accuracy, 2, MidpointRounding.AwayFromZero)}%\n" +
+                            $"**Max Combo** : {recentScore.MaxCombo}x/{beatmap.MaxCombo}x\n" +
+                            $"**Hit Count** : [{recentScore.Count300}/{recentScore.Count100}/{recentScore.Count50}/{recentScore.Miss}]\n" +
+                            "**PP** : implement soon:tm:")
+                        .WithThumbnail(beatmap.CoverUri);
 
-                await ctx.RespondAsync(embed: embedBuilder.Build());
+                    await ctx.RespondAsync(embed: embedBuilder.Build());
+                    await Task.Delay(1000);
+                }
             }
         }
     }
@@ -306,8 +296,6 @@ public class OsuModule : BaseCommandModule
                 foreach (Score score in scores)
                 {
                     Beatmap beatmap = await this._osuApiClient.GetBeatmapByIdAsync(score.BeatmapId, (GameMode) mode);
-                    PerformanceData fc = await beatmap.GetPPAsync(score.Mods, (float)Math.Round(score.Accuracy, 2, MidpointRounding.AwayFromZero));
-                    PerformanceData currentProgress = await score.GetPPAsync();
 
                     DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
                         .WithTimestamp(DateTime.Now)
@@ -320,7 +308,7 @@ public class OsuModule : BaseCommandModule
                             $"**Accuracy** : {Math.Round(score.Accuracy, 2, MidpointRounding.AwayFromZero)}%\n" +
                             $"**Max Combo** : {score.MaxCombo}x/{beatmap.MaxCombo}x\n" +
                             $"**Hit Count** : [{score.Count300}/{score.Count100}/{score.Count50}/{score.Miss}]\n" +
-                            $"**PP** : {Math.Round(currentProgress.Pp, 2, MidpointRounding.AwayFromZero)}pp - **{Math.Round(fc.Pp, 2, MidpointRounding.AwayFromZero)}pp** for {Math.Round(score.Accuracy)}% FC")
+                            $"**PP** : implement soon:tm:")
                         .WithThumbnail(beatmap.CoverUri);
 
                     await ctx.RespondAsync(embed: embedBuilder.Build());
