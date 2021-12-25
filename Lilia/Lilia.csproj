@@ -53,14 +53,5 @@
     <None Update="database.db-wal">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="oppai.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="oppai.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="oppai.lib">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>
