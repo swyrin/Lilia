@@ -7,18 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia.sln" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/OwnerModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OwnerModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/TestModule.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" afterDir="false" />
-    </list>
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Switch to &quot;sl*sh commands&quot;" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -55,6 +44,13 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Lilia.Osu/Class1.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OsuModule.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaDatabase.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OwnerModule.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/HelpCommandFormatter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/HelpCommandFormatter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -114,7 +110,7 @@
       <workItem from="1640222511916" duration="796000" />
       <workItem from="1640346627727" duration="1418000" />
       <workItem from="1640392324248" duration="13097000" />
-      <workItem from="1640424922566" duration="4961000" />
+      <workItem from="1640424922566" duration="5573000" />
     </task>
     <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
       <created>1632880432287</created>
@@ -256,7 +252,63 @@
       <option name="project" value="LOCAL" />
       <updated>1640323526084</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Abuse Hot Reload, migrating to &quot;sl*sh commands&quot;, remove some of osu! stuffs">
+      <created>1640431471917</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1640431471917</updated>
+    </task>
+    <task id="LOCAL-00022" summary=":thinking:">
+      <created>1640431486344</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1640431486344</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Nah">
+      <created>1640431497068</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1640431497068</updated>
+    </task>
+    <task id="LOCAL-00024" summary="better wording">
+      <created>1640431526910</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1640431526910</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Add interactivity and &quot;sl*sh commands&quot;">
+      <created>1640431591846</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1640431591846</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Remove pp calculations">
+      <created>1640431606205</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1640431606205</updated>
+    </task>
+    <task id="LOCAL-00027" summary="better wording">
+      <created>1640431622526</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1640431622526</updated>
+    </task>
+    <task id="LOCAL-00028" summary="Switch to &quot;sl*sh commands&quot;">
+      <created>1640431638069</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1640431638069</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -329,8 +381,14 @@
     <MESSAGE value="Just. Use. One." />
     <MESSAGE value="logging" />
     <MESSAGE value="something something new?" />
+    <MESSAGE value="Abuse Hot Reload, migrating to &quot;sl*sh commands&quot;, remove some of osu! stuffs" />
     <MESSAGE value=":thinking:" />
-    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
+    <MESSAGE value="Nah" />
+    <MESSAGE value="Add interactivity and &quot;sl*sh commands&quot;" />
+    <MESSAGE value="Remove pp calculations" />
+    <MESSAGE value="better wording" />
+    <MESSAGE value="Switch to &quot;sl*sh commands&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Switch to &quot;sl*sh commands&quot;" />
   </component>
   <component name="XDebuggerManager">
     <pin-to-top-manager>
