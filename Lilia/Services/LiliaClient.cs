@@ -1,4 +1,5 @@
-﻿using DSharpPlus;
+﻿using System;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -9,8 +10,12 @@ using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Lavalink;
 using DSharpPlus.Net;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.EventArgs;
 using Serilog;
 
 namespace Lilia.Services;
@@ -20,6 +25,7 @@ public class LiliaClient
     public CancellationTokenSource Cts;
     public LiliaDatabase Database;
     public JsonConfigurations Configurations;
+
     private LavalinkExtension _lavalinkExtension;
 
     public async Task Run()
@@ -32,9 +38,9 @@ public class LiliaClient
         Log.Logger.Information("Loading configurations");
         JsonConfigurationsManager.EnsureConfigFileGenerated();
         this.Configurations = JsonConfigurationsManager.Configurations;
-            
+
         this.Cts = new CancellationTokenSource();
-            
+
         DiscordClient client = new(new DiscordConfiguration
         {
             Token = this.Configurations.Credentials.DiscordToken,
@@ -57,21 +63,34 @@ public class LiliaClient
         });
 
         this._lavalinkExtension = client.UseLavalink();
+        
+        SlashCommandsExtension slashCommands = client.UseSlashCommands(new SlashCommandsConfiguration
+        {
+            Services = services
+        });
+
+        client.UseInteractivity(new InteractivityConfiguration
+        {
+            Timeout = TimeSpan.FromMinutes(2)
+        });
 
         commandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
         commandsNext.SetHelpFormatter<HelpCommandFormatter>();
+        
+        slashCommands.RegisterCommands<MusicModule>();
+        slashCommands.RegisterCommands<OwnerModule>();
 
         client.Ready += this.OnReady;
         client.GuildAvailable += this.OnGuildAvailable;
         client.ClientErrored += this.OnClientErrored;
 
         commandsNext.CommandErrored += this.OnCommandsNextCommandErrored;
+        slashCommands.SlashCommandErrored += this.OnSlashCommandErrored;
 
         await client.ConnectAsync();
-        await Task.Delay(-1);
 
-        while (!Cts.IsCancellationRequested) await Task.Delay(2000);
-
+        while (!Cts.IsCancellationRequested) await Task.Delay(200);
+        
         await client.DisconnectAsync();
     }
 
@@ -99,7 +118,7 @@ public class LiliaClient
         });
 
         await sender.UpdateStatusAsync(activity, (UserStatus)activityData.Status);
-        Log.Logger.Information("Client is ready to serve.");
+        Log.Logger.Information("Client is ready to serve");
     }
 
     private Task OnGuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
@@ -110,13 +129,19 @@ public class LiliaClient
 
     private Task OnClientErrored(DiscordClient sender, ClientErrorEventArgs e)
     {
-        Log.Logger.Fatal(e.Exception, "An exception occured when running bot");
-        return Task.CompletedTask;
+        Log.Logger.Fatal(e.Exception, "An exception occured when running");
+        throw e.Exception;
     }
 
     private Task OnCommandsNextCommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
     {
-        Log.Logger.Fatal(e.Exception, "An exception occured when running a command");
-        return Task.CompletedTask;
+        Log.Logger.Fatal(e.Exception, "An exception occured when executing a command");
+        throw e.Exception;
+    }
+
+    private Task OnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
+    {
+        Log.Logger.Fatal(e.Exception, "An exception occured when executing a slash command");
+        throw e.Exception;
     }
 }
