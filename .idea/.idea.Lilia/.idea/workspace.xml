@@ -7,10 +7,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Just. Use. One.">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/dotnet.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/dotnet.yml" afterDir="false" />
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia.sln" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Modules/OwnerModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OwnerModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Modules/TestModule.cs" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" afterDir="false" />
     </list>
@@ -49,18 +54,13 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Database/Models/DbGuild.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Lilia.Osu/Class1.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectId" id="1ynCgyB2aA0goTk0uyRlhbOpr7l" />
   <component name="ProjectViewState">
@@ -76,7 +76,7 @@
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.C#" />
+    <property name="settings.editor.selected.configurable" value="HotReloadSettingsPage" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RunManager">
@@ -112,6 +112,9 @@
       <workItem from="1636452858325" duration="542000" />
       <workItem from="1638268957068" duration="2631000" />
       <workItem from="1640222511916" duration="796000" />
+      <workItem from="1640346627727" duration="1418000" />
+      <workItem from="1640392324248" duration="13097000" />
+      <workItem from="1640424922566" duration="4961000" />
     </task>
     <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
       <created>1632880432287</created>
@@ -232,7 +235,28 @@
       <option name="project" value="LOCAL" />
       <updated>1640315170140</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="logging">
+      <created>1640323492182</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1640323492182</updated>
+    </task>
+    <task id="LOCAL-00019" summary="something something new?">
+      <created>1640323513876</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1640323513876</updated>
+    </task>
+    <task id="LOCAL-00020" summary=":thinking:">
+      <created>1640323526084</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1640323526084</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -302,9 +326,11 @@
     <MESSAGE value="Add Serilog, upgrade D#+ and OsuSharp" />
     <MESSAGE value="stuffs" />
     <MESSAGE value="edit something something" />
-    <MESSAGE value=":thinking:" />
     <MESSAGE value="Just. Use. One." />
-    <option name="LAST_COMMIT_MESSAGE" value="Just. Use. One." />
+    <MESSAGE value="logging" />
+    <MESSAGE value="something something new?" />
+    <MESSAGE value=":thinking:" />
+    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
   </component>
   <component name="XDebuggerManager">
     <pin-to-top-manager>
