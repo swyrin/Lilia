@@ -23,7 +23,7 @@ public class HelpCommandFormatter : BaseHelpFormatter
         this._helpEmbedBuilder = new DiscordEmbedBuilder()
             .WithColor(DiscordColor.Red)
             .WithTimestamp(DateTime.Now)
-            .WithTitle("Bot Help Message")
+            .WithTitle("Help message")
             .WithDescription("This is a list of available commands, groups or details of a command")
             .WithFooter($"Requested by {this._currentCommandContext.Member.DisplayName}#{this._currentCommandContext.Member.Discriminator}", this._currentCommandContext.Member.AvatarUrl);
     }
@@ -35,15 +35,15 @@ public class HelpCommandFormatter : BaseHelpFormatter
         this._currentCommand = command;
 
         this._helpEmbedBuilder
-            .AddField("Explanations", "`<argument>`: required argument\n`[argument]`: optional argument\n`argument..`: take the rest of it.")
-            .AddField("Command description", this._currentCommand.Description ?? "No description provided");
+            .AddField("Explanations", "`<argument>`: required argument\n`[argument]`: optional argument\n`argument..`: take to the last.")
+            .AddField("Description", this._currentCommand.Description ?? "No description provided");
 
         int overloadCount = 1;
 
         foreach (CommandOverload overload in this._currentCommand.Overloads)
         {
             StringBuilder argsBuilder = new StringBuilder();
-            StringBuilder commandNameWithAliases = new StringBuilder($" {this._currentCommand.Name}");
+            StringBuilder commandNameWithAliases = new StringBuilder($"{this._currentCommand.Name}");
             StringBuilder usageBuilder = new StringBuilder($"{this._currentCommandContext.Prefix}{this._currentCommand.Parent?.Name ?? string.Empty}");
 
             foreach (string alias in this._currentCommand.Aliases) commandNameWithAliases.Append($"|{alias}");
@@ -63,14 +63,15 @@ public class HelpCommandFormatter : BaseHelpFormatter
                 else
                     usageBuilder.Append($"<{argument.Name}> ");
 
-                argName.Append("\n" + "\t" + "Description: " + argument.Description ?? "No description provided")
-                    .Append("\n" + "\t" + "Type: " + this._currentCommandContext.CommandsNext.GetUserFriendlyTypeName(argument.Type))
-                    .Append("\n" + "\t" + "Default value: " + (argument.DefaultValue ?? "None"));
+                argName.AppendLine();
+                argName.AppendLine("\t" + "Description: " + argument.Description ?? "No description provided")
+                    .AppendLine("\t" + "Type: " + this._currentCommandContext.CommandsNext.GetUserFriendlyTypeName(argument.Type))
+                    .AppendLine("\t" + "Default value: " + (argument.DefaultValue ?? "None"));
 
                 argsBuilder.Append(argName + "\n");
             }
 
-            usageBuilder.Append("\n\n");
+            usageBuilder.AppendLine();
 
             this._helpEmbedBuilder
                 .AddField($"Usage ({overloadCount})", Formatter.BlockCode(usageBuilder.ToString()))
