@@ -24,23 +24,19 @@ public class LiliaDatabase
 
     private void Setup()
     {
-        Log.Logger.Information("Executing database migrations, if any.");
-        
-        using (LiliaDbContext context = new LiliaDbContext(this.options))
-        {
-            while (context.Database.GetPendingMigrations().Any())
-            {
-                using (LiliaDbContext migrationContext = new LiliaDbContext(this.options))
-                {
-                    migrationContext.Database.Migrate();
-                    migrationContext.SaveChanges();
-                    Log.Logger.Information("Migrated upcoming changes on databases.");
-                }
-            }
+        Log.Logger.Information("Executing database migrations, if any");
 
-            context.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL");
-            context.SaveChanges();
+        using LiliaDbContext context = new LiliaDbContext(this.options);
+        while (context.Database.GetPendingMigrations().Any())
+        {
+            using LiliaDbContext migrationContext = new LiliaDbContext(this.options);
+            migrationContext.Database.Migrate();
+            migrationContext.SaveChanges();
+            Log.Logger.Information("Migrated upcoming changes on databases");
         }
+
+        context.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL");
+        context.SaveChanges();
     }
 
     public LiliaDbContext GetContext()
@@ -50,13 +46,11 @@ public class LiliaDatabase
         DbConnection conn = context.Database.GetDbConnection();
         conn.Open();
 
-        using (DbCommand com = conn.CreateCommand())
-        {
-            // https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
-            com.CommandText = "PRAGMA journal_mode=WAL; PRAGMA synchronous=OFF";
-            com.ExecuteNonQuery();
-        }
-        
+        using DbCommand com = conn.CreateCommand();
+        // https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
+        com.CommandText = "PRAGMA journal_mode=WAL; PRAGMA synchronous=OFF";
+        com.ExecuteNonQuery();
+
         return context;
     }
 }
