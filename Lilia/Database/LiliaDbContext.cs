@@ -11,7 +11,9 @@ public class LiliaDbContextFactory : IDesignTimeDbContextFactory<LiliaDbContext>
     public LiliaDbContext CreateDbContext(string[] args)
     {
         DbContextOptionsBuilder<LiliaDbContext> optionsBuilder = new DbContextOptionsBuilder<LiliaDbContext>();
-        SqliteConnectionStringBuilder connStringBuilder = new SqliteConnectionStringBuilder($"Data Source=database.db;Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}");
+        SqliteConnectionStringBuilder connStringBuilder =
+            new SqliteConnectionStringBuilder(
+                $"Data Source=database.db;Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}");
 
         optionsBuilder.UseSqlite(connStringBuilder.ToString());
         LiliaDbContext ctx = new LiliaDbContext(optionsBuilder.Options);
