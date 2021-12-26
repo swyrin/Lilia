@@ -11,6 +11,7 @@ using DSharpPlus.SlashCommands.Attributes;
 
 namespace Lilia.Modules;
 
+[SlashCommandGroup("music", "Commands related to music playbacks")]
 public class MusicModule : ApplicationCommandModule
 {
     [SlashCommand("join", "Jumps right into your current voice channel")]
@@ -21,7 +22,9 @@ public class MusicModule : ApplicationCommandModule
 
         if (channel == null)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Join a voice channel please"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Join a voice channel please"));
+
             return;
         }
 
@@ -38,40 +41,51 @@ public class MusicModule : ApplicationCommandModule
                     await connection.DisconnectAsync();
                     await node.ConnectAsync(channel);
                     await (await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id)).SetDeafAsync(true, "Self deaf");
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Jumped to your new voice channel"));
-                    return;    
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("Jumped to your new voice channel"));
+
+                    return;
                 }
 
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("You must have 'Move Members' permission in order to let me do that"));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You must have 'Move Members' permission in order to let me do that"));
+
                 return;
             }
-            
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("I have joined already"));
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("I have joined already"));
+
             return;
         }
 
         await node.ConnectAsync(channel);
         await (await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id)).SetDeafAsync(true, "Self deaf");
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Connected to your current voice channel"));
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("Connected to your current voice channel"));
     }
 
     [SlashCommand("leave", "Leave the voice chanel")]
     public async Task LeaveVoiceCommand(InteractionContext ctx)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-        
+
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
 
         if (connection == null)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("I am not in any channel right now"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("I am not in any channel right now"));
+
             return;
         }
 
         await connection.DisconnectAsync();
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Left the voice channel"));
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("Left the voice channel"));
     }
 
     [SlashCommand("play", "Play music")]
@@ -80,35 +94,42 @@ public class MusicModule : ApplicationCommandModule
         [Choice("youtube", "youtube")]
         [Choice("soundcloud", "soundcloud")]
         [Choice("stream", "stream")]
-        [Option("mode", "Searching mode")] string mode = "youtube")
+        [Option("mode", "Searching mode")]
+        string mode = "youtube")
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-        
+
         if (string.IsNullOrWhiteSpace(search))
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Did you forget something?"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Did you forget something?"));
+
             return;
         }
 
         DiscordChannel channel = ctx.Member.VoiceState?.Channel;
         if (channel == null)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Join a voice channel please"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Join a voice channel please"));
+
             return;
         }
 
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
-        
+
         if (connection == null)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("I am not in any channel right now"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("I am not in any channel right now"));
+
             return;
         }
-        
+
         LavalinkLoadResult loadResult;
-        
+
         switch (mode)
         {
             case "stream":
@@ -118,7 +139,9 @@ public class MusicModule : ApplicationCommandModule
                     loadResult = await node.Rest.GetTracksAsync(result);
                 else
                 {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Invalid URI provided"));
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("Invalid URI provided"));
+
                     return;
                 }
 
@@ -131,55 +154,67 @@ public class MusicModule : ApplicationCommandModule
                 loadResult = await node.Rest.GetTracksAsync(search);
                 break;
         }
-        
+
 
         if (!loadResult.Tracks.Any())
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("I am unable to find a track from your search"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("I am unable to find a track from your search"));
+
             return;
         }
 
         LavalinkTrack track = loadResult.Tracks.First();
         await connection.PlayAsync(track);
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Now playing the track {track.Uri}"));
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent($"Now playing the track {track.Uri}"));
     }
 
-    [SlashCommand("nowplaying","Check playing track")]
+    [SlashCommand("nowplaying", "Check playing track")]
     public async Task NowPlayingCommand(InteractionContext ctx)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-        
+
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
-        
+
         if (connection == null)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("I am not in any channel right now"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("I am not in any channel right now"));
+
             return;
         }
-        
+
         LavalinkTrack track = connection.CurrentState.CurrentTrack;
 
         if (connection.CurrentState.CurrentTrack == null)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("I am not playing anything"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("I am not playing anything"));
+
             return;
         }
 
         if (connection.CurrentState.CurrentTrack.IsStream)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"I am playing a stream from: {connection.CurrentState.CurrentTrack.Uri}"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"I am playing a stream from: {connection.CurrentState.CurrentTrack.Uri}"));
+
             return;
         }
 
         StringBuilder text = new StringBuilder();
         text.AppendLine($"{Formatter.Bold("Track title")}: {track.Title}");
         text.AppendLine($"{Formatter.Bold("Author/Uploader")}: {track.Author}");
-        text.AppendLine($"{Formatter.Bold("Playback position")}: {connection.CurrentState.PlaybackPosition:g}/{track.Length:g}");
+        text.AppendLine(
+            $"{Formatter.Bold("Playback position")}: {connection.CurrentState.PlaybackPosition:g}/{track.Length:g}");
         text.AppendLine($"{Formatter.Bold("Source")}: {track.Uri}");
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(text.ToString()));
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent(text.ToString()));
     }
 
     [SlashCommand("controls", "Show playback controls")]
@@ -191,52 +226,67 @@ public class MusicModule : ApplicationCommandModule
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
-        
+
         if (connection == null)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("I am not in any channel right now"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("I am not in any channel right now"));
+
             return;
         }
-        
+
         LavalinkTrack track = connection.CurrentState.CurrentTrack;
 
         if (connection.CurrentState.CurrentTrack == null)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("I am not playing anything"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("I am not playing anything"));
+
             return;
         }
 
-        DiscordButtonComponent pauseBtn = new DiscordButtonComponent(ButtonStyle.Primary, "pauseBtn", null, false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":pause_button:")));
-        DiscordButtonComponent stopBtn = new DiscordButtonComponent(ButtonStyle.Primary, "stopBtn", null, false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":stop_button:")));
-        DiscordButtonComponent resumeBtn = new DiscordButtonComponent(ButtonStyle.Primary, "resumeBtn", null, false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":play_pause:")));
+        DiscordButtonComponent pauseBtn = new DiscordButtonComponent(ButtonStyle.Primary, "pauseBtn", null, false,
+            new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":pause_button:")));
+        DiscordButtonComponent stopBtn = new DiscordButtonComponent(ButtonStyle.Primary, "stopBtn", null, false,
+            new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":stop_button:")));
+        DiscordButtonComponent resumeBtn = new DiscordButtonComponent(ButtonStyle.Primary, "resumeBtn", null, false,
+            new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":play_pause:")));
 
         DiscordMessage message = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .AddComponents(pauseBtn, resumeBtn, stopBtn)
             .WithContent("Here's the controls"));
-        
+
         var result = await message.WaitForButtonAsync();
-        
+
         if (result.TimedOut)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Time exceeded"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Time exceeded"));
+
             return;
         }
-        
+
         string id = result.Result.Id;
 
-        switch (id)      
+        switch (id)
         {
             case "pauseBtn":
                 await connection.PauseAsync();
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Pausing"));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Pausing"));
+
                 break;
             case "stopBtn":
                 await connection.StopAsync();
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Stopping"));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Stopping"));
+
                 break;
             case "resumeBtn":
                 await connection.ResumeAsync();
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Resuming"));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Resuming"));
+
                 break;
         }
     }
