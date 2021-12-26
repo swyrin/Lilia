@@ -34,7 +34,7 @@ public class LiliaClient
             .WriteTo.Console()
             .MinimumLevel.Debug()
             .CreateLogger();
-            
+
         Log.Logger.Information("Loading configurations");
         JsonConfigurationsManager.EnsureConfigFileGenerated();
         this.Configurations = JsonConfigurationsManager.Configurations;
@@ -48,10 +48,10 @@ public class LiliaClient
             MinimumLogLevel = LogLevel.Debug,
             LoggerFactory = new LoggerFactory().AddSerilog()
         });
-            
+
         Log.Logger.Information("Setting up databases");
         this.Database = new LiliaDatabase();
-            
+
         ServiceProvider services = new ServiceCollection()
             .AddSingleton(this)
             .BuildServiceProvider();
@@ -63,7 +63,7 @@ public class LiliaClient
         });
 
         this._lavalinkExtension = client.UseLavalink();
-        
+
         SlashCommandsExtension slashCommands = client.UseSlashCommands(new SlashCommandsConfiguration
         {
             Services = services
@@ -71,14 +71,13 @@ public class LiliaClient
 
         client.UseInteractivity(new InteractivityConfiguration
         {
-            Timeout = TimeSpan.FromMinutes(2)
+            Timeout = TimeSpan.FromSeconds(30)
         });
 
         commandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
         commandsNext.SetHelpFormatter<HelpCommandFormatter>();
-        
-        slashCommands.RegisterCommands<MusicModule>();
-        slashCommands.RegisterCommands<OwnerModule>();
+
+        slashCommands.RegisterCommands(Assembly.GetExecutingAssembly());
 
         client.Ready += this.OnReady;
         client.GuildAvailable += this.OnGuildAvailable;
@@ -90,7 +89,7 @@ public class LiliaClient
         await client.ConnectAsync();
 
         while (!Cts.IsCancellationRequested) await Task.Delay(200);
-        
+
         await client.DisconnectAsync();
     }
 
@@ -100,7 +99,7 @@ public class LiliaClient
 
         DiscordActivity activity = new DiscordActivity
         {
-            ActivityType = (ActivityType)activityData.Type,
+            ActivityType = (ActivityType) activityData.Type,
             Name = activityData.Name
         };
 
@@ -117,7 +116,7 @@ public class LiliaClient
             SocketEndpoint = endpoint
         });
 
-        await sender.UpdateStatusAsync(activity, (UserStatus)activityData.Status);
+        await sender.UpdateStatusAsync(activity, (UserStatus) activityData.Status);
         Log.Logger.Information("Client is ready to serve");
     }
 
