@@ -46,11 +46,11 @@ public class ClientData
 
 public class ClientActivityData
 {
-    [JsonProperty("type")] public int Type = 3;
+    [JsonProperty("type")] public string Type = "Watching";
 
     [JsonProperty("name")] public string Name = "you";
 
-    [JsonProperty("status")] public int Status = 4;
+    [JsonProperty("status")] public string Status = "DoNotDisturb";
 }
 
 public class CredentialsData

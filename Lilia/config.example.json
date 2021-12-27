@@ -1,12 +1,9 @@
 ﻿{
   "client": {
-    "prefixes": [
-      "l."
-    ],
     "activity": {
-      "type": 3,
+      "type": "Watching",
       "name": "you",
-      "status": 4
+      "status": "DoNotDisturb"
     }
   },
   "credentials": {

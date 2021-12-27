@@ -89,9 +89,26 @@ public class LiliaClient
     {
         ClientActivityData activityData = this.Configurations.Client.Activity;
 
+        bool canConvertActivityType = Enum.TryParse(activityData.Type, out ActivityType activityType);
+        bool canConvertStatus = Enum.TryParse(activityData.Status, out UserStatus userStatus);
+
+        if (!canConvertActivityType)
+        {
+            Log.Logger.Warning($"Can not convert \"{activityData.Type}\" to a valid activity type, using Playing by default");
+            Log.Logger.Information($"Valid options are: ListeningTo, Competing, Playing, Watching. Others are soon to be implemented in a future release");
+            activityType = ActivityType.Playing;
+        }
+
+        if (!canConvertStatus)
+        {
+            Log.Logger.Warning($"Can not convert \"{activityData.Status}\" to a valid status, using Online by default");
+            Log.Logger.Information($"Valid options are: Online, Invisible, Idle, DoNotDisturb. Others are soon to be implemented in a future release");
+            userStatus = UserStatus.Online;
+        }
+
         DiscordActivity activity = new DiscordActivity
         {
-            ActivityType = (ActivityType) activityData.Type,
+            ActivityType = activityType,
             Name = activityData.Name
         };
 
@@ -108,7 +125,7 @@ public class LiliaClient
             SocketEndpoint = endpoint
         });
 
-        await sender.UpdateStatusAsync(activity, (UserStatus) activityData.Status);
+        await sender.UpdateStatusAsync(activity, userStatus);
         Log.Logger.Information("Client is ready to serve");
     }
 
