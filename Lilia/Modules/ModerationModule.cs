@@ -1,14 +1,17 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using Lilia.Database;
 using Lilia.Services;
 
 namespace Lilia.Modules;
 
-public class ModerationModule : BaseCommandModule
+public class ModerationModule : ApplicationCommandModule
 {
     private LiliaClient _client;
     private LiliaDbContext _dbCtx;
@@ -19,52 +22,101 @@ public class ModerationModule : BaseCommandModule
         this._dbCtx = client.Database.GetContext();
     }
 
-    [Command("ban")]
-    [RequirePermissions(Permissions.BanMembers)]
-    public async Task BanMembersCommand(CommandContext ctx,
-        [Description("List of members to ban.")]
-        params DiscordMember[] members)
+    [SlashCommand("ban", "Ban members, obviously")]
+    [SlashRequirePermissions(Permissions.BanMembers)]
+    public async Task BanMembersCommand(InteractionContext ctx,
+        [Option("reason", "Reason to ban")] string reason = "")
     {
-        await ctx.RespondAsync("Banning mischievous people...");
+        await ctx.DeferAsync();
 
-        foreach (DiscordMember member in members)
+        DiscordMessage msg = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent($"{Formatter.Bold("Mention")} all the people you want to ban"));
+
+        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+
+        var res = await interactivity.WaitForMessageAsync(x => x.MentionedUsers.Any());
+
+        if (res.TimedOut)
         {
-            if (member == ctx.Message.Author)
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("Time exceeded"));
+
+            return;
+        }
+        
+        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+            .WithContent("Banning mischievous people"));
+
+        DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
+        
+        foreach (DiscordUser user in res.Result.MentionedUsers)
+        {
+            DiscordMember member = (DiscordMember) user;
+            
+            if (member == ctx.Member)
             {
-                await ctx.RespondAsync(
-                    $"Beaned {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")} from this server.");
+                builder.WithContent("Beaned you");
             }
             else
             {
-                await ctx.Guild.BanMemberAsync(member, 0, "Batch banning.");
-                await ctx.RespondAsync($"Banned {member.DisplayName}#{member.Discriminator} from this server.");
+                reason = string.IsNullOrWhiteSpace(reason)
+                    ? $"Banned by {ctx.Member.DisplayName}#{ctx.Member.Discriminator}"
+                    : reason;
+                
+                await ctx.Guild.BanMemberAsync(member, 0, reason);
+                builder.WithContent($"Banned {member.DisplayName}#{member.Discriminator}");
             }
-
-            await Task.Delay(1000);
         }
+
+        await ctx.FollowUpAsync(builder);
     }
 
-    [Command("kick")]
-    [RequirePermissions(Permissions.KickMembers)]
-    public async Task KickMembersCommand(CommandContext ctx,
-        [Description("List of members to kick.")]
-        params DiscordMember[] members)
+    [SlashCommand("kick", "Kick members, obviously")]
+    [SlashRequirePermissions(Permissions.BanMembers)]
+    public async Task KickMembersCommand(InteractionContext ctx,
+        [Option("reason", "Reason to kick")] string reason = "")
     {
-        await ctx.RespondAsync("Kicking mischievous people...");
+        await ctx.DeferAsync();
 
-        foreach (DiscordMember member in members)
+        DiscordMessage msg = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent($"{Formatter.Bold("Mention")} all the people you want to kick"));
+
+        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+
+        var res = await interactivity.WaitForMessageAsync(x => x.MentionedUsers.Any());
+
+        if (res.TimedOut)
         {
-            if (member == ctx.Message.Author)
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("Time exceeded"));
+
+            return;
+        }
+        
+        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+            .WithContent("Kicked mischievous people"));
+
+        DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
+        
+        foreach (DiscordUser user in res.Result.MentionedUsers)
+        {
+            DiscordMember member = (DiscordMember) user;
+            
+            if (member == ctx.Member)
             {
-                await ctx.RespondAsync("Imagine kicking yourself, smh.");
+                builder.WithContent("Imagine kicking yourself, smh");
             }
             else
             {
-                await member.RemoveAsync("Batch kicking");
-                await ctx.RespondAsync($"Kicked {member.DisplayName}#{member.Discriminator} from this server.");
-            }
+                reason = string.IsNullOrWhiteSpace(reason)
+                    ? $"Kicked by {ctx.Member.DisplayName}#{ctx.Member.Discriminator}"
+                    : reason;
 
-            await Task.Delay(1000);
+                await member.RemoveAsync(reason);
+                builder.WithContent($"Kicked {member.DisplayName}#{member.Discriminator}");
+            }
         }
+
+        await ctx.FollowUpAsync(builder);
     }
 }

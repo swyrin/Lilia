@@ -41,8 +41,6 @@ public class JsonConfigurations
 
 public class ClientData
 {
-    [JsonProperty("prefixes")] public string[] StringPrefixes = {"l."};
-
     [JsonProperty("activity")] public ClientActivityData Activity = new();
 }
 

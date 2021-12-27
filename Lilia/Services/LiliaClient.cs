@@ -1,13 +1,10 @@
 ﻿using System;
 using DSharpPlus;
-using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Lilia.Commons;
-using Lilia.Modules;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.Interactivity;
@@ -16,6 +13,7 @@ using DSharpPlus.Lavalink;
 using DSharpPlus.Net;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
+using Lilia.Modules;
 using Serilog;
 
 namespace Lilia.Services;
@@ -56,12 +54,6 @@ public class LiliaClient
             .AddSingleton(this)
             .BuildServiceProvider();
 
-        CommandsNextExtension commandsNext = client.UseCommandsNext(new CommandsNextConfiguration
-        {
-            StringPrefixes = this.Configurations.Client.StringPrefixes,
-            Services = services
-        });
-
         this._lavalinkExtension = client.UseLavalink();
 
         SlashCommandsExtension slashCommands = client.UseSlashCommands(new SlashCommandsConfiguration
@@ -73,17 +65,16 @@ public class LiliaClient
         {
             Timeout = TimeSpan.FromSeconds(30)
         });
-
-        commandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
-        commandsNext.SetHelpFormatter<HelpCommandFormatter>();
-
-        slashCommands.RegisterCommands(Assembly.GetExecutingAssembly());
+        
+        slashCommands.RegisterCommands<OsuModule>();
+        slashCommands.RegisterCommands<ModerationModule>();
+        slashCommands.RegisterCommands<OwnerModule>();
+        slashCommands.RegisterCommands<MusicModule>();
 
         client.Ready += this.OnReady;
         client.GuildAvailable += this.OnGuildAvailable;
         client.ClientErrored += this.OnClientErrored;
-
-        commandsNext.CommandErrored += this.OnCommandsNextCommandErrored;
+        
         slashCommands.SlashCommandErrored += this.OnSlashCommandErrored;
 
         await client.ConnectAsync();
@@ -91,6 +82,7 @@ public class LiliaClient
         while (!Cts.IsCancellationRequested) await Task.Delay(200);
 
         await client.DisconnectAsync();
+        await this.Database.GetContext().DisposeAsync();
     }
 
     private async Task OnReady(DiscordClient sender, ReadyEventArgs e)
@@ -129,12 +121,6 @@ public class LiliaClient
     private Task OnClientErrored(DiscordClient sender, ClientErrorEventArgs e)
     {
         Log.Logger.Fatal(e.Exception, "An exception occured when running");
-        throw e.Exception;
-    }
-
-    private Task OnCommandsNextCommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
-    {
-        Log.Logger.Fatal(e.Exception, "An exception occured when executing a command");
         throw e.Exception;
     }
 
