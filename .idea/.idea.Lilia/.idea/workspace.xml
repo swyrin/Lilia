@@ -11,16 +11,12 @@
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Database/Extensions/UserDbAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Database/Extensions/UserDbAccess.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Database/LiliaDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Database/LiliaDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Database/Models/DbUser.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Database/Models/DbUser.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Modules/ModerationModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/ModerationModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/OwnerModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OwnerModule.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/config.example.json" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/config.example.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,7 +115,9 @@
       <workItem from="1640392324248" duration="13097000" />
       <workItem from="1640424922566" duration="5775000" />
       <workItem from="1640476858407" duration="565000" />
-      <workItem from="1640481153413" duration="13275000" />
+      <workItem from="1640481153413" duration="13889000" />
+      <workItem from="1640512397986" duration="8493000" />
+      <workItem from="1640565477148" duration="1326000" />
     </task>
     <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
       <created>1632880432287</created>
@@ -331,7 +329,63 @@
       <option name="project" value="LOCAL" />
       <updated>1640431769656</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="Applying Rider cleanup">
+      <created>1640495410712</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1640495410712</updated>
+    </task>
+    <task id="LOCAL-00032" summary="No wonder why my data keeps losing">
+      <created>1640495445147</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1640495445147</updated>
+    </task>
+    <task id="LOCAL-00033" summary="Reduce timeout">
+      <created>1640495462707</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1640495462707</updated>
+    </task>
+    <task id="LOCAL-00034" summary="Sl*sh commanded for osu! commands">
+      <created>1640495487969</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1640495487969</updated>
+    </task>
+    <task id="LOCAL-00035" summary="Grouping 101">
+      <created>1640495501852</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1640495501852</updated>
+    </task>
+    <task id="LOCAL-00036" summary="*readability*">
+      <created>1640495517225</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1640495517225</updated>
+    </task>
+    <task id="LOCAL-00037" summary="I don't know why I do this">
+      <created>1640495537137</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1640495537137</updated>
+    </task>
+    <task id="LOCAL-00038" summary=":thinking:">
+      <created>1640495548656</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1640495548656</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -390,10 +444,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="I hate you, Visual Studio." />
-    <MESSAGE value="oofed" />
-    <MESSAGE value="Add example config file" />
-    <MESSAGE value="self mute is good" />
     <MESSAGE value="Better README" />
     <MESSAGE value="change README file sep." />
     <MESSAGE value="oops...." />
@@ -411,6 +461,13 @@
     <MESSAGE value="better wording" />
     <MESSAGE value="Switch to &quot;sl*sh commands&quot;" />
     <MESSAGE value="Bye bye oppai" />
+    <MESSAGE value="Applying Rider cleanup" />
+    <MESSAGE value="No wonder why my data keeps losing" />
+    <MESSAGE value="Reduce timeout" />
+    <MESSAGE value="Sl*sh commanded for osu! commands" />
+    <MESSAGE value="Grouping 101" />
+    <MESSAGE value="*readability*" />
+    <MESSAGE value="I don't know why I do this" />
     <MESSAGE value=":thinking:" />
     <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
   </component>
