@@ -7,6 +7,7 @@ using OsuSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
@@ -39,25 +40,24 @@ public class OsuModule : ApplicationCommandModule
     public async Task SetOsuUsernameCommand(InteractionContext ctx,
         [Option("username", "Your osu! username")]
         string username,
-        [Choice("standard", 0)]
-        [Choice("taiko", 1)]
-        [Choice("catch", 2)]
-        [Choice("mania", 3)]
+        [Choice("standard", "Standard")]
+        [Choice("taiko", "Taiko")]
+        [Choice("catch", "Catch")]
+        [Choice("mania", "Mania")]
         [Option("mode", "osu! mode to retrieve data")]
-        long mode = 0)
+        string mode = "Standard")
     {
         await ctx.DeferAsync();
 
         DbUser user = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
 
         user.OsuUsername = username;
-        user.OsuMode = (int) mode;
+        user.OsuMode = mode;
 
         this._dbCtx.Update(user);
         await this._dbCtx.SaveChangesAsync();
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent(
-                $"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(((GameMode) mode).ToString())}"));
+            .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(mode)}"));
     }
 
     [SlashCommand("me", "Get your linked data with me")]
@@ -67,8 +67,8 @@ public class OsuModule : ApplicationCommandModule
         DbUser user = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
 
         DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-            .AddField("Username", user.OsuUsername ?? "Not linked yet", true)
-            .AddField("Default mode", user.OsuMode == -1 ? $"{(GameMode) user.OsuMode}" : "Not linked yet", true)
+            .AddField("Username", !string.IsNullOrWhiteSpace(user.OsuUsername) ? user.OsuUsername : "Not linked yet", true)
+            .AddField("Default mode", !string.IsNullOrWhiteSpace(user.OsuMode) ? user.OsuMode : "Not linked yet", true)
             .WithTimestamp(DateTime.Now)
             .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
             .WithColor(this.OsuEmbedColor);
@@ -87,16 +87,20 @@ public class OsuModule : ApplicationCommandModule
         [Choice("best", "best")]
         [Option("type", "Request type")]
         string type = "profile",
-        [Choice("standard", 0)]
-        [Choice("taiko", 1)]
-        [Choice("catch", 2)]
-        [Choice("mania", 3)]
+        [Choice("standard", "Standard")]
+        [Choice("taiko", "Taiko")]
+        [Choice("catch", "Catch")]
+        [Choice("mania", "Mania")]
         [Option("mode", "Overridden mode if NOT that user didn't link")]
-        long mode = 0)
+        string mode = "Standard")
     {
         DiscordMember member = (DiscordMember) discordUser;
         await ctx.DeferAsync();
+
         DbUser user = this._dbCtx.GetOrCreateUserRecord(member.Id);
+        string officialMode = string.IsNullOrWhiteSpace(user.OsuMode) ? mode : user.OsuMode;
+        
+        Enum.TryParse(officialMode, out GameMode omode);
 
         if (string.IsNullOrWhiteSpace(user.OsuUsername))
         {
@@ -105,9 +109,8 @@ public class OsuModule : ApplicationCommandModule
 
             return;
         }
-
-        long officialMode = user.OsuMode == -1 ? mode : user.OsuMode;
-        User osuUser = await this._osuApiClient.GetUserByUsernameAsync(user.OsuUsername, (GameMode) officialMode);
+        
+        User osuUser = await this._osuApiClient.GetUserByUsernameAsync(user.OsuUsername, omode);
 
         if (osuUser == null)
         {
@@ -119,22 +122,28 @@ public class OsuModule : ApplicationCommandModule
 
         if (type == "profile")
         {
+            StringBuilder sb = new StringBuilder();
+
+            sb
+                .AppendLine($"{Formatter.Bold("Join Date")}: {osuUser.JoinDate:d}")
+                .AppendLine($"{Formatter.Bold("Country")}: {osuUser.Country.EnglishName} :flag_{osuUser.Country.Name.ToLower()}:")
+                .AppendLine($"{Formatter.Bold("Total Score")}: {osuUser.Score} - {osuUser.RankedScore} ranked score")
+                .AppendLine($"{Formatter.Bold("PP")}: {osuUser.PerformancePoints.GetValueOrDefault()}pp (Country: #{osuUser.CountryRank} - Global: #{osuUser.Rank})")
+                .AppendLine($"{Formatter.Bold("Accuracy")}: {osuUser.Accuracy.GetValueOrDefault()}%")
+                .AppendLine($"{Formatter.Bold("Level")}: {Convert.ToInt32(osuUser.Level)}")
+                .AppendLine($"{Formatter.Bold("Play Count")}: {osuUser.PlayCount} with {osuUser.TimePlayed:g} of play time");
+
             DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
                 .WithTimestamp(DateTime.Now)
                 .WithFooter($"Requested by {ctx.Member.DisplayName}#{ctx.Member.Discriminator}", ctx.Member.AvatarUrl)
-                .WithAuthor($"{osuUser.Username}'s osu! profile", $"https://osu.ppy.sh/users/{osuUser.UserId}")
+                .WithAuthor($"{osuUser.Username}'s osu! profile", osuUser.ProfileUri.ToString())
                 .WithColor(this.OsuEmbedColor)
-                .AddField(":information_source: Basic Information",
-                    $"**Country** : :flag_{osuUser.Country.Name.ToLower()}: {osuUser.Country.EnglishName}\n" +
-                    $"**PP** : {Math.Round(osuUser.PerformancePoints.GetValueOrDefault(), 2, MidpointRounding.AwayFromZero)}pp ( :flag_{osuUser.Country.Name.ToLower()}: : #{osuUser.CountryRank} - :globe_with_meridians: : #{osuUser.Rank})\n" +
-                    $"**Level** : {Convert.ToInt32(osuUser.Level)}\n" +
-                    $"**Play Count** : {osuUser.PlayCount}\n" +
-                    $"**Accuracy** : {Math.Round(osuUser.Accuracy.GetValueOrDefault(), 2, MidpointRounding.AwayFromZero)}%")
+                .AddField("Basic Information", sb.ToString())
+                .AddField("Click the link below to spectate this user, if they are playing", osuUser.SpectateUri.ToString())
                 .WithThumbnail($"https://a.ppy.sh/{osuUser.UserId}");
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent(
-                    $"osu! profile of user {Formatter.Bold($"{member.DisplayName}#{member.Discriminator}")} with mode {Formatter.Bold(((GameMode) officialMode).ToString())}")
+                .WithContent($"osu! profile of user {member.DisplayName}#{member.Discriminator} with mode {Formatter.Bold(omode.ToString())}")
                 .AddEmbed(embedBuilder.Build()));
         }
         else
@@ -163,45 +172,46 @@ public class OsuModule : ApplicationCommandModule
             IReadOnlyList<Score> scores = new List<Score>();
 
             if (type == "best")
-                scores = await this._osuApiClient.GetUserBestsByUsernameAsync(user.OsuUsername, (GameMode) officialMode,
-                    r);
+                scores = await this._osuApiClient.GetUserBestsByUsernameAsync(user.OsuUsername, omode, r);
             else if (type == "recent")
-                scores = await this._osuApiClient.GetUserRecentsByUsernameAsync(user.OsuUsername,
-                    (GameMode) officialMode, r);
+                scores = await this._osuApiClient.GetUserRecentsByUsernameAsync(user.OsuUsername, omode, r);
 
             if (!scores.Any())
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("I found nothing, sorry"));
             else
             {
                 DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
+                StringBuilder sb = new StringBuilder();
 
                 foreach (Score score in scores)
                 {
-                    Beatmap beatmap =
-                        await this._osuApiClient.GetBeatmapByIdAsync(score.BeatmapId, (GameMode) officialMode);
+                    Beatmap beatmap = await score.GetBeatmapAsync();
+
+                    sb
+                        .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore}")
+                        .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
+                        .AppendLine($"{Formatter.Bold("Accuracy")}: {score.Accuracy}%")
+                        .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
+                        .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Count300}/{score.Count100}/{score.Count50}/{score.Miss}]")
+                        .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints.GetValueOrDefault()}")
+                        .AppendLine($"{Formatter.Bold("Submission Time")}: {score.Date:f}");
+                    
                     DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
                         .WithTimestamp(DateTime.Now)
                         .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
                         .WithAuthor(
-                            $"{(type == "best" ? "Best" : "Recent")} score of {osuUser.Username} in mode {(GameMode) officialMode}",
-                            $"https://osu.ppy.sh/users/{osuUser.UserId}", $"https://a.ppy.sh/{osuUser.UserId}")
+                            $"{(type == "best" ? "Best" : "Recent")} score of {osuUser.Username} in mode {omode}", osuUser.ProfileUri.ToString(), $"https://a.ppy.sh/{osuUser.UserId}")
                         .WithColor(this.OsuEmbedColor)
-                        .WithDescription(
-                            $"Map: {Formatter.MaskedUrl($"{beatmap.Artist} - {beatmap.Title} [{beatmap.Difficulty}] **+{score.Mods.ToModeString(this._osuApiClient)}**", beatmap.BeatmapUri)}")
-                        .AddField("Score data",
-                            $"**Ranking** : {score.Rank}\n" +
-                            $"**Accuracy** : {Math.Round(score.Accuracy, 2, MidpointRounding.AwayFromZero)}%\n" +
-                            $"**Max Combo** : {score.MaxCombo}x/{beatmap.MaxCombo}x\n" +
-                            $"**Hit Count** : [{score.Count300}/{score.Count100}/{score.Count50}/{score.Miss}]\n" +
-                            "**PP** : implement soon:tm:")
+                        .WithDescription($"Map: {Formatter.MaskedUrl($"{beatmap.Artist} - {beatmap.Title} [{beatmap.Difficulty}] +{Formatter.Bold(score.Mods.ToModeString(this._osuApiClient))}", beatmap.BeatmapUri)}")
+                        .AddField("Score data", sb.ToString())
                         .WithThumbnail(beatmap.CoverUri);
 
                     builder.AddEmbed(embedBuilder.Build());
+                    sb.Clear();
                 }
 
-                builder.WithContent(
-                    $"{(type == "best" ? "Best" : "Recent")} scores of user {member.Username}#{member.Discriminator}");
+                builder.WithContent($"{(type == "best" ? "Best" : "Recent")} scores of user {osuUser.Username}");
                 await ctx.FollowUpAsync(builder);
             }
         }
@@ -216,15 +226,17 @@ public class OsuModule : ApplicationCommandModule
         [Choice("best", "best")]
         [Option("type", "Request type")]
         string type = "profile",
-        [Choice("standard", 0)]
-        [Choice("taiko", 1)]
-        [Choice("catch", 2)]
-        [Choice("mania", 3)]
+        [Choice("standard", "Standard")]
+        [Choice("taiko", "Taiko")]
+        [Choice("catch", "Catch")]
+        [Choice("mania", "Mania")]
         [Option("mode", "osu! mode to retrieve data")]
-        long mode = 0)
+        string mode = "Standard")
     {
         await ctx.DeferAsync();
-        User osuUser = await this._osuApiClient.GetUserByUsernameAsync(username, (GameMode) mode);
+        Enum.TryParse(mode, out GameMode omode);
+
+        User osuUser = await this._osuApiClient.GetUserByUsernameAsync(username, omode);
 
         if (osuUser == null)
         {
@@ -236,22 +248,27 @@ public class OsuModule : ApplicationCommandModule
 
         if (type == "profile")
         {
+            StringBuilder sb = new StringBuilder();
+
+            sb
+                .AppendLine($"{Formatter.Bold("Join Date")}: {osuUser.JoinDate:d}")
+                .AppendLine($"{Formatter.Bold("Country")}: {osuUser.Country.EnglishName} :flag_{osuUser.Country.Name.ToLower()}:")
+                .AppendLine($"{Formatter.Bold("Total Score")}: {osuUser.Score} - {osuUser.RankedScore} ranked score")
+                .AppendLine($"{Formatter.Bold("PP")}: {osuUser.PerformancePoints.GetValueOrDefault()}pp (Country: #{osuUser.CountryRank} - Global: #{osuUser.Rank})")
+                .AppendLine($"{Formatter.Bold("Accuracy")}: {osuUser.Accuracy.GetValueOrDefault()}%")
+                .AppendLine($"{Formatter.Bold("Level")}: {Convert.ToInt32(osuUser.Level)}")
+                .AppendLine($"{Formatter.Bold("Play Count")}: {osuUser.PlayCount} with {osuUser.TimePlayed:g} of play time");
+
             DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
                 .WithTimestamp(DateTime.Now)
                 .WithFooter($"Requested by {ctx.Member.DisplayName}#{ctx.Member.Discriminator}", ctx.Member.AvatarUrl)
-                .WithAuthor($"{osuUser.Username}'s osu! profile", $"https://osu.ppy.sh/users/{osuUser.UserId}")
+                .WithAuthor($"{osuUser.Username}'s osu! profile", osuUser.ProfileUri.ToString())
                 .WithColor(this.OsuEmbedColor)
-                .AddField(":information_source: Basic Information",
-                    $"**Country** : :flag_{osuUser.Country.Name.ToLower()}: {osuUser.Country.EnglishName}\n" +
-                    $"**PP** : {Math.Round(osuUser.PerformancePoints.GetValueOrDefault(), 2, MidpointRounding.AwayFromZero)}pp ( :flag_{osuUser.Country.Name.ToLower()}: : #{osuUser.CountryRank} - :globe_with_meridians: : #{osuUser.Rank})\n" +
-                    $"**Level** : {Convert.ToInt32(osuUser.Level)}\n" +
-                    $"**Play Count** : {osuUser.PlayCount}\n" +
-                    $"**Accuracy** : {Math.Round(osuUser.Accuracy.GetValueOrDefault(), 2, MidpointRounding.AwayFromZero)}%")
+                .AddField("Basic Information", sb.ToString())
                 .WithThumbnail($"https://a.ppy.sh/{osuUser.UserId}");
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent(
-                    $"osu! profile of user {username} with mode {Formatter.Bold(((GameMode) mode).ToString())}")
+                .WithContent($"osu! profile of user {username} with mode {Formatter.Bold(omode.ToString())}")
                 .AddEmbed(embedBuilder.Build()));
         }
         else
@@ -280,38 +297,42 @@ public class OsuModule : ApplicationCommandModule
             IReadOnlyList<Score> scores = new List<Score>();
 
             if (type == "best")
-                scores = await this._osuApiClient.GetUserBestsByUsernameAsync(username, (GameMode) mode, r);
+                scores = await this._osuApiClient.GetUserBestsByUsernameAsync(username, omode, r);
             else if (type == "recent")
-                scores = await this._osuApiClient.GetUserRecentsByUsernameAsync(username, (GameMode) mode, r);
+                scores = await this._osuApiClient.GetUserRecentsByUsernameAsync(username, omode, r);
 
             if (!scores.Any())
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("I found nothing, sorry"));
             else
             {
                 DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
+                StringBuilder sb = new StringBuilder();
 
                 foreach (Score score in scores)
                 {
-                    Beatmap beatmap = await this._osuApiClient.GetBeatmapByIdAsync(score.BeatmapId, (GameMode) mode);
+                    Beatmap beatmap = await score.GetBeatmapAsync();
+
+                    sb
+                        .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore}")
+                        .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
+                        .AppendLine($"{Formatter.Bold("Accuracy")}: {score.Accuracy}%")
+                        .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
+                        .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Count300}/{score.Count100}/{score.Count50}/{score.Miss}]")
+                        .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints.GetValueOrDefault()}")
+                        .AppendLine($"{Formatter.Bold("Submission Time")}: {score.Date:f}");
+                    
                     DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
                         .WithTimestamp(DateTime.Now)
                         .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
-                        .WithAuthor(
-                            $"{(type == "best" ? "Best" : "Recent")} score of {osuUser.Username} in mode {(GameMode) mode}",
-                            $"https://osu.ppy.sh/users/{osuUser.UserId}", $"https://a.ppy.sh/{osuUser.UserId}")
+                        .WithAuthor($"{(type == "best" ? "Best" : "Recent")} score of {osuUser.Username} in mode {omode}", osuUser.ProfileUri.ToString(), $"https://a.ppy.sh/{osuUser.UserId}")
                         .WithColor(this.OsuEmbedColor)
-                        .WithDescription(
-                            $"Map: {Formatter.MaskedUrl($"{beatmap.Artist} - {beatmap.Title} [{beatmap.Difficulty}] **+{score.Mods.ToModeString(this._osuApiClient)}**", beatmap.BeatmapUri)}")
-                        .AddField("Score data",
-                            $"**Ranking** : {score.Rank}\n" +
-                            $"**Accuracy** : {Math.Round(score.Accuracy, 2, MidpointRounding.AwayFromZero)}%\n" +
-                            $"**Max Combo** : {score.MaxCombo}x/{beatmap.MaxCombo}x\n" +
-                            $"**Hit Count** : [{score.Count300}/{score.Count100}/{score.Count50}/{score.Miss}]\n" +
-                            "**PP** : implement soon:tm:")
+                        .WithDescription($"Map: {Formatter.MaskedUrl($"{beatmap.Artist} - {beatmap.Title} [{beatmap.Difficulty}] +{Formatter.Bold(score.Mods.ToModeString(this._osuApiClient))}", beatmap.BeatmapUri)}")
+                        .AddField("Score data", sb.ToString())
                         .WithThumbnail(beatmap.CoverUri);
 
                     builder.AddEmbed(embedBuilder.Build());
+                    sb.Clear();
                 }
 
                 builder.WithContent($"{(type == "best" ? "Best" : "Recent")} scores of user {osuUser.Username}");

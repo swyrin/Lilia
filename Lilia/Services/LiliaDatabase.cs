@@ -30,10 +30,11 @@ public class LiliaDatabase
         using LiliaDbContext context = new LiliaDbContext(this.options);
         while (context.Database.GetPendingMigrations().Any())
         {
+            string nextMigration = context.Database.GetPendingMigrations().First();
             using LiliaDbContext migrationContext = new LiliaDbContext(this.options);
             migrationContext.Database.Migrate();
             migrationContext.SaveChanges();
-            Log.Logger.Information("Migrated upcoming changes on databases");
+            Log.Logger.Information($"Migrated changes from {nextMigration} on databases");
         }
 
         context.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL");

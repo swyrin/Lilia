@@ -16,8 +16,7 @@ public static class UserDbAccess
             user = new DbUser
             {
                 UserId = userId,
-                Shards = 0,
-                OsuMode = -1
+                Shards = 0
             };
 
             users.Add(user);
