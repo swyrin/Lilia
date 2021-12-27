@@ -56,6 +56,7 @@ public class OsuModule : ApplicationCommandModule
 
         this._dbCtx.Update(user);
         await this._dbCtx.SaveChangesAsync();
+
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(mode)}"));
     }
@@ -87,20 +88,18 @@ public class OsuModule : ApplicationCommandModule
         [Choice("best", "best")]
         [Option("type", "Request type")]
         string type = "profile",
+        [Choice("linked", "Linked")]
         [Choice("standard", "Standard")]
         [Choice("taiko", "Taiko")]
         [Choice("catch", "Catch")]
         [Choice("mania", "Mania")]
-        [Option("mode", "Overridden mode if NOT that user didn't link")]
-        string mode = "Standard")
+        [Option("mode", "osu! mode to retrieve data")]
+        string mode = "Linked")
     {
         DiscordMember member = (DiscordMember) discordUser;
         await ctx.DeferAsync();
 
         DbUser user = this._dbCtx.GetOrCreateUserRecord(member.Id);
-        string officialMode = string.IsNullOrWhiteSpace(user.OsuMode) ? mode : user.OsuMode;
-        
-        Enum.TryParse(officialMode, out GameMode omode);
 
         if (string.IsNullOrWhiteSpace(user.OsuUsername))
         {
@@ -109,7 +108,11 @@ public class OsuModule : ApplicationCommandModule
 
             return;
         }
-        
+
+        if (mode == "Linked") mode = user.OsuMode;
+
+        Enum.TryParse(mode, out GameMode omode);
+
         User osuUser = await this._osuApiClient.GetUserByUsernameAsync(user.OsuUsername, omode);
 
         if (osuUser == null)
