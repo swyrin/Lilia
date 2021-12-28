@@ -1,45 +1,53 @@
 # Welcome to `Lilia` repo
-Welcome to Lilia repository, where I commit horrible quality codes.
+Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduction.  
 
-Yeah, this is just a learning project, why not?
+# Changelogs
+soon:tm:
 
 # Self-hosting guide
-### Step 0: Prequistes
-> Linux users *might* need to prepend `sudo`
+### Step 0: Prerequisites
+> You *might* need administrator privileges in your machine - `sudo` in Linux distros (maybe Mac), `Administrator` user in Windows 
 
-- [.NET](https://dotnet.microsoft.com/download). Version 6 or higher. I don't know if the Runtime one could work?
+- [.NET](https://dotnet.microsoft.com/download), version 6 or higher.
 - [Java](https://www.java.com/en/download/) for Lavalink. **JDK** 11 or higher. Install either on server or your local machine.
 - [Git](https://git-scm.com/), easier to update.
 
 ### Step 1: Grab the files
-Run the following command in your favorite terminal
-```shell
-git clone https://github.com/Swyreee/Lilia.git
-```
-then head to the directory containing`Lilia.csproj`, we will use this until the end of the guide:
+>#### 1. With `git`
+>Run the following command in your favorite terminal:
+>```shell
+>git clone https://github.com/Swyreee/Lilia.git
+>```
+>If you need to update the bot (remember to shutdown the running instance first):
+>```shell
+>git pull origin master
+>```
 
-(should be `.\Lilia\Lilia` in case I am wrong)
-```shell
-cd your-path-containing-csproj-file-here
-```
+>#### 2. Without `git`
+>There is a green-ish button calling `Code`, click it, there should be an option. `Download ZIP` if I recall correctly.
+> 
+> And **every time** you want to update the bot, go to this repo again, do the same thing.
 
-In case we need to update the bot:
+Whether you have `git` or not, head to the directory **containing `Lilia.csproj` file** with `cd` command.
 ```shell
-git pull
+cd <somewhere-else-with-that-file>
 ```
+We will use this directory until the end of the guide.
 
 ### Step 2: Configurations
-- Rename `config.example.json` file to `config.json` and fill with appropriate contents. Everything else is self-explanatory.
-- For `lavalink` part, remember to [run the server first](https://github.com/freyacodes/Lavalink#server-configuration) **before running the bot**. Your local machine is fine.
-  - It is advisable that you should only change the hostname in the `config.json` file.
+- Rename the file `config.example.json` to `config.json` (or copy if you wish) and fill with appropriate stuffs. Most of them is self-explanatory. Docs later?
+- For `lavalink` part, remember to [run the server first](https://github.com/freyacodes/Lavalink#server-configuration) **before running the bot**.
 
-### Step 3: Install dependencies and build the project
+### Step 3: Update dependencies
+>You should run this every time you **update** the bot.
 ```shell
+dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
 dotnet restore
-dotnet build
 ```
 
 ### Step 4: Run the bot
+>Known issue: https://github.com/dotnet/sdk/issues/10164
 ```shell
-dotnet ./bin/Debug/net6.0/Lilia.dll
+dotnet build -c Release --no-restore
+dotnet ./bin/Release/net6.0/Lilia.dll
 ```
