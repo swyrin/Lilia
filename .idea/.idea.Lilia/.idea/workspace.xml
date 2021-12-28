@@ -9,7 +9,12 @@
   <component name="ChangeListManager">
     <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Commons/LiliaDatabase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/config.example.json" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/config.example.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,7 +51,10 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/96790fb115a743319102f37c54ece12f14600/d4/a2913bc0/GameMode.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OsuModule.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -112,7 +120,9 @@
       <workItem from="1640512397986" duration="8493000" />
       <workItem from="1640565477148" duration="1326000" />
       <workItem from="1640593778733" duration="2240000" />
-      <workItem from="1640654423350" duration="3568000" />
+      <workItem from="1640654423350" duration="3781000" />
+      <workItem from="1640660330342" duration="6094000" />
+      <workItem from="1640683951835" duration="12145000" />
     </task>
     <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
       <created>1632880432287</created>
@@ -380,7 +390,21 @@
       <option name="project" value="LOCAL" />
       <updated>1640495548656</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="README write">
+      <created>1640658260159</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1640658260159</updated>
+    </task>
+    <task id="LOCAL-00040" summary=":thinking:">
+      <created>1640658270199</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1640658270199</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -439,7 +463,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Better README" />
     <MESSAGE value="change README file sep." />
     <MESSAGE value="oops...." />
     <MESSAGE value="Reformat code, use better logging client" />
@@ -463,6 +486,7 @@
     <MESSAGE value="Grouping 101" />
     <MESSAGE value="*readability*" />
     <MESSAGE value="I don't know why I do this" />
+    <MESSAGE value="README write" />
     <MESSAGE value=":thinking:" />
     <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
   </component>
