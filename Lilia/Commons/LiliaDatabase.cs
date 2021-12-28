@@ -1,12 +1,11 @@
-﻿using Lilia.Commons;
+﻿using System.Data.Common;
+using System.Linq;
 using Lilia.Database;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
-using System.Linq;
 using Serilog;
 
-namespace Lilia.Services;
+namespace Lilia.Commons;
 
 public class LiliaDatabase
 {
@@ -34,7 +33,6 @@ public class LiliaDatabase
             using LiliaDbContext migrationContext = new LiliaDbContext(this.options);
             migrationContext.Database.Migrate();
             migrationContext.SaveChanges();
-            Log.Logger.Information($"Migrated changes from {nextMigration} on databases");
         }
 
         context.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL");
