@@ -9,7 +9,10 @@
   "credentials": {
     "discord_token": "",
     "db_password": "",
-    "osu_api_key": ""
+    "osu": {
+      "client_id": 0,
+      "client_secret": ""
+    }
   },
   "lavalink": {
     "host": "localhost",

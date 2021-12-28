@@ -14,6 +14,8 @@ using DSharpPlus.Net;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
 using Lilia.Modules;
+using OsuSharp;
+using OsuSharp.Extensions;
 using Serilog;
 
 namespace Lilia.Services;
@@ -51,6 +53,15 @@ public class LiliaClient
         this.Database = new LiliaDatabase();
 
         ServiceProvider services = new ServiceCollection()
+            .AddLogging(x => x.AddSerilog())
+            .AddDefaultSerializer()
+            .AddDefaultRequestHandler()
+            .AddOsuSharp(x => x.Configuration = new OsuClientConfiguration
+            {
+                ModFormatSeparator = string.Empty,
+                ClientId = this.Configurations.Credentials.Osu.ClientId,
+                ClientSecret = this.Configurations.Credentials.Osu.ClientSecret
+            })
             .AddSingleton(this)
             .BuildServiceProvider();
 

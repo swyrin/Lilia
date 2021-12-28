@@ -3,7 +3,6 @@ using DSharpPlus.Entities;
 using Lilia.Database;
 using Lilia.Database.Models;
 using Lilia.Services;
-using OsuSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +12,9 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using Lilia.Database.Extensions;
+using OsuSharp.Domain;
+using OsuSharp.Exceptions;
+using OsuSharp.Interfaces;
 
 namespace Lilia.Modules;
 
@@ -21,40 +23,36 @@ public class OsuModule : ApplicationCommandModule
 {
     private LiliaClient _client;
     private LiliaDbContext _dbCtx;
-    private OsuClient _osuApiClient;
+    private IOsuClient _osuClient;
 
     private DiscordColor OsuEmbedColor => DiscordColor.HotPink;
 
-    public OsuModule(LiliaClient client)
+    public OsuModule(LiliaClient client, IOsuClient osuClient)
     {
         this._client = client;
         this._dbCtx = client.Database.GetContext();
-        this._osuApiClient = new OsuClient(new OsuSharpConfiguration
-        {
-            ApiKey = this._client.Configurations.Credentials.OsuApiKey,
-            ModeSeparator = string.Empty
-        });
+        this._osuClient = osuClient;
     }
-
+    
     [SlashCommand("link", "Update your osu! profile in my database for future searches")]
     public async Task SetOsuUsernameCommand(InteractionContext ctx,
         [Option("username", "Your osu! username")]
         string username,
-        [Choice("standard", "Standard")]
+        [Choice("standard", "Osu")]
         [Choice("taiko", "Taiko")]
-        [Choice("catch", "Catch")]
+        [Choice("catch", "Fruits")]
         [Choice("mania", "Mania")]
-        [Option("mode", "osu! mode to retrieve data")]
-        string mode = "Standard")
+        [Option("mode", "osu! mode to link")]
+        string mode = "Osu")
     {
         await ctx.DeferAsync();
 
-        DbUser user = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
+        DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
 
-        user.OsuUsername = username;
-        user.OsuMode = mode;
+        dbUser.OsuUsername = username;
+        dbUser.OsuMode = mode;
 
-        this._dbCtx.Update(user);
+        this._dbCtx.Update(dbUser);
         await this._dbCtx.SaveChangesAsync();
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -65,11 +63,11 @@ public class OsuModule : ApplicationCommandModule
     public async Task CheckMyProfileCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
-        DbUser user = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
+        DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
 
         DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-            .AddField("Username", !string.IsNullOrWhiteSpace(user.OsuUsername) ? user.OsuUsername : "Not linked yet", true)
-            .AddField("Default mode", !string.IsNullOrWhiteSpace(user.OsuMode) ? user.OsuMode : "Not linked yet", true)
+            .AddField("Username", !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
+            .AddField("Default mode", !string.IsNullOrWhiteSpace(dbUser.OsuMode) ? dbUser.OsuMode : "Not linked yet", true)
             .WithTimestamp(DateTime.Now)
             .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
             .WithColor(this.OsuEmbedColor);
@@ -86,6 +84,7 @@ public class OsuModule : ApplicationCommandModule
         [Choice("profile", "profile")]
         [Choice("recent", "recent")]
         [Choice("best", "best")]
+        [Choice("firsts", "firsts")]
         [Option("type", "Request type")]
         string type = "profile",
         [Choice("linked", "Linked")]
@@ -99,9 +98,9 @@ public class OsuModule : ApplicationCommandModule
         DiscordMember member = (DiscordMember) discordUser;
         await ctx.DeferAsync();
 
-        DbUser user = this._dbCtx.GetOrCreateUserRecord(member.Id);
+        DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(member.Id);
 
-        if (string.IsNullOrWhiteSpace(user.OsuUsername))
+        if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("That user doesn't exist in my database"));
@@ -109,115 +108,9 @@ public class OsuModule : ApplicationCommandModule
             return;
         }
 
-        if (mode == "Linked") mode = user.OsuMode;
+        if (mode == "Linked") mode = dbUser.OsuMode;
 
-        Enum.TryParse(mode, out GameMode omode);
-
-        User osuUser = await this._osuApiClient.GetUserByUsernameAsync(user.OsuUsername, omode);
-
-        if (osuUser == null)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("That user linked an invalid account"));
-
-            return;
-        }
-
-        if (type == "profile")
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb
-                .AppendLine($"{Formatter.Bold("Join Date")}: {osuUser.JoinDate:d}")
-                .AppendLine($"{Formatter.Bold("Country")}: {osuUser.Country.EnglishName} :flag_{osuUser.Country.Name.ToLower()}:")
-                .AppendLine($"{Formatter.Bold("Total Score")}: {osuUser.Score} - {osuUser.RankedScore} ranked score")
-                .AppendLine($"{Formatter.Bold("PP")}: {osuUser.PerformancePoints.GetValueOrDefault()}pp (Country: #{osuUser.CountryRank} - Global: #{osuUser.Rank})")
-                .AppendLine($"{Formatter.Bold("Accuracy")}: {osuUser.Accuracy.GetValueOrDefault()}%")
-                .AppendLine($"{Formatter.Bold("Level")}: {Convert.ToInt32(osuUser.Level)}")
-                .AppendLine($"{Formatter.Bold("Play Count")}: {osuUser.PlayCount} with {osuUser.TimePlayed:g} of play time");
-
-            DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-                .WithTimestamp(DateTime.Now)
-                .WithFooter($"Requested by {ctx.Member.DisplayName}#{ctx.Member.Discriminator}", ctx.Member.AvatarUrl)
-                .WithAuthor($"{osuUser.Username}'s osu! profile", osuUser.ProfileUri.ToString())
-                .WithColor(this.OsuEmbedColor)
-                .AddField("Basic Information", sb.ToString())
-                .AddField("Click the link below to spectate this user, if they are playing", osuUser.SpectateUri.ToString())
-                .WithThumbnail($"https://a.ppy.sh/{osuUser.UserId}");
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"osu! profile of user {member.DisplayName}#{member.Discriminator} with mode {Formatter.Bold(omode.ToString())}")
-                .AddEmbed(embedBuilder.Build()));
-        }
-        else
-        {
-            InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-
-            DiscordMessage msg = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("How many scores do you want to get?"));
-
-            int r = 1;
-
-            var res = await interactivity.WaitForMessageAsync(m =>
-            {
-                bool canDo = int.TryParse(m.Content, out r);
-                return canDo && r is >= 1 and <= 100;
-            });
-
-            if (res.TimedOut)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Time exceeded"));
-
-                return;
-            }
-
-            IReadOnlyList<Score> scores = new List<Score>();
-
-            if (type == "best")
-                scores = await this._osuApiClient.GetUserBestsByUsernameAsync(user.OsuUsername, omode, r);
-            else if (type == "recent")
-                scores = await this._osuApiClient.GetUserRecentsByUsernameAsync(user.OsuUsername, omode, r);
-
-            if (!scores.Any())
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("I found nothing, sorry"));
-            else
-            {
-                DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
-                StringBuilder sb = new StringBuilder();
-
-                foreach (Score score in scores)
-                {
-                    Beatmap beatmap = await score.GetBeatmapAsync();
-
-                    sb
-                        .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore}")
-                        .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
-                        .AppendLine($"{Formatter.Bold("Accuracy")}: {score.Accuracy}%")
-                        .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
-                        .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Count300}/{score.Count100}/{score.Count50}/{score.Miss}]")
-                        .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints.GetValueOrDefault()}")
-                        .AppendLine($"{Formatter.Bold("Submission Time")}: {score.Date:f}");
-                    
-                    DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-                        .WithTimestamp(DateTime.Now)
-                        .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
-                        .WithAuthor(
-                            $"{(type == "best" ? "Best" : "Recent")} score of {osuUser.Username} in mode {omode}", osuUser.ProfileUri.ToString(), $"https://a.ppy.sh/{osuUser.UserId}")
-                        .WithColor(this.OsuEmbedColor)
-                        .WithDescription($"Map: {Formatter.MaskedUrl($"{beatmap.Artist} - {beatmap.Title} [{beatmap.Difficulty}] +{Formatter.Bold(score.Mods.ToModeString(this._osuApiClient))}", beatmap.BeatmapUri)}")
-                        .AddField("Score data", sb.ToString())
-                        .WithThumbnail(beatmap.CoverUri);
-
-                    builder.AddEmbed(embedBuilder.Build());
-                    sb.Clear();
-                }
-
-                builder.WithContent($"{(type == "best" ? "Best" : "Recent")} scores of user {osuUser.Username}");
-                await ctx.FollowUpAsync(builder);
-            }
-        }
+        await this.GetOsuProfileStringCommand(ctx, dbUser.OsuUsername, type, mode);
     }
 
     [SlashCommand("profile", "Get osu! profile from provided username")]
@@ -229,118 +122,160 @@ public class OsuModule : ApplicationCommandModule
         [Choice("best", "best")]
         [Option("type", "Request type")]
         string type = "profile",
-        [Choice("standard", "Standard")]
+        [Choice("standard", "Osu")]
         [Choice("taiko", "Taiko")]
-        [Choice("catch", "Catch")]
+        [Choice("catch", "Fruits")]
         [Choice("mania", "Mania")]
         [Option("mode", "osu! mode to retrieve data")]
-        string mode = "Standard")
+        string mode = "Osu")
     {
         await ctx.DeferAsync();
+
         Enum.TryParse(mode, out GameMode omode);
 
-        User osuUser = await this._osuApiClient.GetUserByUsernameAsync(username, omode);
-
-        if (osuUser == null)
+        try
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Nothing found"));
+            IUser osuUser = await this._osuClient.GetUserAsync(username, omode);
 
-            return;
-        }
-
-        if (type == "profile")
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb
-                .AppendLine($"{Formatter.Bold("Join Date")}: {osuUser.JoinDate:d}")
-                .AppendLine($"{Formatter.Bold("Country")}: {osuUser.Country.EnglishName} :flag_{osuUser.Country.Name.ToLower()}:")
-                .AppendLine($"{Formatter.Bold("Total Score")}: {osuUser.Score} - {osuUser.RankedScore} ranked score")
-                .AppendLine($"{Formatter.Bold("PP")}: {osuUser.PerformancePoints.GetValueOrDefault()}pp (Country: #{osuUser.CountryRank} - Global: #{osuUser.Rank})")
-                .AppendLine($"{Formatter.Bold("Accuracy")}: {osuUser.Accuracy.GetValueOrDefault()}%")
-                .AppendLine($"{Formatter.Bold("Level")}: {Convert.ToInt32(osuUser.Level)}")
-                .AppendLine($"{Formatter.Bold("Play Count")}: {osuUser.PlayCount} with {osuUser.TimePlayed:g} of play time");
-
-            DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-                .WithTimestamp(DateTime.Now)
-                .WithFooter($"Requested by {ctx.Member.DisplayName}#{ctx.Member.Discriminator}", ctx.Member.AvatarUrl)
-                .WithAuthor($"{osuUser.Username}'s osu! profile", osuUser.ProfileUri.ToString())
-                .WithColor(this.OsuEmbedColor)
-                .AddField("Basic Information", sb.ToString())
-                .WithThumbnail($"https://a.ppy.sh/{osuUser.UserId}");
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"osu! profile of user {username} with mode {Formatter.Bold(omode.ToString())}")
-                .AddEmbed(embedBuilder.Build()));
-        }
-        else
-        {
-            InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-
-            DiscordMessage msg = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("How many scores do you want to get?"));
-
-            int r = 1;
-
-            var res = await interactivity.WaitForMessageAsync(m =>
+            if (type == "profile")
             {
-                bool canDo = int.TryParse(m.Content, out r);
-                return canDo && r is >= 1 and <= 100;
-            });
-
-            if (res.TimedOut)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Time exceeded"));
-
-                return;
-            }
-
-            IReadOnlyList<Score> scores = new List<Score>();
-
-            if (type == "best")
-                scores = await this._osuApiClient.GetUserBestsByUsernameAsync(username, omode, r);
-            else if (type == "recent")
-                scores = await this._osuApiClient.GetUserRecentsByUsernameAsync(username, omode, r);
-
-            if (!scores.Any())
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("I found nothing, sorry"));
-            else
-            {
-                DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
                 StringBuilder sb = new StringBuilder();
 
-                foreach (Score score in scores)
+                sb
+                    .AppendLine($"{Formatter.Bold("Join Date")}: {osuUser.JoinDate:d}")
+                    .AppendLine($"{Formatter.Bold("Country")}: {osuUser.Country.Name} :flag_{osuUser.Country.Code.ToLower()}:")
+                    .AppendLine($"{Formatter.Bold("Total Score")}: {osuUser.Statistics.TotalScore} - {osuUser.Statistics.RankedScore} ranked score")
+                    .AppendLine($"{Formatter.Bold("PP")}: {osuUser.Statistics.Pp}pp (Country: #{osuUser.Statistics.CountryRank} - Global: #{osuUser.Statistics.GlobalRank})")
+                    .AppendLine($"{Formatter.Bold("Accuracy")}: {osuUser.Statistics.HitAccuracy}%")
+                    .AppendLine($"{Formatter.Bold("Level")}: {osuUser.Statistics.UserLevel.Current} ({osuUser.Statistics.UserLevel.Progress}%)")
+                    .AppendLine($"{Formatter.Bold("Play Count")}: {osuUser.Statistics.PlayCount} with {osuUser.Statistics.PlayTime:g} of play time")
+                    .AppendLine($"{Formatter.Bold("Current status")}: {(osuUser.IsOnline ? "Online" : "Offline/Invisible")}");
+
+                DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
+                    .WithTimestamp(DateTime.Now)
+                    .WithFooter($"Requested by {ctx.Member.DisplayName}#{ctx.Member.Discriminator}", ctx.Member.AvatarUrl)
+                    .WithAuthor($"{osuUser.Username}'s osu! profile {(osuUser.IsSupporter ? DiscordEmoji.FromName(ctx.Client, ":heart:").ToString() : string.Empty)}", $"https://osu.ppy.sh/users/{osuUser.Id}")
+                    .WithColor(this.OsuEmbedColor)
+                    .AddField("Basic Information", sb.ToString())
+                    .WithThumbnail(osuUser.AvatarUrl.ToString());
+
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent($"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
+                    .AddEmbed(embedBuilder.Build()));
+            }
+            else
+            {
+                InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+
+                DiscordMessage msg = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("How many scores do you want to get?"));
+
+                int r = 1;
+
+                var res = await interactivity.WaitForMessageAsync(m =>
                 {
-                    Beatmap beatmap = await score.GetBeatmapAsync();
+                    bool canDo = int.TryParse(m.Content, out r);
+                    return r is >= 1 and <= 100;
+                });
 
-                    sb
-                        .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore}")
-                        .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
-                        .AppendLine($"{Formatter.Bold("Accuracy")}: {score.Accuracy}%")
-                        .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
-                        .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Count300}/{score.Count100}/{score.Count50}/{score.Miss}]")
-                        .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints.GetValueOrDefault()}")
-                        .AppendLine($"{Formatter.Bold("Submission Time")}: {score.Date:f}");
-                    
-                    DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-                        .WithTimestamp(DateTime.Now)
-                        .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
-                        .WithAuthor($"{(type == "best" ? "Best" : "Recent")} score of {osuUser.Username} in mode {omode}", osuUser.ProfileUri.ToString(), $"https://a.ppy.sh/{osuUser.UserId}")
-                        .WithColor(this.OsuEmbedColor)
-                        .WithDescription($"Map: {Formatter.MaskedUrl($"{beatmap.Artist} - {beatmap.Title} [{beatmap.Difficulty}] +{Formatter.Bold(score.Mods.ToModeString(this._osuApiClient))}", beatmap.BeatmapUri)}")
-                        .AddField("Score data", sb.ToString())
-                        .WithThumbnail(beatmap.CoverUri);
+                if (res.TimedOut)
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("Time exceeded"));
 
-                    builder.AddEmbed(embedBuilder.Build());
-                    sb.Clear();
+                    return;
                 }
 
-                builder.WithContent($"{(type == "best" ? "Best" : "Recent")} scores of user {osuUser.Username}");
-                await ctx.FollowUpAsync(builder);
+                IReadOnlyList<IScore> scores = new List<Score>();
+
+                switch (type)
+                {
+                    case "best":
+                        scores = await this._osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Best, false, omode, r);
+                        break;
+                    case "recent":
+                        DiscordButtonComponent yesBtn = new DiscordButtonComponent(ButtonStyle.Success, "yesBtn", "Yes please!");
+                        DiscordButtonComponent noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not");
+
+                        DiscordMessage failAsk = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                            .WithContent("Do you want to include fail scores?")
+                            .AddComponents(yesBtn, noBtn));
+
+                        var btnRes = await failAsk.WaitForButtonAsync(ctx.Member);
+
+                        if (btnRes.TimedOut)
+                        {
+                            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                                .WithContent("Time exceeded"));
+
+                            return;
+                        }
+
+                        bool includeFails = btnRes.Result.Id == "yesBtn";
+
+                        scores = await this._osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Recent, includeFails, omode, r);
+                        break;
+                    case "firsts":
+                        scores = await this._osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Firsts, false, omode, r);
+                        break;
+                }
+
+                if (!scores.Any())
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent("I found nothing, sorry"));
+                else
+                {
+                    DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
+                    StringBuilder sb = new StringBuilder();
+
+                    foreach (IScore score in scores)
+                    {
+                        IBeatmap beatmap = score.Beatmap;
+
+                        sb
+                            .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore} - Global rank #{score.GlobalRank.GetValueOrDefault()}, Country rank #{score.CountryRank.GetValueOrDefault()}")
+                            .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
+                            .AppendLine($"{Formatter.Bold("Accuracy")}: {score.Accuracy}%")
+                            .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
+                            .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
+                            .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints.GetValueOrDefault()}")
+                            .AppendLine($"{Formatter.Bold("Submission Time")}: {score.CreatedAt:f}");
+
+                        DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
+                            .WithTimestamp(DateTime.Now)
+                            .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
+                            .WithAuthor(
+                                $"{(type == "best" ? "Best" : "Recent")} score of {osuUser.Username} in mode {omode}",
+                                $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString())
+                            .WithColor(this.OsuEmbedColor)
+                            .WithDescription(
+                                $"Map: {Formatter.MaskedUrl($"{beatmap.Beatmapset.Artist} - {beatmap.Beatmapset.Title} [{beatmap.Version}] +{Formatter.Bold(score.Mods.ToString())}", new Uri(beatmap.Url))}")
+                            .AddField("Score data", sb.ToString())
+                            .WithThumbnail(beatmap.Beatmapset.Covers.Cover);
+
+                        builder.AddEmbed(embedBuilder.Build());
+                        sb.Clear();
+                    }
+
+                    builder.WithContent($"{(type == "best" ? "Best" : "Recent")} scores of user {osuUser.Username}");
+                    await ctx.FollowUpAsync(builder);
+                }
             }
+        }
+        catch (ApiException _)
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Possibly no one has username {Formatter.Bold(username)} on osu!"));
+        }
+        catch (OsuDeserializationException _)
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"An account with username {Formatter.Bold(username)} found, but they just don't play the mode you provided: {Formatter.Bold(omode.ToString())}"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Something very bad happened when running"));
         }
     }
 }

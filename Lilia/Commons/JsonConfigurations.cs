@@ -6,7 +6,7 @@ namespace Lilia.Commons;
 
 public static class JsonConfigurationsManager
 {
-    public static JsonConfigurations Configurations;
+    public static readonly JsonConfigurations Configurations;
     public const string ConfigFileName = "config.json";
 
     static JsonConfigurationsManager()
@@ -59,7 +59,14 @@ public class CredentialsData
 
     [JsonProperty("db_password")] public string DbPassword = "thisisliterallynotapassword";
 
-    [JsonProperty("osu_api_key")] public string OsuApiKey;
+    [JsonProperty("osu")] public OsuData Osu = new();
+}
+
+public class OsuData
+{
+    [JsonProperty("client_id")] public long ClientId;
+    
+    [JsonProperty("client_secret")] public string ClientSecret;
 }
 
 public class LavalinkData
