@@ -9,14 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Database/Extensions/UserDbAccess.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Database/Extensions/UserDbAccess.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Database/Models/DbUser.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Database/Models/DbUser.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/HelpCommandFormatter.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/ModerationModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/ModerationModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,6 +111,8 @@
       <workItem from="1640481153413" duration="13889000" />
       <workItem from="1640512397986" duration="8493000" />
       <workItem from="1640565477148" duration="1326000" />
+      <workItem from="1640593778733" duration="2240000" />
+      <workItem from="1640654423350" duration="3568000" />
     </task>
     <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
       <created>1632880432287</created>
