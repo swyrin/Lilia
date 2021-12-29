@@ -15,6 +15,7 @@ using Lilia.Database.Extensions;
 using OsuSharp.Domain;
 using OsuSharp.Exceptions;
 using OsuSharp.Interfaces;
+using Serilog;
 
 namespace Lilia.Modules;
 
@@ -96,7 +97,6 @@ public class OsuModule : ApplicationCommandModule
         string mode = "Linked")
     {
         DiscordMember member = (DiscordMember) discordUser;
-        await ctx.DeferAsync();
 
         DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(member.Id);
 
@@ -186,8 +186,8 @@ public class OsuModule : ApplicationCommandModule
                     return;
                 }
 
-                IReadOnlyList<IScore> scores = new List<Score>();
-
+                IReadOnlyList<IScore> scores = new List<IScore>();
+                
                 switch (type)
                 {
                     case "best":
@@ -233,17 +233,20 @@ public class OsuModule : ApplicationCommandModule
                         IBeatmap beatmap = score.Beatmap;
 
                         sb
-                            .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore} - Global rank #{score.GlobalRank.GetValueOrDefault()}, Country rank #{score.CountryRank.GetValueOrDefault()}")
+                            .AppendLine(
+                                $"{Formatter.Bold("Score")}: {score.TotalScore} - Global rank #{score.GlobalRank.GetValueOrDefault()}, Country rank #{score.CountryRank.GetValueOrDefault()}")
                             .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
                             .AppendLine($"{Formatter.Bold("Accuracy")}: {score.Accuracy}%")
                             .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
-                            .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
+                            .AppendLine(
+                                $"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
                             .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints.GetValueOrDefault()}")
                             .AppendLine($"{Formatter.Bold("Submission Time")}: {score.CreatedAt:f}");
 
                         DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
                             .WithTimestamp(DateTime.Now)
-                            .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
+                            .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}",
+                                ctx.User.AvatarUrl)
                             .WithAuthor(
                                 $"{(type == "best" ? "Best" : "Recent")} score of {osuUser.Username} in mode {omode}",
                                 $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString())
@@ -260,6 +263,7 @@ public class OsuModule : ApplicationCommandModule
                     builder.WithContent($"{(type == "best" ? "Best" : "Recent")} scores of user {osuUser.Username}");
                     await ctx.FollowUpAsync(builder);
                 }
+
             }
         }
         catch (ApiException _)
@@ -276,6 +280,8 @@ public class OsuModule : ApplicationCommandModule
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Something very bad happened when running"));
+            
+            Log.Logger.Error(ex.Message);
         }
     }
 }
