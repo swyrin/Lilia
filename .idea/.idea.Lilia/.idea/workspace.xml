@@ -9,12 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaDatabase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Commons/LiliaDatabase.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/config.example.json" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/config.example.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,10 +47,21 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/974fa14c57bab8fe29f1bddd39b1a6548b9cc8cf9e0ef5e670c2407a56d9/String.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/40d9c6632ca3993dcb82583ffa755fbbed8ad19f1b37a7654b7ffaff24b6c/Uri.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/89fbbb69e35e4b11ac51e19cb802f914ba00/ef/53e8acd4/AsyncEvent`2.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d82b8ac02bb43d6b94884e283d560e14f18f7caa55c2d41bb0fc59beb77a1d/UriExt.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1e8feaadf5c3fa14d36ea2a638c432a2e1a47b7837d8b83d88303c5d9c15cf/AsyncValueTaskMethodBuilderT.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/d5/8679c663/OsuClient.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/96790fb115a743319102f37c54ece12f14600/d4/a2913bc0/GameMode.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OsuModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Commons/JsonConfigurations.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/23e31092363db7107ca21367adea927bccc2e7cf2075f9ee398ad1175b8e87/Nullable.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/cd97f89a1dd485a9e981f4eb33be0e28029fd8e72ed1baed66e8b36dc455dc4/HttpMethod.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/6d/0411b405/DefaultRequestHandler.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/efd3e9c4749621d4a53b45d7117d2a581e02a265c444a040f1387a155db/Dictionary.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -122,7 +129,10 @@
       <workItem from="1640593778733" duration="2240000" />
       <workItem from="1640654423350" duration="3781000" />
       <workItem from="1640660330342" duration="6094000" />
-      <workItem from="1640683951835" duration="12145000" />
+      <workItem from="1640683951835" duration="12506000" />
+      <workItem from="1640738592548" duration="2246000" />
+      <workItem from="1640744077596" duration="634000" />
+      <workItem from="1640748367785" duration="2177000" />
     </task>
     <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
       <created>1632880432287</created>
@@ -404,7 +414,28 @@
       <option name="project" value="LOCAL" />
       <updated>1640658270199</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="Update osu! commands&#10;&#10;Known issue: best and recent scores not working">
+      <created>1640696507764</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1640696507764</updated>
+    </task>
+    <task id="LOCAL-00042" summary="Clean up">
+      <created>1640696532168</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1640696532168</updated>
+    </task>
+    <task id="LOCAL-00043" summary=":thinking:">
+      <created>1640696541062</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1640696541062</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -463,8 +494,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="change README file sep." />
-    <MESSAGE value="oops...." />
     <MESSAGE value="Reformat code, use better logging client" />
     <MESSAGE value="Add Serilog, upgrade D#+ and OsuSharp" />
     <MESSAGE value="stuffs" />
@@ -487,14 +516,53 @@
     <MESSAGE value="*readability*" />
     <MESSAGE value="I don't know why I do this" />
     <MESSAGE value="README write" />
+    <MESSAGE value="Update osu! commands&#10;&#10;Known issue: best and recent scores not working" />
+    <MESSAGE value="Clean up" />
     <MESSAGE value=":thinking:" />
     <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/Lilia/Modules/OsuModule.cs</url>
+          <line>193</line>
+          <properties documentPath="D:\something I made when I have free time\Lilia\Lilia\Modules\OsuModule.cs" initialLine="193" containingFunctionPresentation="method 'GetOsuProfileStringCommand'">
+            <startOffsets>
+              <option value="7967" />
+            </startOffsets>
+            <endOffsets>
+              <option value="8062" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/d5/8679c663/OsuClient.cs</url>
+          <line>278</line>
+          <properties documentPath="C:\Users\TienDatPham\AppData\Roaming\JetBrains\Rider2021.3\resharper-host\DecompilerCache\decompiler\7603801502d448acb2042f827f654e4911400\d5\8679c663\OsuClient.cs" initialLine="278" containingFunctionPresentation="method 'GetUserScoresAsync'">
+            <startOffsets>
+              <option value="12126" />
+            </startOffsets>
+            <endOffsets>
+              <option value="12170" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
+        <PinnedItemInfo parentTag="Type#OsuSharp.OsuClient" memberName="_handler" />
+        <PinnedItemInfo parentTag="Frame#OsuSharp.OsuClient+&lt;GetUserScoresAsync&gt;d__16.MoveNext" memberName="osuClient" />
         <PinnedItemInfo parentTag="Type#Lilia.Commons.ClientData" memberName="Activity" />
       </pinned-members>
     </pin-to-top-manager>
+    <watches-manager>
+      <configuration name="DotNetProject">
+        <watch expression="$exception.InnerException.SerializationWatsonBuckets" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>
