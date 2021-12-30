@@ -9,6 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
     </list>
@@ -48,19 +49,15 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/974fa14c57bab8fe29f1bddd39b1a6548b9cc8cf9e0ef5e670c2407a56d9/String.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/40d9c6632ca3993dcb82583ffa755fbbed8ad19f1b37a7654b7ffaff24b6c/Uri.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/89fbbb69e35e4b11ac51e19cb802f914ba00/ef/53e8acd4/AsyncEvent`2.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d82b8ac02bb43d6b94884e283d560e14f18f7caa55c2d41bb0fc59beb77a1d/UriExt.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1e8feaadf5c3fa14d36ea2a638c432a2e1a47b7837d8b83d88303c5d9c15cf/AsyncValueTaskMethodBuilderT.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/d5/8679c663/OsuClient.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/96790fb115a743319102f37c54ece12f14600/d4/a2913bc0/GameMode.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/40d9c6632ca3993dcb82583ffa755fbbed8ad19f1b37a7654b7ffaff24b6c/Uri.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/89fbbb69e35e4b11ac51e19cb802f914ba00/ef/53e8acd4/AsyncEvent`2.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/23e31092363db7107ca21367adea927bccc2e7cf2075f9ee398ad1175b8e87/Nullable.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d82b8ac02bb43d6b94884e283d560e14f18f7caa55c2d41bb0fc59beb77a1d/UriExt.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/cd97f89a1dd485a9e981f4eb33be0e28029fd8e72ed1baed66e8b36dc455dc4/HttpMethod.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/6d/0411b405/DefaultRequestHandler.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1e8feaadf5c3fa14d36ea2a638c432a2e1a47b7837d8b83d88303c5d9c15cf/AsyncValueTaskMethodBuilderT.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/efd3e9c4749621d4a53b45d7117d2a581e02a265c444a040f1387a155db/Dictionary.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
@@ -83,7 +80,7 @@
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="advanced.settings" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.smartKeys_rider" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RunManager">
@@ -132,7 +129,11 @@
       <workItem from="1640683951835" duration="12506000" />
       <workItem from="1640738592548" duration="2246000" />
       <workItem from="1640744077596" duration="634000" />
-      <workItem from="1640748367785" duration="2177000" />
+      <workItem from="1640748367785" duration="2851000" />
+      <workItem from="1640768377025" duration="700000" />
+      <workItem from="1640773828997" duration="3062000" />
+      <workItem from="1640780091949" duration="739000" />
+      <workItem from="1640835264670" duration="6433000" />
     </task>
     <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
       <created>1632880432287</created>
@@ -435,7 +436,21 @@
       <option name="project" value="LOCAL" />
       <updated>1640696541062</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary=":thinking:">
+      <created>1640750829310</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1640750829310</updated>
+    </task>
+    <task id="LOCAL-00045" summary="Yeet a ctx.DeferAsync()">
+      <created>1640750890272</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1640750890272</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -494,7 +509,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Reformat code, use better logging client" />
     <MESSAGE value="Add Serilog, upgrade D#+ and OsuSharp" />
     <MESSAGE value="stuffs" />
     <MESSAGE value="edit something something" />
@@ -519,24 +533,12 @@
     <MESSAGE value="Update osu! commands&#10;&#10;Known issue: best and recent scores not working" />
     <MESSAGE value="Clean up" />
     <MESSAGE value=":thinking:" />
-    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
+    <MESSAGE value="Yeet a ctx.DeferAsync()" />
+    <option name="LAST_COMMIT_MESSAGE" value="Yeet a ctx.DeferAsync()" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Lilia/Modules/OsuModule.cs</url>
-          <line>193</line>
-          <properties documentPath="D:\something I made when I have free time\Lilia\Lilia\Modules\OsuModule.cs" initialLine="193" containingFunctionPresentation="method 'GetOsuProfileStringCommand'">
-            <startOffsets>
-              <option value="7967" />
-            </startOffsets>
-            <endOffsets>
-              <option value="8062" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/d5/8679c663/OsuClient.cs</url>
           <line>278</line>
@@ -564,5 +566,9 @@
         <watch expression="$exception.InnerException.SerializationWatsonBuckets" />
       </configuration>
     </watches-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
