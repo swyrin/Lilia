@@ -45,7 +45,6 @@ public class LiliaClient
         {
             Token = this.Configurations.Credentials.DiscordToken,
             TokenType = TokenType.Bot,
-            MinimumLogLevel = LogLevel.Debug,
             LoggerFactory = new LoggerFactory().AddSerilog()
         });
 
@@ -106,14 +105,14 @@ public class LiliaClient
         if (!canConvertActivityType)
         {
             Log.Logger.Warning($"Can not convert \"{activityData.Type}\" to a valid activity type, using Playing by default");
-            Log.Logger.Information($"Valid options are: ListeningTo, Competing, Playing, Watching. Others are soon to be implemented in a future release");
+            Log.Logger.Information("Valid options are: ListeningTo, Competing, Playing, Watching. Others are soon to be implemented in a future release");
             activityType = ActivityType.Playing;
         }
 
         if (!canConvertStatus)
         {
             Log.Logger.Warning($"Can not convert \"{activityData.Status}\" to a valid status, using Online by default");
-            Log.Logger.Information($"Valid options are: Online, Invisible, Idle, DoNotDisturb. Others are soon to be implemented in a future release");
+            Log.Logger.Information("Valid options are: Online, Invisible, Idle, DoNotDisturb. Others are soon to be implemented in a future release");
             userStatus = UserStatus.Online;
         }
 

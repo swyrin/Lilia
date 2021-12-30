@@ -15,7 +15,6 @@ using Lilia.Database.Extensions;
 using OsuSharp.Domain;
 using OsuSharp.Exceptions;
 using OsuSharp.Interfaces;
-using Serilog;
 
 namespace Lilia.Modules;
 
@@ -120,6 +119,7 @@ public class OsuModule : ApplicationCommandModule
         [Choice("profile", "profile")]
         [Choice("recent", "recent")]
         [Choice("best", "best")]
+        [Choice("firsts", "firsts")]
         [Option("type", "Request type")]
         string type = "profile",
         [Choice("standard", "Osu")]
@@ -160,7 +160,8 @@ public class OsuModule : ApplicationCommandModule
                     .WithThumbnail(osuUser.AvatarUrl.ToString());
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent($"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
+                    .WithContent(
+                        $"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
                     .AddEmbed(embedBuilder.Build()));
             }
             else
@@ -187,7 +188,7 @@ public class OsuModule : ApplicationCommandModule
                 }
 
                 IReadOnlyList<IScore> scores = new List<IScore>();
-                
+
                 switch (type)
                 {
                     case "best":
@@ -227,61 +228,48 @@ public class OsuModule : ApplicationCommandModule
                 {
                     DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
                     StringBuilder sb = new StringBuilder();
+                    DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
+                        .WithTimestamp(DateTime.Now)
+                        .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
+                        .WithAuthor($"{(type == "best" ? "Best" : "Recent")} score(s) of {osuUser.Username} in mode {omode}", $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString())
+                        .WithColor(this.OsuEmbedColor);
 
                     foreach (IScore score in scores)
                     {
-                        IBeatmap beatmap = score.Beatmap;
+                        IBeatmap beatmap = await this._osuClient.GetBeatmapAsync(score.Beatmap.Id);
+                        IBeatmapset bmSet = await this._osuClient.GetBeatmapsetAsync(beatmap.BeatmapsetId);
 
                         sb
-                            .AppendLine(
-                                $"{Formatter.Bold("Score")}: {score.TotalScore} - Global rank #{score.GlobalRank.GetValueOrDefault()}, Country rank #{score.CountryRank.GetValueOrDefault()}")
+                            .AppendLine($"{Formatter.Bold("Map link")}: {beatmap.Url}")
+                            .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore} - Global rank #{score.GlobalRank.GetValueOrDefault()}, Country rank #{score.CountryRank.GetValueOrDefault()}")
                             .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
-                            .AppendLine($"{Formatter.Bold("Accuracy")}: {score.Accuracy}%")
+                            .AppendLine($"{Formatter.Bold("Accuracy")}: {Math.Round(score.Accuracy * 100, 2, MidpointRounding.ToEven)}%")
                             .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
-                            .AppendLine(
-                                $"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
-                            .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints.GetValueOrDefault()}")
+                            .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
+                            .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints}pp -> {Math.Round(score.Weight.PerformancePoints, 2, MidpointRounding.ToEven)}pp {Math.Round(score.Weight.Percentage, 2, MidpointRounding.ToEven)}% weighted")
                             .AppendLine($"{Formatter.Bold("Submission Time")}: {score.CreatedAt:f}");
-
-                        DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-                            .WithTimestamp(DateTime.Now)
-                            .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}",
-                                ctx.User.AvatarUrl)
-                            .WithAuthor(
-                                $"{(type == "best" ? "Best" : "Recent")} score of {osuUser.Username} in mode {omode}",
-                                $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString())
-                            .WithColor(this.OsuEmbedColor)
-                            .WithDescription(
-                                $"Map: {Formatter.MaskedUrl($"{beatmap.Beatmapset.Artist} - {beatmap.Beatmapset.Title} [{beatmap.Version}] +{Formatter.Bold(score.Mods.ToString())}", new Uri(beatmap.Url))}")
-                            .AddField("Score data", sb.ToString())
-                            .WithThumbnail(beatmap.Beatmapset.Covers.Cover);
-
-                        builder.AddEmbed(embedBuilder.Build());
-                        sb.Clear();
+                        
+                        embedBuilder
+                            .AddField($"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{beatmap.Version}]{(score.Mods.Any() ? $" +{Formatter.Bold(string.Join(string.Empty, score.Mods))}" : string.Empty)}", sb.ToString());
+                        
+                        sb.Clear();    
                     }
 
+                    builder.AddEmbed(embedBuilder.Build());
                     builder.WithContent($"{(type == "best" ? "Best" : "Recent")} scores of user {osuUser.Username}");
                     await ctx.FollowUpAsync(builder);
                 }
-
             }
         }
-        catch (ApiException _)
+        catch (ApiException)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"Possibly no one has username {Formatter.Bold(username)} on osu!"));
+                .WithContent("Something went wrong when sending the request"));
         }
-        catch (OsuDeserializationException _)
+        catch (OsuDeserializationException)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"An account with username {Formatter.Bold(username)} found, but they just don't play the mode you provided: {Formatter.Bold(omode.ToString())}"));
-        }
-        catch (InvalidOperationException ex)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something very bad happened when running"));
-            
-            Log.Logger.Error(ex.Message);
+                .WithContent("Something went wrong when parsing the response"));
         }
     }
 }

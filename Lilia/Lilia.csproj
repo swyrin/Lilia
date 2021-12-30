@@ -32,7 +32,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="OsuSharp" Version="6.0.0-ci-20211209.1" />
+        <PackageReference Include="OsuSharp" Version="6.0.0-ci-20211229.1" />
         <PackageReference Include="Serilog" Version="2.11.0-dev-01377" />
         <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.0.2-dev-00890" />
@@ -52,5 +52,9 @@
         <None Update="database.db-wal">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Modules\Utils" />
     </ItemGroup>
 </Project>
