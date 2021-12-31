@@ -25,8 +25,11 @@ public class LiliaClient
     public CancellationTokenSource Cts;
     public LiliaDatabase Database;
     public JsonConfigurations Configurations;
+    public DiscordClient Client;
+    public ServiceProvider Services;
 
     private LavalinkExtension _lavalinkExtension;
+    private SlashCommandsExtension _slashCommandsExtension;
 
     public async Task Run()
     {
@@ -41,7 +44,7 @@ public class LiliaClient
 
         this.Cts = new CancellationTokenSource();
 
-        DiscordClient client = new(new DiscordConfiguration
+        this.Client = new DiscordClient(new DiscordConfiguration
         {
             Token = this.Configurations.Credentials.DiscordToken,
             TokenType = TokenType.Bot,
@@ -51,7 +54,9 @@ public class LiliaClient
         Log.Logger.Information("Setting up databases");
         this.Database = new LiliaDatabase();
 
-        ServiceProvider services = new ServiceCollection()
+        OsuData osuData = this.Configurations.Credentials.Osu;
+
+        this.Services = new ServiceCollection()
             .AddLogging(x => x.AddSerilog())
             .AddDefaultSerializer()
             .AddDefaultRequestHandler()
@@ -64,34 +69,34 @@ public class LiliaClient
             .AddSingleton(this)
             .BuildServiceProvider();
 
-        this._lavalinkExtension = client.UseLavalink();
+        this._lavalinkExtension = this.Client.UseLavalink();
 
-        SlashCommandsExtension slashCommands = client.UseSlashCommands(new SlashCommandsConfiguration
+        this._slashCommandsExtension = this.Client.UseSlashCommands(new SlashCommandsConfiguration
         {
-            Services = services
+            Services = this.Services
         });
 
-        client.UseInteractivity(new InteractivityConfiguration
+        this.Client.UseInteractivity(new InteractivityConfiguration
         {
             Timeout = TimeSpan.FromSeconds(30)
         });
         
-        slashCommands.RegisterCommands<OsuModule>();
-        slashCommands.RegisterCommands<ModerationModule>();
-        slashCommands.RegisterCommands<OwnerModule>();
-        slashCommands.RegisterCommands<MusicModule>();
+        this._slashCommandsExtension.RegisterCommands<OsuModule>();
+        this._slashCommandsExtension.RegisterCommands<ModerationModule>();
+        this._slashCommandsExtension.RegisterCommands<OwnerModule>();
+        this._slashCommandsExtension.RegisterCommands<MusicModule>();
 
-        client.Ready += this.OnReady;
-        client.GuildAvailable += this.OnGuildAvailable;
-        client.ClientErrored += this.OnClientErrored;
+        this.Client.Ready += this.OnReady;
+        this.Client.GuildAvailable += this.OnGuildAvailable;
+        this.Client.ClientErrored += this.OnClientErrored;
         
-        slashCommands.SlashCommandErrored += this.OnSlashCommandErrored;
+        this._slashCommandsExtension.SlashCommandErrored += this.OnSlashCommandErrored;
 
-        await client.ConnectAsync();
+        await this.Client.ConnectAsync();
 
         while (!Cts.IsCancellationRequested) await Task.Delay(200);
 
-        await client.DisconnectAsync();
+        await this.Client.DisconnectAsync();
         await this.Database.GetContext().DisposeAsync();
     }
 
@@ -141,7 +146,7 @@ public class LiliaClient
 
     private Task OnGuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
     {
-        Log.Logger.Information($"Guild cached : {e.Guild.Name}");
+        Log.Logger.Information($"Guild cached: {e.Guild.Name}");
         return Task.CompletedTask;
     }
 
