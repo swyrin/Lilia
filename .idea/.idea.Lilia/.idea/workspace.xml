@@ -9,9 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OsuModule.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,7 +132,8 @@
       <workItem from="1640768377025" duration="700000" />
       <workItem from="1640773828997" duration="3062000" />
       <workItem from="1640780091949" duration="739000" />
-      <workItem from="1640835264670" duration="6433000" />
+      <workItem from="1640835264670" duration="6555000" />
+      <workItem from="1640912768207" duration="808000" />
     </task>
     <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
       <created>1632880432287</created>
@@ -450,7 +450,21 @@
       <option name="project" value="LOCAL" />
       <updated>1640750890272</updated>
     </task>
-    <option name="localTasksCounter" value="46" />
+    <task id="LOCAL-00046" summary="Hopefully this will fix some of osu! stuffs">
+      <created>1640844595125</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1640844595125</updated>
+    </task>
+    <task id="LOCAL-00047" summary=":thinking:">
+      <created>1640844604487</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1640844604487</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -509,7 +523,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Add Serilog, upgrade D#+ and OsuSharp" />
     <MESSAGE value="stuffs" />
     <MESSAGE value="edit something something" />
     <MESSAGE value="Just. Use. One." />
@@ -532,9 +545,10 @@
     <MESSAGE value="README write" />
     <MESSAGE value="Update osu! commands&#10;&#10;Known issue: best and recent scores not working" />
     <MESSAGE value="Clean up" />
-    <MESSAGE value=":thinking:" />
     <MESSAGE value="Yeet a ctx.DeferAsync()" />
-    <option name="LAST_COMMIT_MESSAGE" value="Yeet a ctx.DeferAsync()" />
+    <MESSAGE value="Hopefully this will fix some of osu! stuffs" />
+    <MESSAGE value=":thinking:" />
+    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
