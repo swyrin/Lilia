@@ -7,11 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-    </list>
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment=":thinking:" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -49,6 +45,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/974fa14c57bab8fe29f1bddd39b1a6548b9cc8cf9e0ef5e670c2407a56d9/String.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/d5/8679c663/OsuClient.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/96790fb115a743319102f37c54ece12f14600/d4/a2913bc0/GameMode.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/40d9c6632ca3993dcb82583ffa755fbbed8ad19f1b37a7654b7ffaff24b6c/Uri.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/89fbbb69e35e4b11ac51e19cb802f914ba00/ef/53e8acd4/AsyncEvent`2.cs" root0="SKIP_HIGHLIGHTING" />
@@ -133,28 +130,7 @@
       <workItem from="1640773828997" duration="3062000" />
       <workItem from="1640780091949" duration="739000" />
       <workItem from="1640835264670" duration="6555000" />
-      <workItem from="1640912768207" duration="808000" />
-    </task>
-    <task id="LOCAL-00001" summary="I hate you, Visual Studio.">
-      <created>1632880432287</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1632880432287</updated>
-    </task>
-    <task id="LOCAL-00002" summary=":thinking:">
-      <created>1640308206832</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1640308206832</updated>
-    </task>
-    <task id="LOCAL-00003" summary="oofed">
-      <created>1640308522398</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1640308522398</updated>
+      <workItem from="1640912768207" duration="1103000" />
     </task>
     <task id="LOCAL-00004" summary="Add example config file">
       <created>1640308533432</created>
@@ -464,7 +440,42 @@
       <option name="project" value="LOCAL" />
       <updated>1640844604487</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="Update CodeQL, hopefully">
+      <created>1640913814978</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1640913814978</updated>
+    </task>
+    <task id="LOCAL-00049" summary="Update CodeQL, hopefully">
+      <created>1640913822556</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1640913822556</updated>
+    </task>
+    <task id="LOCAL-00050" summary="More sanity">
+      <created>1640913839748</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1640913839748</updated>
+    </task>
+    <task id="LOCAL-00051" summary="Better clarification">
+      <created>1640913854263</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1640913854263</updated>
+    </task>
+    <task id="LOCAL-00052" summary=":thinking:">
+      <created>1640913863342</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1640913863342</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -523,9 +534,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="stuffs" />
-    <MESSAGE value="edit something something" />
-    <MESSAGE value="Just. Use. One." />
     <MESSAGE value="logging" />
     <MESSAGE value="something something new?" />
     <MESSAGE value="Abuse Hot Reload, migrating to &quot;sl*sh commands&quot;, remove some of osu! stuffs" />
@@ -547,6 +555,9 @@
     <MESSAGE value="Clean up" />
     <MESSAGE value="Yeet a ctx.DeferAsync()" />
     <MESSAGE value="Hopefully this will fix some of osu! stuffs" />
+    <MESSAGE value="Update CodeQL, hopefully" />
+    <MESSAGE value="More sanity" />
+    <MESSAGE value="Better clarification" />
     <MESSAGE value=":thinking:" />
     <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
   </component>

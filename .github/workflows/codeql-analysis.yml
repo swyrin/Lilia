@@ -58,10 +58,8 @@ jobs:
         dotnet-version: 6.0.x
     - name: Add NuGet sources
       run: dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
