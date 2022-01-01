@@ -35,7 +35,7 @@ jobs:
       with:
         tag_name: ${{ steps.get_version.outputs.VERSION }}
         release_name: ${{ steps.get_version.outputs.VERSION }}
-        body_path: CHANGELOGS.md
+        body_path: CHANGELOG.md
         draft: false
         prerelease: false
     - name: Upload release assets
