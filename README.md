@@ -6,7 +6,7 @@ Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduct
 ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg)
 
 # Changelogs
-Watch [here](ttps://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md)
+Watch [here](https://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md)
 
 # Self-hosting guide
 ### Step 0: Prerequisites
