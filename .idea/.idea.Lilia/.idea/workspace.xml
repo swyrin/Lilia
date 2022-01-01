@@ -7,9 +7,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Fix minor stuffs&#10;&#10;New Year commit, yay">
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="path fix">
       <change beforePath="$PROJECT_DIR$/.github/workflows/dotnet.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/dotnet.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,28 +134,7 @@
       <workItem from="1640780091949" duration="739000" />
       <workItem from="1640835264670" duration="6555000" />
       <workItem from="1640912768207" duration="1672000" />
-      <workItem from="1641000035742" duration="5003000" />
-    </task>
-    <task id="LOCAL-00007" summary="change README file sep.">
-      <created>1640310674182</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1640310674182</updated>
-    </task>
-    <task id="LOCAL-00008" summary=":thinking:">
-      <created>1640310693563</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1640310693563</updated>
-    </task>
-    <task id="LOCAL-00009" summary="oops....">
-      <created>1640311106066</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1640311106066</updated>
+      <workItem from="1641000035742" duration="5303000" />
     </task>
     <task id="LOCAL-00010" summary="Reformat code, use better logging client">
       <created>1640313946101</created>
@@ -480,7 +458,28 @@
       <option name="project" value="LOCAL" />
       <updated>1641002284607</updated>
     </task>
-    <option name="localTasksCounter" value="56" />
+    <task id="LOCAL-00056" summary="Mess a bit with Actions">
+      <created>1641005413200</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1641005413200</updated>
+    </task>
+    <task id="LOCAL-00057" summary="oops">
+      <created>1641005487426</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1641005487427</updated>
+    </task>
+    <task id="LOCAL-00058" summary="path fix">
+      <created>1641005572460</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1641005572460</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -539,9 +538,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Abuse Hot Reload, migrating to &quot;sl*sh commands&quot;, remove some of osu! stuffs" />
-    <MESSAGE value="Nah" />
-    <MESSAGE value="Add interactivity and &quot;sl*sh commands&quot;" />
     <MESSAGE value="Remove pp calculations" />
     <MESSAGE value="better wording" />
     <MESSAGE value="Switch to &quot;sl*sh commands&quot;" />
@@ -564,7 +560,10 @@
     <MESSAGE value=":thinking:" />
     <MESSAGE value="Fixing minor stuffs" />
     <MESSAGE value="Fix minor stuffs&#10;&#10;New Year commit, yay" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix minor stuffs&#10;&#10;New Year commit, yay" />
+    <MESSAGE value="Mess a bit with Actions" />
+    <MESSAGE value="oops" />
+    <MESSAGE value="path fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="path fix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
