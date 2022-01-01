@@ -1,33 +1,27 @@
-name: Build
+name: Release
 
 on:
   push:
-    branches: [ master ]
-    tags:
-      - '*'
+    branches:
+      - master
   pull_request:
-    branches: [ master ]
+    branches:
+      - master  
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
-    - name: Add NuGet sources
-      run: dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build -c Release --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-    - name: Create artifacts
-      uses: actions/upload-artifact@
-      with:
-        name: built-code-upload
-        path: bin/Release/net6.0/
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Add NuGet sources
+        run: dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --nologo --configuration Release Lilia --output app/
+      - name: Test
+        run: dotnet test --no-build --nologo --verbosity normal --configuration Release

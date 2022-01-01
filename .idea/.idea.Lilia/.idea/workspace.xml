@@ -7,7 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Add links" />
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Add links">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/dotnet.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia.sln" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia.sln" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -144,6 +147,7 @@
       <workItem from="1640835264670" duration="6555000" />
       <workItem from="1640912768207" duration="1672000" />
       <workItem from="1641000035742" duration="25045000" />
+      <workItem from="1641040052819" duration="243000" />
     </task>
     <task id="LOCAL-00051" summary="Better clarification">
       <created>1640913854263</created>
