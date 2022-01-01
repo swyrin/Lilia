@@ -7,7 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment=":thinking:">
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Remove the cron">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -72,11 +72,15 @@
     <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectId" id="1ynCgyB2aA0goTk0uyRlhbOpr7l" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -140,112 +144,7 @@
       <workItem from="1640780091949" duration="739000" />
       <workItem from="1640835264670" duration="6555000" />
       <workItem from="1640912768207" duration="1672000" />
-      <workItem from="1641000035742" duration="11578000" />
-    </task>
-    <task id="LOCAL-00022" summary=":thinking:">
-      <created>1640431486344</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1640431486344</updated>
-    </task>
-    <task id="LOCAL-00023" summary="Nah">
-      <created>1640431497068</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1640431497068</updated>
-    </task>
-    <task id="LOCAL-00024" summary="better wording">
-      <created>1640431526910</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1640431526910</updated>
-    </task>
-    <task id="LOCAL-00025" summary="Add interactivity and &quot;sl*sh commands&quot;">
-      <created>1640431591846</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1640431591846</updated>
-    </task>
-    <task id="LOCAL-00026" summary="Remove pp calculations">
-      <created>1640431606205</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1640431606205</updated>
-    </task>
-    <task id="LOCAL-00027" summary="better wording">
-      <created>1640431622526</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1640431622526</updated>
-    </task>
-    <task id="LOCAL-00028" summary="Switch to &quot;sl*sh commands&quot;">
-      <created>1640431638069</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1640431638069</updated>
-    </task>
-    <task id="LOCAL-00029" summary="Bye bye oppai">
-      <created>1640431752424</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1640431752424</updated>
-    </task>
-    <task id="LOCAL-00030" summary=":thinking:">
-      <created>1640431769656</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1640431769656</updated>
-    </task>
-    <task id="LOCAL-00031" summary="Applying Rider cleanup">
-      <created>1640495410712</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1640495410712</updated>
-    </task>
-    <task id="LOCAL-00032" summary="No wonder why my data keeps losing">
-      <created>1640495445147</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1640495445147</updated>
-    </task>
-    <task id="LOCAL-00033" summary="Reduce timeout">
-      <created>1640495462707</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1640495462707</updated>
-    </task>
-    <task id="LOCAL-00034" summary="Sl*sh commanded for osu! commands">
-      <created>1640495487969</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1640495487969</updated>
-    </task>
-    <task id="LOCAL-00035" summary="Grouping 101">
-      <created>1640495501852</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1640495501852</updated>
-    </task>
-    <task id="LOCAL-00036" summary="*readability*">
-      <created>1640495517225</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1640495517225</updated>
+      <workItem from="1641000035742" duration="17868000" />
     </task>
     <task id="LOCAL-00037" summary="I don't know why I do this">
       <created>1640495537137</created>
@@ -485,7 +384,112 @@
       <option name="project" value="LOCAL" />
       <updated>1641011397492</updated>
     </task>
-    <option name="localTasksCounter" value="71" />
+    <task id="LOCAL-00071" summary=":thinking:">
+      <created>1641012551954</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1641012551954</updated>
+    </task>
+    <task id="LOCAL-00072" summary=":thinking:">
+      <created>1641012686687</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1641012686687</updated>
+    </task>
+    <task id="LOCAL-00073" summary=":thinking:">
+      <created>1641012804039</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1641012804039</updated>
+    </task>
+    <task id="LOCAL-00074" summary=":thinking:">
+      <created>1641013563205</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1641013563205</updated>
+    </task>
+    <task id="LOCAL-00075" summary=":thinking:">
+      <created>1641013854377</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1641013854377</updated>
+    </task>
+    <task id="LOCAL-00076" summary=":thinking:">
+      <created>1641014219445</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1641014219445</updated>
+    </task>
+    <task id="LOCAL-00077" summary="Final test before sleep">
+      <created>1641014434496</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1641014434496</updated>
+    </task>
+    <task id="LOCAL-00078" summary="self-note: rebase">
+      <created>1641014531994</created>
+      <option name="number" value="00078" />
+      <option name="presentableId" value="LOCAL-00078" />
+      <option name="project" value="LOCAL" />
+      <updated>1641014531994</updated>
+    </task>
+    <task id="LOCAL-00079" summary="*sighs*">
+      <created>1641014716473</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1641014716473</updated>
+    </task>
+    <task id="LOCAL-00080" summary="More CI I think?">
+      <created>1641028759207</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1641028759207</updated>
+    </task>
+    <task id="LOCAL-00081" summary=":thinking:">
+      <created>1641029328650</created>
+      <option name="number" value="00081" />
+      <option name="presentableId" value="LOCAL-00081" />
+      <option name="project" value="LOCAL" />
+      <updated>1641029328650</updated>
+    </task>
+    <task id="LOCAL-00082" summary="Finalize all I guess?">
+      <created>1641029603520</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1641029603520</updated>
+    </task>
+    <task id="LOCAL-00083" summary="Preps for first release">
+      <created>1641030336936</created>
+      <option name="number" value="00083" />
+      <option name="presentableId" value="LOCAL-00083" />
+      <option name="project" value="LOCAL" />
+      <updated>1641030336936</updated>
+    </task>
+    <task id="LOCAL-00084" summary="Preps">
+      <created>1641030785432</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1641030785432</updated>
+    </task>
+    <task id="LOCAL-00085" summary="Remove the cron">
+      <created>1641030894436</created>
+      <option name="number" value="00085" />
+      <option name="presentableId" value="LOCAL-00085" />
+      <option name="project" value="LOCAL" />
+      <updated>1641030894436</updated>
+    </task>
+    <option name="localTasksCounter" value="86" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -543,14 +547,8 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Sl*sh commanded for osu! commands" />
-    <MESSAGE value="Grouping 101" />
-    <MESSAGE value="*readability*" />
-    <MESSAGE value="I don't know why I do this" />
-    <MESSAGE value="README write" />
-    <MESSAGE value="Update osu! commands&#10;&#10;Known issue: best and recent scores not working" />
-    <MESSAGE value="Clean up" />
     <MESSAGE value="Yeet a ctx.DeferAsync()" />
     <MESSAGE value="Hopefully this will fix some of osu! stuffs" />
     <MESSAGE value="Update CodeQL, hopefully" />
@@ -565,11 +563,18 @@
     <MESSAGE value="Happy new year" />
     <MESSAGE value="CI a bit?" />
     <MESSAGE value="oops" />
-    <MESSAGE value="*sighs*" />
     <MESSAGE value="no?" />
     <MESSAGE value="Maybe release?" />
+    <MESSAGE value="Final test before sleep" />
+    <MESSAGE value="self-note: rebase" />
+    <MESSAGE value="*sighs*" />
+    <MESSAGE value="More CI I think?" />
     <MESSAGE value=":thinking:" />
-    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
+    <MESSAGE value="Finalize all I guess?" />
+    <MESSAGE value="Preps for first release" />
+    <MESSAGE value="Preps" />
+    <MESSAGE value="Remove the cron" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove the cron" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
