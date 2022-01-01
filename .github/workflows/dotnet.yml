@@ -26,7 +26,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --nologo --verbosity normal --configuration Release
     - name: Create archive of built files
-      run: zip -r out.zip /home/runner/work/Lilia/Lilia/app
+      run: zip -r -j out.zip /home/runner/work/Lilia/Lilia/app
     - name: Create release
       id: create_release
       uses: actions/create-release@v1
@@ -42,7 +42,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
         asset_path: /home/runner/work/Lilia/Lilia/out.zip
         asset_name: out.zip
         asset_content_type: application/zip
