@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -80,12 +81,27 @@ public class LiliaClient
         {
             Timeout = TimeSpan.FromSeconds(30)
         });
-        
-        this._slashCommandsExtension.RegisterCommands<OsuModule>();
-        this._slashCommandsExtension.RegisterCommands<ModerationModule>();
-        this._slashCommandsExtension.RegisterCommands<OwnerModule>();
-        this._slashCommandsExtension.RegisterCommands<MusicModule>();
 
+        if (this.Configurations.Client.PrivateGuildIds.Any())
+        {
+            this.Configurations.Client.PrivateGuildIds.ForEach(guildId =>
+            {
+                Log.Logger.Warning($"Registering slash commands for private guild with ID \"{guildId}\"");
+                this._slashCommandsExtension.RegisterCommands<OsuModule>(guildId);
+                this._slashCommandsExtension.RegisterCommands<ModerationModule>(guildId);
+                this._slashCommandsExtension.RegisterCommands<OwnerModule>(guildId);
+                this._slashCommandsExtension.RegisterCommands<MusicModule>(guildId);    
+            });
+        }
+        else
+        {
+            Log.Logger.Warning("Registering slash commands for global scope");
+            this._slashCommandsExtension.RegisterCommands<OsuModule>();
+            this._slashCommandsExtension.RegisterCommands<ModerationModule>();
+            this._slashCommandsExtension.RegisterCommands<OwnerModule>();
+            this._slashCommandsExtension.RegisterCommands<MusicModule>();
+        }
+        
         this.Client.Ready += this.OnReady;
         this.Client.GuildAvailable += this.OnGuildAvailable;
         this.Client.ClientErrored += this.OnClientErrored;
