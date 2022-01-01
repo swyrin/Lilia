@@ -7,13 +7,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment=":thinking:">
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Upload templates">
+      <change afterPath="$PROJECT_DIR$/.github/issue_template.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/ISSUE_TEMPLATE/bug_report.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/ISSUE_TEMPLATE/feature_request.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOGS.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOGS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Commons/JsonConfigurations.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/ModerationModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/ModerationModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia.sln" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia.sln" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,6 +66,7 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/96790fb115a743319102f37c54ece12f14600/d4/a2913bc0/GameMode.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/23e31092363db7107ca21367adea927bccc2e7cf2075f9ee398ad1175b8e87/Nullable.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/cd97f89a1dd485a9e981f4eb33be0e28029fd8e72ed1baed66e8b36dc455dc4/HttpMethod.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/ModerationModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/6d/0411b405/DefaultRequestHandler.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/efd3e9c4749621d4a53b45d7117d2a581e02a265c444a040f1387a155db/Dictionary.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
@@ -149,49 +149,7 @@
       <workItem from="1640780091949" duration="739000" />
       <workItem from="1640835264670" duration="6555000" />
       <workItem from="1640912768207" duration="1672000" />
-      <workItem from="1641000035742" duration="22323000" />
-    </task>
-    <task id="LOCAL-00042" summary="Clean up">
-      <created>1640696532168</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1640696532168</updated>
-    </task>
-    <task id="LOCAL-00043" summary=":thinking:">
-      <created>1640696541062</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1640696541062</updated>
-    </task>
-    <task id="LOCAL-00044" summary=":thinking:">
-      <created>1640750829310</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1640750829310</updated>
-    </task>
-    <task id="LOCAL-00045" summary="Yeet a ctx.DeferAsync()">
-      <created>1640750890272</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1640750890272</updated>
-    </task>
-    <task id="LOCAL-00046" summary="Hopefully this will fix some of osu! stuffs">
-      <created>1640844595125</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1640844595125</updated>
-    </task>
-    <task id="LOCAL-00047" summary=":thinking:">
-      <created>1640844604487</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1640844604487</updated>
+      <workItem from="1641000035742" duration="24712000" />
     </task>
     <task id="LOCAL-00048" summary="Update CodeQL, hopefully">
       <created>1640913814978</created>
@@ -494,7 +452,49 @@
       <option name="project" value="LOCAL" />
       <updated>1641032356273</updated>
     </task>
-    <option name="localTasksCounter" value="91" />
+    <task id="LOCAL-00091" summary="Separate private guild and global slash command registration">
+      <created>1641036239627</created>
+      <option name="number" value="00091" />
+      <option name="presentableId" value="LOCAL-00091" />
+      <option name="project" value="LOCAL" />
+      <updated>1641036239627</updated>
+    </task>
+    <task id="LOCAL-00092" summary="Add editpsa and fix existing commands">
+      <created>1641036270182</created>
+      <option name="number" value="00092" />
+      <option name="presentableId" value="LOCAL-00092" />
+      <option name="project" value="LOCAL" />
+      <updated>1641036270182</updated>
+    </task>
+    <task id="LOCAL-00093" summary="Add new version">
+      <created>1641036289849</created>
+      <option name="number" value="00093" />
+      <option name="presentableId" value="LOCAL-00093" />
+      <option name="project" value="LOCAL" />
+      <updated>1641036289849</updated>
+    </task>
+    <task id="LOCAL-00094" summary="Add new version">
+      <created>1641036305544</created>
+      <option name="number" value="00094" />
+      <option name="presentableId" value="LOCAL-00094" />
+      <option name="project" value="LOCAL" />
+      <updated>1641036305544</updated>
+    </task>
+    <task id="LOCAL-00095" summary=":thinking:">
+      <created>1641036338915</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1641036338915</updated>
+    </task>
+    <task id="LOCAL-00096" summary="Upload templates">
+      <created>1641038288006</created>
+      <option name="number" value="00096" />
+      <option name="presentableId" value="LOCAL-00096" />
+      <option name="project" value="LOCAL" />
+      <updated>1641038288006</updated>
+    </task>
+    <option name="localTasksCounter" value="97" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -554,10 +554,6 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="More sanity" />
-    <MESSAGE value="Better clarification" />
-    <MESSAGE value="Fixing minor stuffs" />
-    <MESSAGE value="Fix minor stuffs&#10;&#10;New Year commit, yay" />
     <MESSAGE value="Mess a bit with Actions" />
     <MESSAGE value="path fix" />
     <MESSAGE value="path mess #2" />
@@ -579,8 +575,12 @@
     <MESSAGE value="Oops" />
     <MESSAGE value="edit something something" />
     <MESSAGE value="Add CHANGELOG.md for single version" />
+    <MESSAGE value="Separate private guild and global slash command registration" />
+    <MESSAGE value="Add editpsa and fix existing commands" />
+    <MESSAGE value="Add new version" />
     <MESSAGE value=":thinking:" />
-    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
+    <MESSAGE value="Upload templates" />
+    <option name="LAST_COMMIT_MESSAGE" value="Upload templates" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
