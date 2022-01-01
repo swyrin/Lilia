@@ -74,11 +74,15 @@
     <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectId" id="1ynCgyB2aA0goTk0uyRlhbOpr7l" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -545,6 +549,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Reduce timeout" />
     <MESSAGE value="Sl*sh commanded for osu! commands" />
@@ -569,7 +574,6 @@
     <MESSAGE value="CI a bit?" />
     <MESSAGE value=":thinking:" />
     <MESSAGE value="oops" />
-    <MESSAGE value="*sighs*" />
     <MESSAGE value="no?" />
     <option name="LAST_COMMIT_MESSAGE" value="no?" />
   </component>
