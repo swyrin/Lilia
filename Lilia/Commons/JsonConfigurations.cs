@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Lilia.Commons;
@@ -41,6 +42,8 @@ public class JsonConfigurations
 
 public class ClientData
 {
+    [JsonProperty("private_guilds")] public List<ulong> PrivateGuildIds = new();
+    
     [JsonProperty("activity")] public ClientActivityData Activity = new();
 }
 

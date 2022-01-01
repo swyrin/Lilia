@@ -23,6 +23,7 @@ Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `ap
 ```json
 {
   "client": {
+    "private_guilds": [],
     "activity": {
       "type": "Watching",
       "name": "you",
