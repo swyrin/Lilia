@@ -11,7 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
@@ -26,23 +25,24 @@ jobs:
       run: dotnet build --no-restore --nologo --configuration Release Lilia --output app/
     - name: Test
       run: dotnet test --no-build --nologo --verbosity normal --configuration Release
-    - name: Create artifacts
-      uses: actions/upload-artifact@v2
+    - name: Create archive of built files
+      run: zip -r out.zip /home/runner/work/Lilia/Lilia/app
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
-        name: artifact
-        path: /home/runner/work/Lilia/Lilia/app
-    - name: Download artifacts
-      uses: actions/download-artifact@v2
-      with:
-        name: artifact
-        run: mkdir builds
-        path: /builds
-    - name: Release
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: "artifact"
+        tag_name: test-release
+        release_name: Release test
         prerelease: true
-        tag: "temp-release"
-        replacesArtifacts: true
-        token: ${{ secrets.GITHUB_TOKEN }}
-      
+    - name: Upload release assets
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: /home/runner/work/Lilia/Lilia/out.zip
+        asset_name: out.zip
+        asset_content_type: application/zip
