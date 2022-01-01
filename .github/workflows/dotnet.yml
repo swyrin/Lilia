@@ -36,6 +36,7 @@ jobs:
       with:
         artifacts: "artifact"
         prerelease: true
+        tag: "temp-release"
         replacesArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
       
