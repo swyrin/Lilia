@@ -10,29 +10,9 @@ soon:tm:
 
 - [.NET](https://dotnet.microsoft.com/download), version 6 or higher.
 - [Java](https://www.java.com/en/download/) for [Lavalink](https://github.com/freyacodes/Lavalink). **JDK** 13 or higher. Install either on server or your local machine.
-- [Git](https://git-scm.com/), easier to update. Optional.
 
-### Step 1: Grab the files
->#### 1. With `git`
->Run the following command in your favorite terminal:
->```shell
->git clone https://github.com/Swyreee/Lilia.git
->```
->If you need to update the bot (remember to shutdown the running instance first):
->```shell
->git pull origin master
->```
-
->#### 2. Without `git`
->There is a green-ish button calling `Code`, click it, there should be an option. `Download ZIP` if I recall correctly.
-> 
->And **every time** you want to update the bot, go to this repo again, do the same thing. Remember to backup your stuffs.
-
-Whether you have `git` or not, head to the directory **containing `Lilia.csproj` file** with `cd` command.
-```shell
-cd <somewhere-else-with-that-file>
-```
-We will use this directory until the end of the guide.
+### Step 1: Grab the pre-built files
+Rewriting....
 
 ### Step 2: Configurations
 - Rename the file `config.example.json` to `config.json` (or copy if you wish) and fill with appropriate stuffs. Watch [here](https://github.com/Swyreee/Lilia/wiki/Configuration-101) for helps.

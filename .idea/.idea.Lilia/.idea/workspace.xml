@@ -7,10 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="why don't you build Release?">
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="no?">
       <change beforePath="$PROJECT_DIR$/.github/workflows/dotnet.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/dotnet.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +31,12 @@
         </map>
       </branch-storage>
     </excluded-from-favorite>
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--tags" />
+        <option name="title" value="All" />
+      </GitPushTagMode>
+    </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="secret-uwu" />
@@ -136,49 +142,7 @@
       <workItem from="1640780091949" duration="739000" />
       <workItem from="1640835264670" duration="6555000" />
       <workItem from="1640912768207" duration="1672000" />
-      <workItem from="1641000035742" duration="6288000" />
-    </task>
-    <task id="LOCAL-00012" summary=":thinking:">
-      <created>1640313999484</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1640313999484</updated>
-    </task>
-    <task id="LOCAL-00013" summary="stuffs">
-      <created>1640314258717</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1640314258717</updated>
-    </task>
-    <task id="LOCAL-00014" summary=":thinking:">
-      <created>1640314267169</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1640314267169</updated>
-    </task>
-    <task id="LOCAL-00015" summary="edit something something">
-      <created>1640314620630</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1640314620630</updated>
-    </task>
-    <task id="LOCAL-00016" summary=":thinking:">
-      <created>1640314628295</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1640314628295</updated>
-    </task>
-    <task id="LOCAL-00017" summary="Just. Use. One.">
-      <created>1640315170140</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1640315170140</updated>
+      <workItem from="1641000035742" duration="9505000" />
     </task>
     <task id="LOCAL-00018" summary="logging">
       <created>1640323492182</created>
@@ -481,7 +445,49 @@
       <option name="project" value="LOCAL" />
       <updated>1641005787212</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="Happy new year">
+      <created>1641006935034</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1641006935034</updated>
+    </task>
+    <task id="LOCAL-00062" summary="CI a bit?">
+      <created>1641006943008</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1641006943008</updated>
+    </task>
+    <task id="LOCAL-00063" summary=":thinking:">
+      <created>1641006950849</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1641006950849</updated>
+    </task>
+    <task id="LOCAL-00064" summary="oops">
+      <created>1641007099933</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1641007099933</updated>
+    </task>
+    <task id="LOCAL-00065" summary="*sighs*">
+      <created>1641007192500</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1641007192500</updated>
+    </task>
+    <task id="LOCAL-00066" summary="no?">
+      <created>1641007604172</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1641007604172</updated>
+    </task>
+    <option name="localTasksCounter" value="67" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -540,10 +546,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Switch to &quot;sl*sh commands&quot;" />
-    <MESSAGE value="Bye bye oppai" />
-    <MESSAGE value="Applying Rider cleanup" />
-    <MESSAGE value="No wonder why my data keeps losing" />
     <MESSAGE value="Reduce timeout" />
     <MESSAGE value="Sl*sh commanded for osu! commands" />
     <MESSAGE value="Grouping 101" />
@@ -557,15 +559,19 @@
     <MESSAGE value="Update CodeQL, hopefully" />
     <MESSAGE value="More sanity" />
     <MESSAGE value="Better clarification" />
-    <MESSAGE value=":thinking:" />
     <MESSAGE value="Fixing minor stuffs" />
     <MESSAGE value="Fix minor stuffs&#10;&#10;New Year commit, yay" />
     <MESSAGE value="Mess a bit with Actions" />
-    <MESSAGE value="oops" />
     <MESSAGE value="path fix" />
     <MESSAGE value="path mess #2" />
     <MESSAGE value="why don't you build Release?" />
-    <option name="LAST_COMMIT_MESSAGE" value="why don't you build Release?" />
+    <MESSAGE value="Happy new year" />
+    <MESSAGE value="CI a bit?" />
+    <MESSAGE value=":thinking:" />
+    <MESSAGE value="oops" />
+    <MESSAGE value="*sighs*" />
+    <MESSAGE value="no?" />
+    <option name="LAST_COMMIT_MESSAGE" value="no?" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -3,6 +3,8 @@ name: .NET Build and Upload Artifacts
 on:
   push:
     branches: [ master ]
+    tags:
+      - '*'
   pull_request:
     branches: [ master ]
 
@@ -24,8 +26,14 @@ jobs:
       run: dotnet build --no-restore --nologo --configuration Release Lilia --output app/
     - name: Test
       run: dotnet test --no-build --nologo --verbosity normal --configuration Release
-    - name: Create artifact
+    - name: Create built artifacts
       uses: actions/upload-artifact@v2
       with:
         name: artifact
         path: /home/runner/work/Lilia/Lilia/app
+    - name: Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "/home/runner/work/Lilia/Lilia/app"
+        token: ${{ secrets.GITHUB_TOKEN }}
+      
