@@ -1,4 +1,4 @@
-name: .NET Build and Upload Artifacts
+name: Build
 
 on:
   push:
