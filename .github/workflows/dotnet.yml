@@ -34,6 +34,8 @@ jobs:
     - name: Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "artifact.zip,config.example.json"
+        artifacts: "artifact"
+        prerelease: true
+        replacesArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
       
