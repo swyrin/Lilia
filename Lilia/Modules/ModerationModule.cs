@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -72,7 +73,7 @@ public class ModerationModule : ApplicationCommandModule
     }
 
     [SlashCommand("kick", "Kick members, obviously")]
-    [SlashRequirePermissions(Permissions.BanMembers)]
+    [SlashRequirePermissions(Permissions.KickMembers)]
     public async Task KickMembersCommand(InteractionContext ctx,
         [Option("reason", "Reason to kick")] string reason = "")
     {
@@ -94,7 +95,7 @@ public class ModerationModule : ApplicationCommandModule
         }
         
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-            .WithContent("Kicked mischievous people"));
+            .WithContent("Kicking mischievous people"));
 
         DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
         
@@ -118,5 +119,21 @@ public class ModerationModule : ApplicationCommandModule
         }
 
         await ctx.FollowUpAsync(builder);
+    }
+
+    [SlashCommand("psa", "Send PSAs to a channel without the member knowings the sender")]
+    [SlashRequirePermissions(Permissions.KickMembers)]
+    public async Task SendPsaCommand(InteractionContext ctx,
+        [Option("message_id", "Message ID to copy")] string msgId,
+        [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store, ChannelType.NewsThread, ChannelType.PublicThread)]
+        [Option("channel", "Channel to send")] DiscordChannel channel)
+    {
+        await ctx.DeferAsync();
+        
+        DiscordMessage msg = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(msgId));
+        await channel.SendMessageAsync(msg.Content);
+        
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("Sent to the destination channel"));
     }
 }

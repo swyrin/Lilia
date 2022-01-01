@@ -12,7 +12,7 @@
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <Optimize>False</Optimize>
     </PropertyGroup>
-
+    
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <Optimize>true</Optimize>
     </PropertyGroup>
@@ -52,9 +52,5 @@
         <None Update="database.db-wal">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Modules\Utils" />
     </ItemGroup>
 </Project>
