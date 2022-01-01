@@ -7,10 +7,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="no?">
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Maybe release?">
       <change beforePath="$PROJECT_DIR$/.github/workflows/dotnet.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/dotnet.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,14 +140,7 @@
       <workItem from="1640780091949" duration="739000" />
       <workItem from="1640835264670" duration="6555000" />
       <workItem from="1640912768207" duration="1672000" />
-      <workItem from="1641000035742" duration="9505000" />
-    </task>
-    <task id="LOCAL-00018" summary="logging">
-      <created>1640323492182</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1640323492182</updated>
+      <workItem from="1641000035742" duration="10336000" />
     </task>
     <task id="LOCAL-00019" summary="something something new?">
       <created>1640323513876</created>
@@ -487,7 +478,14 @@
       <option name="project" value="LOCAL" />
       <updated>1641007604172</updated>
     </task>
-    <option name="localTasksCounter" value="67" />
+    <task id="LOCAL-00067" summary="Maybe release?">
+      <created>1641010111899</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1641010111899</updated>
+    </task>
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -546,7 +544,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Reduce timeout" />
     <MESSAGE value="Sl*sh commanded for osu! commands" />
     <MESSAGE value="Grouping 101" />
     <MESSAGE value="*readability*" />
@@ -571,7 +568,8 @@
     <MESSAGE value="oops" />
     <MESSAGE value="*sighs*" />
     <MESSAGE value="no?" />
-    <option name="LAST_COMMIT_MESSAGE" value="no?" />
+    <MESSAGE value="Maybe release?" />
+    <option name="LAST_COMMIT_MESSAGE" value="Maybe release?" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

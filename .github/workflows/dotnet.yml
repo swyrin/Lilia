@@ -34,6 +34,6 @@ jobs:
     - name: Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "/home/runner/work/Lilia/Lilia/app"
+        artifacts: "artifact.zip,config.example.json"
         token: ${{ secrets.GITHUB_TOKEN }}
       
