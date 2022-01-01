@@ -26,7 +26,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --nologo --verbosity normal --configuration Release
     - name: Create archive of built files
-      run: zip -r -j out.zip /home/runner/work/Lilia/Lilia/app
+      run: zip -j out.zip /home/runner/work/Lilia/Lilia/app
     - name: Create release
       id: create_release
       uses: actions/create-release@v1
