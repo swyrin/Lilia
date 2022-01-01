@@ -1,8 +1,6 @@
 name: Release
 
 on:
-  schedule:
-    - cron: '59 23 * * *'
   push:
     tags:
       - release-*
