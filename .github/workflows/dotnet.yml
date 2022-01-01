@@ -23,7 +23,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore --nologo --configuration Release Lilia --output app/
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --nologo --verbosity normal --configuration Release
     - name: Create artifact
       uses: actions/upload-artifact@v2
       with:
