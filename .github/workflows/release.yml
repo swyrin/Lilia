@@ -1,6 +1,8 @@
 name: Create release
 
 on:
+  schedule:
+    - cron: '59 23 * * *'
   push:
     branches: [ master ]
     tags:
@@ -28,14 +30,17 @@ jobs:
             pushd /home/runner/work/Lilia/Lilia/
             zip -r app.zip ./app
             popd
+    - name: Get tagged version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: Create release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        release_name: Release version ${{ steps.get_version.outputs.VERSION }}
         prerelease: true
     - name: Upload release assets
       id: upload-release-asset
