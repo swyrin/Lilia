@@ -28,7 +28,7 @@ jobs:
     - name: Create archive of built files
       run: |
             pushd /home/runner/work/Lilia/Lilia/
-            zip -j app.zip ./app
+            zip -r app.zip ./app
             popd
     - name: Create release
       id: create_release
