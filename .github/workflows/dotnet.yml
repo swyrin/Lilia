@@ -21,11 +21,11 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build -c Release --no-restore
+      run: dotnet build --no-restore --no-logo --configuration Release Lilia --output app/
     - name: Test
       run: dotnet test --no-build --verbosity normal
-    - name: Create artifacts
+    - name: Create artifact
       uses: actions/upload-artifact@v2
       with:
-        name: built-code-upload
-        path:  /home/runner/work/Lilia/Lilia/Lilia/bin/Debug/net6.0
+        name: artifact
+        path: /home/runner/work/Lilia/Lilia/Lilia/app
