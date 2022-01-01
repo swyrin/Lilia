@@ -26,11 +26,15 @@ jobs:
       run: dotnet build --no-restore --nologo --configuration Release Lilia --output app/
     - name: Test
       run: dotnet test --no-build --nologo --verbosity normal --configuration Release
-    - name: Create built artifacts
+    - name: Create artifacts
       uses: actions/upload-artifact@v2
       with:
         name: artifact
         path: /home/runner/work/Lilia/Lilia/app
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: artifact
     - name: Release
       uses: ncipollo/release-action@v1
       with:
