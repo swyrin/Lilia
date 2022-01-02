@@ -24,6 +24,7 @@ Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `ap
 
 ### Step 2: Configurations
 - Create the file `config.json` with the following template
+>If you are really lazy to do some clicks, follow step 3 first then go back here
 ```json
 {
   "client": {
@@ -56,3 +57,9 @@ Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `ap
 ```shell
 dotnet ./bin/Release/net6.0/Lilia.dll
 ```
+
+# So... Where are the commands?
+Well, the bot runs under Discord's "Application Command" so just simply type `/` on the message box or Right Click if you are on PC or Web version of Discord.
+
+# Are there any roadmaps?
+Maybe get some reputations first.
