@@ -7,9 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Add links">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/dotnet.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia.sln" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia.sln" afterDir="false" />
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Remove issue_template.md">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -144,35 +145,8 @@
       <workItem from="1640835264670" duration="6555000" />
       <workItem from="1640912768207" duration="1672000" />
       <workItem from="1641000035742" duration="25045000" />
-      <workItem from="1641040052819" duration="243000" />
-    </task>
-    <task id="LOCAL-00051" summary="Better clarification">
-      <created>1640913854263</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1640913854263</updated>
-    </task>
-    <task id="LOCAL-00052" summary=":thinking:">
-      <created>1640913863342</created>
-      <option name="number" value="00052" />
-      <option name="presentableId" value="LOCAL-00052" />
-      <option name="project" value="LOCAL" />
-      <updated>1640913863342</updated>
-    </task>
-    <task id="LOCAL-00053" summary=":thinking:">
-      <created>1640914104424</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1640914104424</updated>
-    </task>
-    <task id="LOCAL-00054" summary="Fixing minor stuffs">
-      <created>1641002266937</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1641002266938</updated>
+      <workItem from="1641040052819" duration="890000" />
+      <workItem from="1641085722850" duration="1982000" />
     </task>
     <task id="LOCAL-00055" summary="Fix minor stuffs&#10;&#10;New Year commit, yay">
       <created>1641002284607</created>
@@ -489,7 +463,35 @@
       <option name="project" value="LOCAL" />
       <updated>1641038780245</updated>
     </task>
-    <option name="localTasksCounter" value="100" />
+    <task id="LOCAL-00100" summary="Suddenly dumb">
+      <created>1641040383704</created>
+      <option name="number" value="00100" />
+      <option name="presentableId" value="LOCAL-00100" />
+      <option name="project" value="LOCAL" />
+      <updated>1641040383704</updated>
+    </task>
+    <task id="LOCAL-00101" summary="Suddenly dumb part 2">
+      <created>1641040470763</created>
+      <option name="number" value="00101" />
+      <option name="presentableId" value="LOCAL-00101" />
+      <option name="project" value="LOCAL" />
+      <updated>1641040470763</updated>
+    </task>
+    <task id="LOCAL-00102" summary="Upload build tasks on different environment">
+      <created>1641086407439</created>
+      <option name="number" value="00102" />
+      <option name="presentableId" value="LOCAL-00102" />
+      <option name="project" value="LOCAL" />
+      <updated>1641086407439</updated>
+    </task>
+    <task id="LOCAL-00103" summary="Remove issue_template.md">
+      <created>1641086423254</created>
+      <option name="number" value="00103" />
+      <option name="presentableId" value="LOCAL-00103" />
+      <option name="project" value="LOCAL" />
+      <updated>1641086423254</updated>
+    </task>
+    <option name="localTasksCounter" value="104" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -549,10 +551,6 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="path mess #2" />
-    <MESSAGE value="why don't you build Release?" />
-    <MESSAGE value="Happy new year" />
-    <MESSAGE value="CI a bit?" />
     <MESSAGE value=":thinking:" />
     <MESSAGE value="oops" />
     <MESSAGE value="no?" />
@@ -575,7 +573,11 @@
     <MESSAGE value="Add templates" />
     <MESSAGE value=":thinking:" />
     <MESSAGE value="Add links" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add links" />
+    <MESSAGE value="Suddenly dumb" />
+    <MESSAGE value="Suddenly dumb part 2" />
+    <MESSAGE value="Upload build tasks on different environment" />
+    <MESSAGE value="Remove issue_template.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove issue_template.md" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
