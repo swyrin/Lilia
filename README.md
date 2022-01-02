@@ -1,9 +1,13 @@
 # Welcome to `Lilia` repo
 Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduction.
 
-![CodeQL](https://github.com/Swyreee/Lilia/actions/workflows/codeql-analysis.yml/badge.svg)
-![Build](https://github.com/Swyreee/Lilia/actions/workflows/dotnet.yml/badge.svg)
-![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg)
+| Build (Windows)                                                                              | Build (macOS)                                                                            | Build (Linux)                                                                                 |
+|----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| ![WinBuild](https://github.com/Swyreee/Lilia/actions/workflows/dotnet_windows.yml/badge.svg) | ![MacBuild](https://github.com/Swyreee/Lilia/actions/workflows/dotnet_mac.yml/badge.svg) | ![LinuxBuild](https://github.com/Swyreee/Lilia/actions/workflows/dotnet_ubuntu.yml/badge.svg) |
+
+| Code inspection (CodeQL)                                                                    | Release build (All platforms)                                                        |
+|---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| ![CodeQL](https://github.com/Swyreee/Lilia/actions/workflows/codeql-analysis.yml/badge.svg) | ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg) |
 
 # Changelogs
 Watch [here](https://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md)
@@ -16,7 +20,7 @@ Watch [here](https://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md)
 - [Java](https://www.java.com/en/download/) for [Lavalink](https://github.com/freyacodes/Lavalink). **JDK** 13 or higher. Install either on server or your local machine.
 
 ### Step 1: Grab the files
-Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `app.zip` at the top release then unzip it. Everything should be at `app/` directory
+Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `app.zip` at the top release then unzip it. Everything should be inside `app/` directory
 
 ### Step 2: Configurations
 - Create the file `config.json` with the following template
