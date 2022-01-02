@@ -17,7 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.github\pull_request_template.md = .github\pull_request_template.md
 		.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
 		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
-		.github\issue_template.md = .github\issue_template.md
+		.github\workflows\dotnet_mac.yml = .github\workflows\dotnet_mac.yml
+		.github\workflows\dotnet_ubuntu.yml = .github\workflows\dotnet_ubuntu.yml
+		.github\workflows\dotnet_windows.yml = .github\workflows\dotnet_windows.yml
 	EndProjectSection
 EndProject
 Global
