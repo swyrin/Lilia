@@ -12,16 +12,16 @@ public static class JsonConfigurationsManager
 
     static JsonConfigurationsManager()
     {
+        EnsureConfigFileGenerated();
         Configurations = JsonConvert.DeserializeObject<JsonConfigurations>(File.ReadAllText(ConfigFileName));
     }
 
-    public static void EnsureConfigFileGenerated()
+    private static void EnsureConfigFileGenerated()
     {
         if (!File.Exists(ConfigFileName))
         {
             File.Create(ConfigFileName);
-            File.WriteAllText(ConfigFileName,
-                JsonConvert.SerializeObject(new JsonConfigurations(), Formatting.Indented));
+            File.WriteAllText(ConfigFileName, JsonConvert.SerializeObject(new JsonConfigurations(), Formatting.Indented));
             Console.WriteLine($"Created configuration file {ConfigFileName}.");
             Console.WriteLine("Please fill it with necessary data.");
             Console.WriteLine("Press any key to exit.");

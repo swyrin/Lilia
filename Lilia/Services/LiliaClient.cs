@@ -40,7 +40,6 @@ public class LiliaClient
             .CreateLogger();
 
         Log.Logger.Information("Loading configurations");
-        JsonConfigurationsManager.EnsureConfigFileGenerated();
         this.Configurations = JsonConfigurationsManager.Configurations;
 
         this.Cts = new CancellationTokenSource();
