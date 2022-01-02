@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -14,7 +15,6 @@ using DSharpPlus.Lavalink;
 using DSharpPlus.Net;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
-using Lilia.Modules;
 using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
@@ -87,19 +87,13 @@ public class LiliaClient
             this.Configurations.Client.PrivateGuildIds.ForEach(guildId =>
             {
                 Log.Logger.Warning($"Registering slash commands for private guild with ID \"{guildId}\"");
-                this._slashCommandsExtension.RegisterCommands<OsuModule>(guildId);
-                this._slashCommandsExtension.RegisterCommands<ModerationModule>(guildId);
-                this._slashCommandsExtension.RegisterCommands<OwnerModule>(guildId);
-                this._slashCommandsExtension.RegisterCommands<MusicModule>(guildId);    
+                this._slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly(), guildId);    
             });
         }
         else
         {
             Log.Logger.Warning("Registering slash commands for global scope");
-            this._slashCommandsExtension.RegisterCommands<OsuModule>();
-            this._slashCommandsExtension.RegisterCommands<ModerationModule>();
-            this._slashCommandsExtension.RegisterCommands<OwnerModule>();
-            this._slashCommandsExtension.RegisterCommands<MusicModule>();
+            this._slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly());
         }
         
         this.Client.Ready += this.OnReady;
