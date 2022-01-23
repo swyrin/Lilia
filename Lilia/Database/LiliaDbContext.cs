@@ -33,11 +33,5 @@ public class LiliaDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
-        base.OnConfiguring(options);
-    }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
     }
 }

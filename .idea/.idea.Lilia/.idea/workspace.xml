@@ -7,9 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="">
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Remove issue_template.md">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,9 +146,42 @@
       <workItem from="1640912768207" duration="1672000" />
       <workItem from="1641000035742" duration="25045000" />
       <workItem from="1641040052819" duration="890000" />
-      <workItem from="1641085722850" duration="4078000" />
-      <workItem from="1642746688570" duration="1443000" />
-      <workItem from="1642897869140" duration="557000" />
+      <workItem from="1641085722850" duration="1982000" />
+    </task>
+    <task id="LOCAL-00055" summary="Fix minor stuffs&#10;&#10;New Year commit, yay">
+      <created>1641002284607</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1641002284607</updated>
+    </task>
+    <task id="LOCAL-00056" summary="Mess a bit with Actions">
+      <created>1641005413200</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1641005413200</updated>
+    </task>
+    <task id="LOCAL-00057" summary="oops">
+      <created>1641005487426</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1641005487427</updated>
+    </task>
+    <task id="LOCAL-00058" summary="path fix">
+      <created>1641005572460</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1641005572460</updated>
+    </task>
+    <task id="LOCAL-00059" summary="path mess #2">
+      <created>1641005690284</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1641005690284</updated>
     </task>
     <task id="LOCAL-00060" summary="why don't you build Release?">
       <created>1641005787212</created>
@@ -457,42 +491,7 @@
       <option name="project" value="LOCAL" />
       <updated>1641086423254</updated>
     </task>
-    <task id="LOCAL-00104" summary="Add statuses I guess?">
-      <created>1641088323570</created>
-      <option name="number" value="00104" />
-      <option name="presentableId" value="LOCAL-00104" />
-      <option name="project" value="LOCAL" />
-      <updated>1641088323571</updated>
-    </task>
-    <task id="LOCAL-00105" summary="Convenience for further developments">
-      <created>1641088351533</created>
-      <option name="number" value="00105" />
-      <option name="presentableId" value="LOCAL-00105" />
-      <option name="project" value="LOCAL" />
-      <updated>1641088351533</updated>
-    </task>
-    <task id="LOCAL-00106" summary=":thinking:">
-      <created>1641088360948</created>
-      <option name="number" value="00106" />
-      <option name="presentableId" value="LOCAL-00106" />
-      <option name="project" value="LOCAL" />
-      <updated>1641088360948</updated>
-    </task>
-    <task id="LOCAL-00107" summary="Handle the case when you didn't create the JSON config file properly">
-      <created>1641089153852</created>
-      <option name="number" value="00107" />
-      <option name="presentableId" value="LOCAL-00107" />
-      <option name="project" value="LOCAL" />
-      <updated>1641089153852</updated>
-    </task>
-    <task id="LOCAL-00108" summary="Spice up README a bit">
-      <created>1641089769614</created>
-      <option name="number" value="00108" />
-      <option name="presentableId" value="LOCAL-00108" />
-      <option name="project" value="LOCAL" />
-      <updated>1641089769614</updated>
-    </task>
-    <option name="localTasksCounter" value="109" />
+    <option name="localTasksCounter" value="104" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -552,6 +551,11 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value=":thinking:" />
+    <MESSAGE value="oops" />
+    <MESSAGE value="no?" />
+    <MESSAGE value="Maybe release?" />
+    <MESSAGE value="Final test before sleep" />
     <MESSAGE value="self-note: rebase" />
     <MESSAGE value="*sighs*" />
     <MESSAGE value="More CI I think?" />
@@ -567,17 +571,13 @@
     <MESSAGE value="Add new version" />
     <MESSAGE value="Upload templates" />
     <MESSAGE value="Add templates" />
+    <MESSAGE value=":thinking:" />
     <MESSAGE value="Add links" />
     <MESSAGE value="Suddenly dumb" />
     <MESSAGE value="Suddenly dumb part 2" />
     <MESSAGE value="Upload build tasks on different environment" />
     <MESSAGE value="Remove issue_template.md" />
-    <MESSAGE value="Add statuses I guess?" />
-    <MESSAGE value="Convenience for further developments" />
-    <MESSAGE value=":thinking:" />
-    <MESSAGE value="Handle the case when you didn't create the JSON config file properly" />
-    <MESSAGE value="Spice up README a bit" />
-    <option name="LAST_COMMIT_MESSAGE" value="Spice up README a bit" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove issue_template.md" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
