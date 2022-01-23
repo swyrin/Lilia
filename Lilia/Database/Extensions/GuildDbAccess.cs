@@ -9,14 +9,15 @@ public static class GuildDbAccess
     public static DbGuild GetOrCreateGuildRecord(this LiliaDbContext ctx, ulong guildId)
     {
         DbSet<DbGuild> guilds = ctx.Guilds;
-        DbGuild guild = guilds.FirstOrDefault(entity => entity.GuildId == guildId);
+        DbGuild guild = guilds.FirstOrDefault(entity => entity.DiscordGuildId == guildId);
 
         if (guild == default(DbGuild))
         {
             guild = new DbGuild
             {
-                GuildId = guildId,
-                Ranking = 1
+                DiscordGuildId = guildId,
+                Queue = string.Empty,
+                QueueWithNames = string.Empty
             };
 
             guilds.Add(guild);

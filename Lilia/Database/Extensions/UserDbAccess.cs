@@ -9,14 +9,13 @@ public static class UserDbAccess
     public static DbUser GetOrCreateUserRecord(this LiliaDbContext ctx, ulong userId)
     {
         DbSet<DbUser> users = ctx.Users;
-        DbUser user = users.FirstOrDefault(entity => entity.UserId == userId);
+        DbUser user = users.FirstOrDefault(entity => entity.DiscordUserId == userId);
 
         if (user == default(DbUser))
         {
             user = new DbUser
             {
-                UserId = userId,
-                Shards = 0
+                DiscordUserId = userId
             };
 
             users.Add(user);
