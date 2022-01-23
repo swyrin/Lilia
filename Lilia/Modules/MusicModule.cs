@@ -11,7 +11,7 @@ using DSharpPlus.SlashCommands.Attributes;
 
 namespace Lilia.Modules;
 
-[SlashCommandGroup("music", "Commands related to music playbacks")]
+[SlashCommandGroup("music", "Commands related to music playback")]
 public class MusicModule : ApplicationCommandModule
 {
     [SlashCommand("join", "Join a voice channel")]
@@ -34,27 +34,8 @@ public class MusicModule : ApplicationCommandModule
 
         if (connection != null && connection.IsConnected)
         {
-            if (connection.Channel != channel)
-            {
-                if (ctx.Member.Permissions.HasPermission(Permissions.MoveMembers))
-                {
-                    await connection.DisconnectAsync();
-                    await node.ConnectAsync(channel);
-                    await (await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id)).SetDeafAsync(true, "Self deaf");
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Jumped to your new voice channel"));
-
-                    return;
-                }
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("You must have 'Move Members' permission in order to let me do that"));
-
-                return;
-            }
-
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I have joined already"));
+                .WithContent("I have joined already, maybe in somewhere else. Consider using \"/music summon\" to move me to your current channel"));
 
             return;
         }
@@ -134,7 +115,7 @@ public class MusicModule : ApplicationCommandModule
             .WithContent("Left the voice channel"));
     }
 
-    [SlashCommand("play", "Play music")]
+    [SlashCommand("playdirect", "Play one track/stream from provided search")]
     public async Task PlayCommand(InteractionContext ctx,
         [Option("search", "Text to search.")] string search,
         [Choice("youtube", "youtube")]
@@ -144,14 +125,6 @@ public class MusicModule : ApplicationCommandModule
         string mode = "youtube")
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-
-        if (string.IsNullOrWhiteSpace(search))
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Did you forget something?"));
-
-            return;
-        }
 
         DiscordChannel channel = ctx.Member.VoiceState?.Channel;
         if (channel == null)
@@ -174,7 +147,7 @@ public class MusicModule : ApplicationCommandModule
             return;
         }
 
-        LavalinkLoadResult loadResult;
+        LavalinkLoadResult loadResult = null;
 
         switch (mode)
         {
@@ -196,11 +169,10 @@ public class MusicModule : ApplicationCommandModule
             case "soundcloud":
                 loadResult = await node.Rest.GetTracksAsync(search, LavalinkSearchType.SoundCloud);
                 break;
-            default:
+            case "youtube":
                 loadResult = await node.Rest.GetTracksAsync(search);
                 break;
         }
-
 
         if (!loadResult.Tracks.Any())
         {
@@ -252,11 +224,10 @@ public class MusicModule : ApplicationCommandModule
             return;
         }
 
-        StringBuilder text = new StringBuilder();
+        StringBuilder text = new();
         text.AppendLine($"{Formatter.Bold("Track title")}: {track.Title}");
         text.AppendLine($"{Formatter.Bold("Author/Uploader")}: {track.Author}");
-        text.AppendLine(
-            $"{Formatter.Bold("Playback position")}: {connection.CurrentState.PlaybackPosition:g}/{track.Length:g}");
+        text.AppendLine($"{Formatter.Bold("Playback position")}: {connection.CurrentState.PlaybackPosition:g}/{track.Length:g}");
         text.AppendLine($"{Formatter.Bold("Source")}: {track.Uri}");
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -281,8 +252,6 @@ public class MusicModule : ApplicationCommandModule
             return;
         }
 
-        LavalinkTrack track = connection.CurrentState.CurrentTrack;
-
         if (connection.CurrentState.CurrentTrack == null)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -304,7 +273,7 @@ public class MusicModule : ApplicationCommandModule
         if (result.TimedOut)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Time exceeded"));
+                .WithContent("Timed out"));
 
             return;
         }
@@ -329,7 +298,6 @@ public class MusicModule : ApplicationCommandModule
                 await connection.ResumeAsync();
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Resuming"));
-
                 break;
         }
     }
