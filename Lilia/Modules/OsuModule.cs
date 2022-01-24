@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using Lilia.Commons;
 using Lilia.Database.Extensions;
 using OsuSharp.Domain;
 using OsuSharp.Exceptions;
@@ -24,8 +25,6 @@ public class OsuModule : ApplicationCommandModule
     private LiliaClient _client;
     private LiliaDbContext _dbCtx;
     private IOsuClient _osuClient;
-
-    private DiscordColor OsuEmbedColor => DiscordColor.HotPink;
 
     public OsuModule(LiliaClient client, IOsuClient osuClient)
     {
@@ -65,12 +64,9 @@ public class OsuModule : ApplicationCommandModule
         await ctx.DeferAsync(true);
         DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
 
-        DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
+        DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
             .AddField("Username", !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
-            .AddField("Default mode", !string.IsNullOrWhiteSpace(dbUser.OsuMode) ? dbUser.OsuMode : "Not linked yet", true)
-            .WithTimestamp(DateTime.Now)
-            .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
-            .WithColor(this.OsuEmbedColor);
+            .AddField("Default mode", !string.IsNullOrWhiteSpace(dbUser.OsuMode) ? dbUser.OsuMode : "Not linked yet", true);
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent("Here is your linked data with me")
@@ -151,24 +147,20 @@ public class OsuModule : ApplicationCommandModule
                     .AppendLine($"{Formatter.Bold("Play Count")}: {osuUser.Statistics.PlayCount} with {osuUser.Statistics.PlayTime:g} of play time")
                     .AppendLine($"{Formatter.Bold("Current status")}: {(osuUser.IsOnline ? "Online" : "Offline/Invisible")}");
 
-                DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-                    .WithTimestamp(DateTime.Now)
-                    .WithFooter($"Requested by {ctx.Member.DisplayName}#{ctx.Member.Discriminator}", ctx.Member.AvatarUrl)
+                DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
                     .WithAuthor($"{osuUser.Username}'s osu! profile {(osuUser.IsSupporter ? DiscordEmoji.FromName(ctx.Client, ":heart:").ToString() : string.Empty)}", $"https://osu.ppy.sh/users/{osuUser.Id}")
-                    .WithColor(this.OsuEmbedColor)
                     .AddField("Basic Information", sb.ToString())
                     .WithThumbnail(osuUser.AvatarUrl.ToString());
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent(
-                        $"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
+                    .WithContent($"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
                     .AddEmbed(embedBuilder.Build()));
             }
             else
             {
                 InteractivityExtension interactivity = ctx.Client.GetInteractivity();
 
-                DiscordMessage msg = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("How many scores do you want to get?"));
 
                 int r = 1;
@@ -196,7 +188,7 @@ public class OsuModule : ApplicationCommandModule
                         break;
                     case "recent":
                         DiscordButtonComponent yesBtn = new DiscordButtonComponent(ButtonStyle.Success, "yesBtn", "Yes please!");
-                        DiscordButtonComponent noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not");
+                        DiscordButtonComponent noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not!");
 
                         DiscordMessage failAsk = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                             .WithContent("Do you want to include fail scores?")
@@ -207,7 +199,7 @@ public class OsuModule : ApplicationCommandModule
                         if (btnRes.TimedOut)
                         {
                             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                                .WithContent("Time exceeded"));
+                                .WithContent("Timed out"));
 
                             return;
                         }
@@ -228,11 +220,8 @@ public class OsuModule : ApplicationCommandModule
                 {
                     DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
                     StringBuilder sb = new StringBuilder();
-                    DiscordEmbedBuilder embedBuilder = new DiscordEmbedBuilder()
-                        .WithTimestamp(DateTime.Now)
-                        .WithFooter($"Requested by {ctx.User.Username}#{ctx.User.Discriminator}", ctx.User.AvatarUrl)
-                        .WithAuthor($"{(type == "best" ? "Best" : "Recent")} score(s) of {osuUser.Username} in mode {omode}", $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString())
-                        .WithColor(this.OsuEmbedColor);
+                    DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
+                        .WithAuthor($"{(type == "best" ? "Best" : "Recent")} score(s) of {osuUser.Username} in mode {omode}", $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString());
 
                     foreach (IScore score in scores)
                     {
@@ -252,7 +241,7 @@ public class OsuModule : ApplicationCommandModule
                         embedBuilder
                             .AddField($"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{beatmap.Version}]{(score.Mods.Any() ? $" +{Formatter.Bold(string.Join(string.Empty, score.Mods))}" : string.Empty)}", sb.ToString());
                         
-                        sb.Clear();    
+                        sb.Clear();
                     }
 
                     builder.AddEmbed(embedBuilder.Build());
