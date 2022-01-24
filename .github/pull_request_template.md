@@ -2,4 +2,4 @@
 
 **What does it do**
 
-**Did you test it?**
+**Did you test it locally?**

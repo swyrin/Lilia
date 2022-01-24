@@ -10,12 +10,12 @@ Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduct
 | ![CodeQL](https://github.com/Swyreee/Lilia/actions/workflows/codeql-analysis.yml/badge.svg) | ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg) |
 
 # Changelogs
-Watch [here](https://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md)
+- All stable versions: Check [here](https://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md)
+- In development version: Check [here](https://github.com/Swyreee/Lilia/blob/master/CHANGELOG.md)
 
 # Self-hosting guide
 ### Step 0: Prerequisites
->You *might* need administrator privileges in your machine - `sudo` in Linux distros (maybe Mac), `Administrator` user in Windows 
-
+>You *might* need administrator privileges in your machine - `sudo` in Linux distros (maybe Mac), `Administrator` user in Windows
 - [.NET](https://dotnet.microsoft.com/download), version 6 or higher.
 - [Java](https://www.java.com/en/download/) for [Lavalink](https://github.com/freyacodes/Lavalink). **JDK** 13 or higher. Install either on server or your local machine.
 
@@ -51,7 +51,6 @@ Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `ap
 }
 ```
 - See [here](https://github.com/Swyreee/Lilia/wiki/Configuration-101) for help on filling stuffs.
-- For `lavalink` part, remember to [run the server first](https://github.com/freyacodes/Lavalink#server-configuration) **before running the bot**.
 
 ### Step 3: Run the bot
 ```shell
@@ -59,7 +58,7 @@ dotnet ./bin/Release/net6.0/Lilia.dll
 ```
 
 # So... Where are the commands?
-Well, the bot runs under Discord's "Application Command" so just simply type `/` on the message box or Right Click if you are on PC or Web version of Discord.
+Well, the bot runs under [Discord's "Application Command"](https://discord.com/blog/slash-commands-are-here) so just simply type `/` on the message box or Right Click if you are on PC or Web version of Discord.
 
 # Are there any roadmaps?
 Maybe get some reputations first.
