@@ -1,6 +1,9 @@
-# `release-0.0.2`
-- `editpsa` command added
-- `psa` command renamed to `sendpsa`
-- Both `sendpsa` (formerly named `psa`) and `editpsa` now requires `Manage Server` permission
-- Add option to run only in your **private** guilds
-- Better error handling in `sendpsa` and `editpsa`
+# `release-0.0.3`
+- Add `queue` command module
+- Add `uptime` command to check bot uptime
+- Add `copypsa` command to copy a PSA
+- Rearrange parameter orders of `editpsa`
+- Rewrite error handling of `sendpsa`, `editpsa`
+- Fix critical bug in `ban` and `kick` when it only shows the last victim
+- Add default reason for `ban` and `kick`
+- Extend response wait time for `ban` and `kick` from 30 seconds to 5 minutes
