@@ -198,6 +198,8 @@ public class MusicQueueModule : ApplicationCommandModule
                 .WithContent("If you see \"This interaction failed\", just ignore it. I can not find a workaround :D"));
 
             await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, p, TimeSpan.FromMinutes(5), DSharpPlus.Interactivity.Enums.PaginationBehaviour.WrapAround);
+
+            await this._dbCtx.SaveChangesAsync();
         }
         else
         {
