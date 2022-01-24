@@ -32,29 +32,10 @@ public class MusicModule : ApplicationCommandModule
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
 
-        if (connection != null && connection.IsConnected)
+        if (connection is {IsConnected: true})
         {
-            if (connection.Channel != channel)
-            {
-                if (ctx.Member.Permissions.HasPermission(Permissions.MoveMembers))
-                {
-                    await connection.DisconnectAsync();
-                    await node.ConnectAsync(channel);
-                    await (await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id)).SetDeafAsync(true, "Self deaf");
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Jumped to your new voice channel"));
-
-                    return;
-                }
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("You must have 'Move Members' permission in order to let me do that"));
-
-                return;
-            }
-
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I have joined already"));
+                .WithContent("I have joined already, maybe in other voice channel"));
 
             return;
         }
@@ -86,7 +67,7 @@ public class MusicModule : ApplicationCommandModule
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
 
-        if (connection != null && connection.IsConnected)
+        if (connection is {IsConnected: true})
         {
             if (connection.Channel != channel)
             {
@@ -95,21 +76,13 @@ public class MusicModule : ApplicationCommandModule
                 await (await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id)).SetDeafAsync(true, "Self deaf");
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Jumped to your new voice channel"));
-
-                return;
             }
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I have joined already"));
-
-            return;
+            else
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("We are in the same voice channel"));
+            }
         }
-
-        await node.ConnectAsync(channel);
-        await (await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id)).SetDeafAsync(true, "Self deaf");
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("Connected to your current voice channel"));
     }
 
     [SlashCommand("leave", "Leave the voice chanel")]
@@ -124,7 +97,7 @@ public class MusicModule : ApplicationCommandModule
         if (connection == null)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I am not in any channel right now"));
+                .WithContent("I am not in any voice channel right now"));
 
             return;
         }
@@ -136,23 +109,15 @@ public class MusicModule : ApplicationCommandModule
 
     [SlashCommand("play", "Play music")]
     public async Task PlayCommand(InteractionContext ctx,
-        [Option("search", "Text to search.")] string search,
+        [Option("search", "Search query")] string search,
         [Choice("youtube", "youtube")]
         [Choice("soundcloud", "soundcloud")]
         [Choice("stream", "stream")]
-        [Option("mode", "Searching mode")]
+        [Option("mode", "Search mode")]
         string mode = "youtube")
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-
-        if (string.IsNullOrWhiteSpace(search))
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Did you forget something?"));
-
-            return;
-        }
-
+        await ctx.DeferAsync();
+        
         DiscordChannel channel = ctx.Member.VoiceState?.Channel;
         if (channel == null)
         {
@@ -169,7 +134,7 @@ public class MusicModule : ApplicationCommandModule
         if (connection == null)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I am not in any channel right now"));
+                .WithContent("I am not in any voice channel right now"));
 
             return;
         }
@@ -205,7 +170,7 @@ public class MusicModule : ApplicationCommandModule
         if (!loadResult.Tracks.Any())
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I am unable to find a track from your search"));
+                .WithContent("I am unable to find a suitable track from your search"));
 
             return;
         }
@@ -216,7 +181,7 @@ public class MusicModule : ApplicationCommandModule
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent($"Now playing the track {track.Uri}"));
     }
-
+    
     [SlashCommand("nowplaying", "Check playing track")]
     public async Task NowPlayingCommand(InteractionContext ctx)
     {
