@@ -46,7 +46,7 @@ public class OsuModule : ApplicationCommandModule
     {
         await ctx.DeferAsync();
 
-        DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
+        DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(ctx.Member);
 
         dbUser.OsuUsername = username;
         dbUser.OsuMode = mode;
@@ -62,7 +62,7 @@ public class OsuModule : ApplicationCommandModule
     public async Task CheckMyProfileCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
-        DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(ctx.Member.Id);
+        DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(ctx.Member);
 
         DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
             .AddField("Username", !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
@@ -93,7 +93,7 @@ public class OsuModule : ApplicationCommandModule
     {
         DiscordMember member = (DiscordMember) discordUser;
 
-        DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(member.Id);
+        DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(member);
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {

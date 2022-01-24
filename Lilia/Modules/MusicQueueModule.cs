@@ -1,4 +1,9 @@
-﻿using DSharpPlus;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
@@ -10,11 +15,8 @@ using Lilia.Database;
 using Lilia.Database.Extensions;
 using Lilia.Database.Models;
 using Lilia.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+namespace Lilia.Modules;
 
 [SlashCommandGroup("queue", "Commands for music queue manipulation")]
 public class MusicQueueModule : ApplicationCommandModule
@@ -95,7 +97,7 @@ public class MusicQueueModule : ApplicationCommandModule
             return;
         }
 
-        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild.Id);
+        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
 
         guild.Queue += $"{tracks[i - 1]}{(string.IsNullOrWhiteSpace(guild.Queue) ? "||" : string.Empty)}";
         guild.QueueWithNames += $"{trackNames[i - 1]}{(string.IsNullOrWhiteSpace(guild.QueueWithNames) ? "||" : string.Empty)}";
@@ -125,7 +127,7 @@ public class MusicQueueModule : ApplicationCommandModule
             return;
         }
 
-        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild.Id);
+        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
 
         StringBuilder tracksStr = new();
 
@@ -162,7 +164,7 @@ public class MusicQueueModule : ApplicationCommandModule
     {
         await ctx.DeferAsync();
 
-        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild.Id);
+        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
         List<string> tracks = string.IsNullOrWhiteSpace(guild.QueueWithNames)
             ? new()
             : guild.QueueWithNames.Split("||").ToList();
@@ -210,7 +212,7 @@ public class MusicQueueModule : ApplicationCommandModule
     {
         await ctx.DeferAsync();
 
-        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild.Id);
+        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
 
         List<string> tracks = string.IsNullOrWhiteSpace(guild.Queue)
             ? new()
@@ -250,7 +252,7 @@ public class MusicQueueModule : ApplicationCommandModule
     public async Task ClearQueueCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync();
-        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild.Id);
+        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
 
         guild.Queue = string.Empty;
         guild.QueueWithNames = string.Empty;
