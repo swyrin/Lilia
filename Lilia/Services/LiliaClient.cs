@@ -28,6 +28,7 @@ public class LiliaClient
     public JsonConfigurations Configurations;
     public DiscordClient Client;
     public ServiceProvider Services;
+    public DateTime StartTime;
 
     private LavalinkExtension _lavalinkExtension;
     private SlashCommandsExtension _slashCommandsExtension;
@@ -151,6 +152,8 @@ public class LiliaClient
 
         await sender.UpdateStatusAsync(activity, userStatus);
         Log.Logger.Information("Client is ready to serve");
+        
+        this.StartTime = DateTime.Now;
     }
 
     private Task OnGuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
