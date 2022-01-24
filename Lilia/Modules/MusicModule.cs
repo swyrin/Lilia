@@ -269,7 +269,7 @@ public class MusicModule : ApplicationCommandModule
         if (result.TimedOut)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Time exceeded"));
+                .WithContent("Timed out"));
 
             return;
         }
