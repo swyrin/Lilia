@@ -16,7 +16,7 @@ public class OwnerModule : ApplicationCommandModule
         this._client = client;
     }
 
-    [SlashCommand("shutdown", "Shutdown the bot, obviously. Only bot owner(s) can do that.")]
+    [SlashCommand("shutdown", "Shutdown the bot")]
     [SlashRequireOwner]
     public async Task ShutdownCommand(InteractionContext ctx)
     {
