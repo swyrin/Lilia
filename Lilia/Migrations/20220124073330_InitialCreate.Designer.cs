@@ -5,17 +5,18 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+#nullable disable
+
 namespace Lilia.Migrations
 {
     [DbContext(typeof(LiliaDbContext))]
-    [Migration("20210916030907_OsuModelUpdate")]
-    partial class OsuModelUpdate
+    [Migration("20220124073330_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
 
             modelBuilder.Entity("Lilia.Database.Models.DbGuild", b =>
                 {
@@ -23,11 +24,14 @@ namespace Lilia.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong>("GuildId")
+                    b.Property<ulong>("DiscordGuildId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Ranking")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Queue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("QueueWithNames")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("DbGuildId");
 
@@ -40,17 +44,14 @@ namespace Lilia.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("OsuMode")
+                    b.Property<ulong>("DiscordUserId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("OsuMode")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("OsuUsername")
                         .HasColumnType("TEXT");
-
-                    b.Property<ulong>("Shards")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<ulong>("UserId")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("DbUserId");
 

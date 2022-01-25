@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
+#nullable disable
+
 namespace Lilia.Migrations
 {
     public partial class InitialCreate : Migration
@@ -10,28 +12,30 @@ namespace Lilia.Migrations
                 name: "Guilds",
                 columns: table => new
                 {
-                    GuildId = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    DbGuildId = table.Column<ulong>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    GuildIndex = table.Column<ulong>(type: "INTEGER", nullable: false),
-                    Ranking = table.Column<int>(type: "INTEGER", nullable: false)
+                    DiscordGuildId = table.Column<ulong>(type: "INTEGER", nullable: false),
+                    Queue = table.Column<string>(type: "TEXT", nullable: true),
+                    QueueWithNames = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Guilds", x => x.GuildId);
+                    table.PrimaryKey("PK_Guilds", x => x.DbGuildId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
-                    UserId = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    DbUserId = table.Column<ulong>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    UserIndex = table.Column<ulong>(type: "INTEGER", nullable: false),
-                    Shards = table.Column<ulong>(type: "INTEGER", nullable: false)
+                    DiscordUserId = table.Column<ulong>(type: "INTEGER", nullable: false),
+                    OsuMode = table.Column<string>(type: "TEXT", nullable: true),
+                    OsuUsername = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.UserId);
+                    table.PrimaryKey("PK_Users", x => x.DbUserId);
                 });
         }
 
