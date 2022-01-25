@@ -2,6 +2,7 @@
 using Lilia.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lilia.Migrations
 {
     [DbContext(typeof(LiliaDbContext))]
-    partial class LiliaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220125031251_AddIsPlayingState")]
+    partial class AddIsPlayingState
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.1");

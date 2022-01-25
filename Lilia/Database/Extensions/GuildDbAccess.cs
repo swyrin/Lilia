@@ -18,7 +18,8 @@ public static class GuildDbAccess
             {
                 DiscordGuildId = discordGuild.Id,
                 Queue = string.Empty,
-                QueueWithNames = string.Empty
+                QueueWithNames = string.Empty,
+                IsPlaying = false
             };
 
             guilds.Add(guild);
