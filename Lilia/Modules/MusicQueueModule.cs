@@ -36,18 +36,18 @@ public class MusicQueueModule : ApplicationCommandModule
         [Choice("Youtube", "Youtube")]
         [Choice("SoundCloud", "SoundCloud")]
         [Option("mode", "Determine place to search")]
-        string mode = "Youtube")
+        string source = "Youtube")
     {
         await ctx.DeferAsync();
 
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
-        LavalinkLoadResult loadResult = await node.Rest.GetTracksAsync(search, Enum.Parse<LavalinkSearchType>(mode));
+        LavalinkLoadResult loadResult = await node.Rest.GetTracksAsync(search, Enum.Parse<LavalinkSearchType>(source));
 
         if (!loadResult.Tracks.Any())
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I am unable to find suitable tracks from your search"));
+                .WithContent("I can't to find suitable tracks from your search"));
 
             return;
         }
@@ -61,32 +61,29 @@ public class MusicQueueModule : ApplicationCommandModule
         foreach (var lavalinkTrack in loadResult.Tracks.Take(10))
         {
             ++index;
+            
             string wot = $"{Formatter.Bold(lavalinkTrack.Title)} by {Formatter.Bold(lavalinkTrack.Author)}";
             tracksStr.AppendLine($"Track #{index}: {Formatter.MaskedUrl(wot, lavalinkTrack.Uri)}");
-            tracks.Add(lavalinkTrack.Identifier);
+            tracks.Add(lavalinkTrack.Uri.ToString());
             trackNames.Add(wot);
         }
 
         DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
-            .WithTitle($"Found {index} tracks with query {search} from {mode}");
+            .WithTitle($"Found {index} tracks with query {search} from {source}")
+            .AddField("Results", tracksStr.ToString());
 
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-        var p = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), DSharpPlus.Interactivity.Enums.SplitType.Line, embedBuilder);
-
-        DiscordWebhookBuilder whb = new DiscordWebhookBuilder();
-        foreach (var page in p) whb.AddEmbed(page.Embed);
-
-        await ctx.EditResponseAsync(whb);
-
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-            .WithContent($"Enter the position of the track you want to get (1 to {index})"));
-
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent($"Type the position of the track you want to get (0 to {index})\nOr type \"cancel\" to cancel")
+            .AddEmbed(embedBuilder.Build()));
+        
         int i = 1;
 
-        var res = await interactivity.WaitForMessageAsync(msg =>
+        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+        
+        var res = await interactivity.WaitForMessageAsync(x =>
         {
-            bool canConvert = int.TryParse(msg.Content, out i);
-            return canConvert && 1 <= i && i <= index;
+            bool canConvert = int.TryParse(x.Content, out i);
+            return (x.Content.ToLower() == "cancel") || (canConvert && 1 <= i && i <= index);
         });
 
         if (res.TimedOut)
@@ -99,14 +96,13 @@ public class MusicQueueModule : ApplicationCommandModule
 
         DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
 
-        guild.Queue += $"{tracks[i - 1]}{(string.IsNullOrWhiteSpace(guild.Queue) ? "||" : string.Empty)}";
-        guild.QueueWithNames += $"{trackNames[i - 1]}{(string.IsNullOrWhiteSpace(guild.QueueWithNames) ? "||" : string.Empty)}";
+        guild.Queue += $"{tracks[i - 1]}||";
+        guild.QueueWithNames += $"{trackNames[i - 1]}||";
 
         await this._dbCtx.SaveChangesAsync();
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent($"Added track selection #{i} to queue."));
-
     }
 
     [SlashCommand("addplaylist", "Add songs in a playlist into queue")]
@@ -130,33 +126,35 @@ public class MusicQueueModule : ApplicationCommandModule
         DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
 
         StringBuilder tracksStr = new();
+        StringBuilder queueApp = new();
+        StringBuilder queueNameApp = new();
 
         foreach (var lavalinkTrack in loadResult.Tracks)
         {
             // don't you dare
             if (lavalinkTrack.IsStream) continue;
-
+            
             string wot = $"{Formatter.Bold(lavalinkTrack.Title)} by {Formatter.Bold(lavalinkTrack.Author)}";
             tracksStr.AppendLine(wot);
 
-            guild.Queue += $"{lavalinkTrack.Identifier}||";
-            guild.QueueWithNames += $"{wot}||";
+            queueApp.Append($"{lavalinkTrack.Uri}||");
+            queueNameApp.Append($"{wot}||");
         }
-
+        
         DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
             .WithTitle($"Found and added {loadResult.Tracks.Count()} tracks from provided playlist URL");
+        
+        guild.Queue += queueApp.ToString();
+        guild.QueueWithNames += queueNameApp.ToString();
+        await this._dbCtx.SaveChangesAsync();
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-        var p = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), DSharpPlus.Interactivity.Enums.SplitType.Line,
-            embedBuilder);
+        var p = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), DSharpPlus.Interactivity.Enums.SplitType.Line, embedBuilder);
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent("If you see \"This interaction failed\", just ignore it. I can not find a workaround :D"));
 
-        await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, p, TimeSpan.FromMinutes(5),
-            DSharpPlus.Interactivity.Enums.PaginationBehaviour.WrapAround);
-
-        await this._dbCtx.SaveChangesAsync();
+        await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, p, TimeSpan.FromMinutes(5), DSharpPlus.Interactivity.Enums.PaginationBehaviour.WrapAround);
     }
 
     [SlashCommand("view", "View this server's queue")]
@@ -165,6 +163,7 @@ public class MusicQueueModule : ApplicationCommandModule
         await ctx.DeferAsync();
 
         DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
+        
         List<string> tracks = string.IsNullOrWhiteSpace(guild.QueueWithNames)
             ? new()
             : guild.QueueWithNames.Split("||").ToList();
@@ -198,8 +197,6 @@ public class MusicQueueModule : ApplicationCommandModule
                 .WithContent("If you see \"This interaction failed\", just ignore it. I can not find a workaround :D"));
 
             await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, p, TimeSpan.FromMinutes(5), DSharpPlus.Interactivity.Enums.PaginationBehaviour.WrapAround);
-
-            await this._dbCtx.SaveChangesAsync();
         }
         else
         {
