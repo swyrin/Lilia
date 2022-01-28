@@ -1,9 +1,14 @@
-# `release-0.0.3`
-- Add `queue` command module
-- Add `uptime` command to check bot uptime
-- Add `copypsa` command to copy a PSA
-- Rearrange parameter orders of `editpsa`
-- Rewrite error handling of `sendpsa`, `editpsa`
-- Fix critical bug in `ban` and `kick` when it only shows the last victim
-- Add default reason for `ban` and `kick`
-- Extend response wait time for `ban` and `kick` from 30 seconds to 5 minutes
+# Updates for `release-1.0.0`
+- Added `queue` command module for music queue manipulations
+- Added `uptime` command to check bot uptime
+- Added `copypsa` command to copy a PSA
+- Added `changes` command to see the changelogs
+  - It will lead you to this file
+- Added `playqueue` command to play the entire queue
+- Rearranged parameter orders of `editpsa`
+- Rewritten error handling of `sendpsa`, `editpsa`
+- Fixed critical bug in `ban` and `kick` when it only shows the last victim
+- Added default reason for `ban` and `kick`
+- Extended response wait time for `ban` and `kick` from 30 seconds to 5 minutes
+- Merged `Pause` and `Resume` button of `/music control` into one
+  - Redesigned the buttons
