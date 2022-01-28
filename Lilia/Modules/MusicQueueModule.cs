@@ -60,12 +60,22 @@ public class MusicQueueModule : ApplicationCommandModule
 
         foreach (var lavalinkTrack in loadResult.Tracks.Take(10))
         {
-            ++index;
+            // ignore livestream, radio, etc.
+            if (lavalinkTrack.IsStream) continue;
             
+            ++index;
             string wot = $"{Formatter.Bold(lavalinkTrack.Title)} by {Formatter.Bold(lavalinkTrack.Author)}";
             tracksStr.AppendLine($"Track #{index}: {Formatter.MaskedUrl(wot, lavalinkTrack.Uri)}");
             tracks.Add(lavalinkTrack.Uri.ToString());
             trackNames.Add(wot);
+        }
+
+        if (string.IsNullOrWhiteSpace(tracksStr.ToString()))
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Nothing found. Maybe you gave me the radio link and I ignored it."));
+
+            return;
         }
 
         DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
@@ -139,6 +149,14 @@ public class MusicQueueModule : ApplicationCommandModule
 
             queueApp.Append($"{lavalinkTrack.Uri}||");
             queueNameApp.Append($"{wot}||");
+        }
+        
+        if (string.IsNullOrWhiteSpace(tracksStr.ToString()))
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Nothing found. Maybe you gave me the radio link and I ignored it."));
+
+            return;
         }
         
         DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
