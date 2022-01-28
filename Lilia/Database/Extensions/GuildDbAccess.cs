@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using DSharpPlus.Entities;
 using Lilia.Database.Models;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,9 @@ public static class GuildDbAccess
                 DiscordGuildId = discordGuild.Id,
                 Queue = string.Empty,
                 QueueWithNames = string.Empty,
-                IsPlaying = false
+                IsPlaying = false,
+                LastPlayedPosition = TimeSpan.Zero,
+                LastPlayedTrack = string.Empty
             };
 
             guilds.Add(guild);

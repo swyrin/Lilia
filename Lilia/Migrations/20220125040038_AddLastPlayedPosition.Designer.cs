@@ -3,6 +3,7 @@ using System;
 using Lilia.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lilia.Migrations
 {
     [DbContext(typeof(LiliaDbContext))]
-    partial class LiliaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220125040038_AddLastPlayedPosition")]
+    partial class AddLastPlayedPosition
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
@@ -30,9 +32,6 @@ namespace Lilia.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<TimeSpan>("LastPlayedPosition")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("LastPlayedTrack")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Queue")

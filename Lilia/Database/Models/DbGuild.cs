@@ -1,4 +1,6 @@
-﻿namespace Lilia.Database.Models;
+﻿using System;
+
+namespace Lilia.Database.Models;
 
 public class DbGuild
 {
@@ -8,7 +10,7 @@ public class DbGuild
     // Separated by ||
     public string Queue { get; set; }
     public string QueueWithNames { get; set; }
-    // end
-    
     public bool IsPlaying { get; set; }
+    public TimeSpan LastPlayedPosition { get; set; }
+    public string LastPlayedTrack { get; set; }
 }
