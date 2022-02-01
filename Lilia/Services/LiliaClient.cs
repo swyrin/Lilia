@@ -92,7 +92,7 @@ public class LiliaClient
         }
         else
         {
-            Log.Logger.Warning("Registering slash commands for global scope");
+            Log.Logger.Warning("Registering slash commands in global scope");
             this._slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly());
         }
         
@@ -119,15 +119,15 @@ public class LiliaClient
 
         if (!canConvertActivityType)
         {
-            Log.Logger.Warning($"Can not convert \"{activityData.Type}\" to a valid activity type, using Playing by default");
-            Log.Logger.Information("Valid options are: ListeningTo, Competing, Playing, Watching. Others are soon to be implemented in a future release");
+            Log.Logger.Warning($"Can not convert \"{activityData.Type}\" to a valid activity type, using \"Playing\"");
+            Log.Logger.Information("Valid options are: ListeningTo, Competing, Playing, Watching");
             activityType = ActivityType.Playing;
         }
 
         if (!canConvertStatus)
         {
-            Log.Logger.Warning($"Can not convert \"{activityData.Status}\" to a valid status, using Online by default");
-            Log.Logger.Information("Valid options are: Online, Invisible, Idle, DoNotDisturb. Others are soon to be implemented in a future release");
+            Log.Logger.Warning($"Can not convert \"{activityData.Status}\" to a valid status, using \"Online\"");
+            Log.Logger.Information("Valid options are: Online, Invisible, Idle, DoNotDisturb");
             userStatus = UserStatus.Online;
         }
 
@@ -151,24 +151,24 @@ public class LiliaClient
         });
 
         await sender.UpdateStatusAsync(activity, userStatus);
-        Log.Logger.Information("Client is ready to serve");
+        Log.Logger.Information("Client is ready");
         
         this.StartTime = DateTime.Now;
     }
 
-    private Task OnGuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
+    private Task OnGuildAvailable(DiscordClient _, GuildCreateEventArgs e)
     {
-        Log.Logger.Information($"Guild cached: {e.Guild.Name}");
+        Log.Logger.Information($"Guild cached: {e.Guild.Name} ({e.Guild.Id})");
         return Task.CompletedTask;
     }
 
-    private Task OnClientErrored(DiscordClient sender, ClientErrorEventArgs e)
+    private Task OnClientErrored(DiscordClient _, ClientErrorEventArgs e)
     {
-        Log.Logger.Fatal(e.Exception, "An exception occured when running");
+        Log.Logger.Fatal(e.Exception, "An exception occured when running the bot");
         throw e.Exception;
     }
 
-    private Task OnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
+    private Task OnSlashCommandErrored(SlashCommandsExtension _, SlashCommandErrorEventArgs e)
     {
         Log.Logger.Fatal(e.Exception, "An exception occured when executing a slash command");
         throw e.Exception;
