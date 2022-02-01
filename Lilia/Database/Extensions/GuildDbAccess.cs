@@ -18,9 +18,8 @@ public static class GuildDbAccess
             guild = new DbGuild
             {
                 DiscordGuildId = discordGuild.Id,
-                Queue = string.Empty,
-                QueueWithNames = string.Empty,
                 IsPlaying = false,
+                QueueItem = string.Empty,
                 LastPlayedPosition = TimeSpan.Zero,
                 LastPlayedTrack = string.Empty
             };
