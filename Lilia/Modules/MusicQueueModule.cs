@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Lavalink;
 using DSharpPlus.SlashCommands;
@@ -40,6 +41,9 @@ public class MusicQueueModule : ApplicationCommandModule
     {
         await ctx.DeferAsync();
 
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("Processing"));
+        
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkLoadResult loadResult = await node.Rest.GetTracksAsync(search, Enum.Parse<LavalinkSearchType>(source));
@@ -47,7 +51,7 @@ public class MusicQueueModule : ApplicationCommandModule
         if (!loadResult.Tracks.Any())
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I can't to find suitable tracks from your search"));
+                .WithContent("I can't find suitable tracks from your search"));
 
             return;
         }
@@ -58,7 +62,7 @@ public class MusicQueueModule : ApplicationCommandModule
         List<string> tracks = new();
         List<string> trackNames = new();
 
-        foreach (var lavalinkTrack in loadResult.Tracks.Take(10))
+        foreach (var lavalinkTrack in loadResult.Tracks)
         {
             // ignore livestream, radio, etc.
             if (lavalinkTrack.IsStream) continue;
@@ -78,22 +82,23 @@ public class MusicQueueModule : ApplicationCommandModule
             return;
         }
 
+        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+        
         DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
-            .WithTitle($"Found {index} tracks with query {search} from {source}")
-            .AddField("Results", tracksStr.ToString());
+            .WithTitle($"Found {index} tracks with query {search} from {source}");
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Type the position of the track you want to get (0 to {index})\nOr type \"cancel\" to cancel")
-            .AddEmbed(embedBuilder.Build()));
+        IEnumerable<Page> pages = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), SplitType.Line, embedBuilder);
+        await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
+        
+        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+            .WithContent($"Type the position of the track you want to get (0 to {index}, inclusive)"));
         
         int i = 1;
 
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-        
         var res = await interactivity.WaitForMessageAsync(x =>
         {
             bool canConvert = int.TryParse(x.Content, out i);
-            return (x.Content.ToLower() == "cancel") || (canConvert && 1 <= i && i <= index);
+            return canConvert && 1 <= i && i <= index;
         });
 
         if (res.TimedOut)
@@ -167,18 +172,18 @@ public class MusicQueueModule : ApplicationCommandModule
         await this._dbCtx.SaveChangesAsync();
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-        var p = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), DSharpPlus.Interactivity.Enums.SplitType.Line, embedBuilder);
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("If you see \"This interaction failed\", just ignore it. I can not find a workaround :D"));
-
-        await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, p, TimeSpan.FromMinutes(5), DSharpPlus.Interactivity.Enums.PaginationBehaviour.WrapAround);
+        
+        IEnumerable<Page> pages = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), SplitType.Line, embedBuilder);
+        await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
     }
 
     [SlashCommand("view", "View this server's queue")]
     public async Task ViewQueueCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync();
+        
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("Processing"));
 
         DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
         
@@ -198,24 +203,13 @@ public class MusicQueueModule : ApplicationCommandModule
                 names.AppendLine($"Track #{pos}: {track}");
             }
 
-            if (string.IsNullOrWhiteSpace(names.ToString()))
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Something wrong happened"));    
-            }
-
             DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
                 .WithTitle($"Queue of guild \"{ctx.Guild.Name}\" ({tracks.Count - 1} tracks)");
 
             InteractivityExtension interactivity = ctx.Client.GetInteractivity();
 
-            var p = interactivity.GeneratePagesInEmbed(names.ToString(), DSharpPlus.Interactivity.Enums.SplitType.Line, embedBuilder);
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("If you see \"This interaction failed\", just ignore it. I can not find a workaround :D"));
-
-            await ctx.Channel.SendPaginatedMessageAsync(ctx.Member, p, TimeSpan.FromMinutes(5), DSharpPlus.Interactivity.Enums.PaginationBehaviour.WrapAround);
-        }
+            IEnumerable<Page> pages = interactivity.GeneratePagesInEmbed(names.ToString(), SplitType.Line, embedBuilder);
+            await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);       }
         else
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -225,7 +219,7 @@ public class MusicQueueModule : ApplicationCommandModule
 
     [SlashCommand("remove", "Remove a track from the queue")]
     public async Task RemoveFromQueueCommand(InteractionContext ctx,
-        [Option("position", "Position to delete. Use \"/queue view\" to check")] long position)
+        [Option("position", "Position to delete. Use \"/queue view\" to check the position")] long position)
     {
         await ctx.DeferAsync();
 

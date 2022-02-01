@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Lavalink;
 using DSharpPlus.Net;
@@ -79,6 +80,9 @@ public class LiliaClient
 
         this.Client.UseInteractivity(new InteractivityConfiguration
         {
+            PaginationBehaviour = PaginationBehaviour.Ignore,
+            AckPaginationButtons = true,
+            ResponseBehavior = InteractionResponseBehavior.Ack,
             Timeout = TimeSpan.FromSeconds(30)
         });
 
