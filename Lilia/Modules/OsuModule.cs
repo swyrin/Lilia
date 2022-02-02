@@ -64,7 +64,7 @@ public class OsuModule : ApplicationCommandModule
         await ctx.DeferAsync(true);
         DbUser dbUser = this._dbCtx.GetOrCreateUserRecord(ctx.Member);
 
-        DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
+        DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
             .AddField("Username", !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
             .AddField("Default mode", !string.IsNullOrWhiteSpace(dbUser.OsuMode) ? dbUser.OsuMode : "Not linked yet", true);
 
@@ -147,7 +147,7 @@ public class OsuModule : ApplicationCommandModule
                     .AppendLine($"{Formatter.Bold("Play Count")}: {osuUser.Statistics.PlayCount} with {osuUser.Statistics.PlayTime:g} of play time")
                     .AppendLine($"{Formatter.Bold("Current status")}: {(osuUser.IsOnline ? "Online" : "Offline/Invisible")}");
 
-                DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
+                DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
                     .WithAuthor($"{osuUser.Username}'s osu! profile {(osuUser.IsSupporter ? DiscordEmoji.FromName(ctx.Client, ":heart:").ToString() : string.Empty)}", $"https://osu.ppy.sh/users/{osuUser.Id}")
                     .AddField("Basic Information", sb.ToString())
                     .WithThumbnail(osuUser.AvatarUrl.ToString());
@@ -220,7 +220,7 @@ public class OsuModule : ApplicationCommandModule
                 {
                     DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
                     StringBuilder sb = new StringBuilder();
-                    DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
+                    DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
                         .WithAuthor($"{(type == "best" ? "Best" : "Recent")} score(s) of {osuUser.Username} in mode {omode}", $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString());
 
                     foreach (IScore score in scores)

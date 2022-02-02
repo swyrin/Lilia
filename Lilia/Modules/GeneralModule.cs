@@ -22,7 +22,7 @@ public class GeneralModule : ApplicationCommandModule
     {
         await ctx.DeferAsync(true);
 
-        DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
+        DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
             .WithTitle("My uptime")
             .AddField("Uptime", $"{DateTime.Now.Subtract(this._client.StartTime):g}", true)
             .AddField("Start since", this._client.StartTime.ToLongDateString(), true);
@@ -36,7 +36,7 @@ public class GeneralModule : ApplicationCommandModule
     {
         await ctx.DeferAsync(true);
 
-        DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
+        DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
             .WithTitle("Here is the changelogs")
             .AddField("All versions", Formatter.MaskedUrl("Click me!", new Uri("https://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md") , "A GitHub link"), true)
             .AddField("Development version", Formatter.MaskedUrl("Click me!", new Uri("https://github.com/Swyreee/Lilia/blob/master/CHANGELOG.md"), "A GitHub link"), true);
