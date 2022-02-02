@@ -20,7 +20,7 @@ public class GeneralModule : ApplicationCommandModule
     [SlashCommand("uptime", "Check the uptime of the bot")]
     public async Task UptimeCheckCommand(InteractionContext ctx)
     {
-        await ctx.DeferAsync(true);
+        await ctx.DeferAsync();
 
         DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
             .WithTitle("My uptime")
@@ -34,7 +34,7 @@ public class GeneralModule : ApplicationCommandModule
     [SlashCommand("changes", "What's new in this version of \"me\"")]
     public async Task ViewChangelogsCommand(InteractionContext ctx)
     {
-        await ctx.DeferAsync(true);
+        await ctx.DeferAsync();
 
         DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
             .WithTitle("Here is the changelogs")
