@@ -30,20 +30,15 @@ public class MusicModule : ApplicationCommandModule
         this._dbCtx = client.Database.GetContext();
     }
 
-    private async Task EnsureUserInVoiceAsync(InteractionContext ctx)
+    public override async Task<bool> BeforeSlashExecutionAsync(InteractionContext ctx)
     {
         DiscordChannel channel = ctx.Member.VoiceState?.Channel;
         
         if (channel == null)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Join a voice channel please"));
+            await ctx.Channel.SendMessageAsync("Join a voice channel please");
+            return false;
         }
-    }
-
-    private async Task EnsureClientInVoiceAsync(InteractionContext ctx)
-    {
-        DiscordChannel channel = ctx.Member.VoiceState?.Channel;
         
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
@@ -51,36 +46,23 @@ public class MusicModule : ApplicationCommandModule
 
         if (connection is {IsConnected: true})
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I have joined already, maybe in other voice channel"));
-
-            return;
+            if (connection.Channel == channel) return true;
+            
+            await ctx.Channel.SendMessageAsync("Looks like we are not in the same voice channel");
+            return false;
         }
-
+        
         await node.ConnectAsync(channel);
         await (await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id)).SetDeafAsync(true, "Self deaf");
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("Connected to your current voice channel"));   
+        return true;
     }
-    
-    [SlashCommand("join", "Join a voice channel")]
-    public async Task JoinVoiceCommand(InteractionContext ctx)
-    {
-        await ctx.DeferAsync();
 
-        await this.EnsureUserInVoiceAsync(ctx);
-        await this.EnsureClientInVoiceAsync(ctx);
-    }
-    
-    [SlashCommand("summon", "Jump to your current voice channel")]
+    [SlashCommand("summon", "Jump to your new voice channel")]
     [SlashRequirePermissions(Permissions.MoveMembers)]
     public async Task SummonVoiceCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync();
-        
-        await this.EnsureUserInVoiceAsync(ctx);
-        
+
         DiscordChannel channel = ctx.Member.VoiceState?.Channel;
 
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
@@ -127,49 +109,38 @@ public class MusicModule : ApplicationCommandModule
             .WithContent("Left the voice channel"));
     }
 
-    [SlashCommand("play", "Play music")]
+    [SlashCommand("play", "Play a single track")]
     public async Task PlayCommand(InteractionContext ctx,
-        [Option("search", "Search query")] string search,
-        [Choice("youtube", "youtube")]
-        [Choice("soundcloud", "soundcloud")]
-        [Choice("stream", "stream")]
-        [Option("mode", "Search mode")]
-        string source = "youtube")
+        [Option("input", "Search query")] string input,
+        [Choice("Youtube", "Youtube")]
+        [Choice("SoundCloud", "SoundCloud")]
+        [Choice("Plain", "Plain")]
+        [Option("source", "Place to search")]
+        string source = "Youtube")
     {
         await ctx.DeferAsync();
 
-        await this.EnsureUserInVoiceAsync(ctx);
-        await this.EnsureClientInVoiceAsync(ctx);
-        
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
 
         LavalinkLoadResult loadResult;
 
-        switch (source)
+        if (source.Equals("Plain"))
         {
-            case "stream":
+            bool canConstructUri = Uri.TryCreate(input, UriKind.Absolute, out Uri result);
+            if (canConstructUri) loadResult = await connection.GetTracksAsync(result);
+            else
             {
-                bool canConstructUri = Uri.TryCreate(search, UriKind.Absolute, out Uri result);
-                if (canConstructUri)
-                    loadResult = await connection.GetTracksAsync(result);
-                else
-                {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Invalid URL provided"));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Invalid URL provided"));
 
-                    return;
-                }
-
-                break;
+                return;
             }
-            case "soundcloud":
-                loadResult = await connection.GetTracksAsync(search, LavalinkSearchType.SoundCloud);
-                break;
-            default:
-                loadResult = await connection.GetTracksAsync(search);
-                break;
+        }
+        else
+        {
+            loadResult = await connection.GetTracksAsync(input, Enum.Parse<LavalinkSearchType>(source));    
         }
         
         if (!loadResult.Tracks.Any())
@@ -196,11 +167,7 @@ public class MusicModule : ApplicationCommandModule
     {
         await ctx.DeferAsync();
 
-        await this.EnsureUserInVoiceAsync(ctx);
-        await this.EnsureClientInVoiceAsync(ctx);
-        
-        List<string> tracks;
-        List<string> trackNames;
+        List<string> tracks; ;
         
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
@@ -243,7 +210,7 @@ public class MusicModule : ApplicationCommandModule
         } while (tracks.Any());
     }
 
-    [SlashCommand("nowplaying", "Check playing track")]
+    [SlashCommand("nowplaying", "Check now playing track")]
     public async Task NowPlayingCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync();
@@ -252,17 +219,9 @@ public class MusicModule : ApplicationCommandModule
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
 
-        if (connection == null)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I am not in any channel right now"));
-
-            return;
-        }
-
         LavalinkTrack track = connection.CurrentState.CurrentTrack;
 
-        if (connection.CurrentState.CurrentTrack == null)
+        if (track == null)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("I am not playing anything"));
@@ -270,10 +229,10 @@ public class MusicModule : ApplicationCommandModule
             return;
         }
 
-        if (connection.CurrentState.CurrentTrack.IsStream)
+        if (track.IsStream)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"I am playing a stream from: {connection.CurrentState.CurrentTrack.Uri}"));
+                .WithContent($"I am playing a stream from: {track.Uri}"));
 
             return;
         }
@@ -293,9 +252,6 @@ public class MusicModule : ApplicationCommandModule
     public async Task ShowControlsCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync();
-
-        await this.EnsureUserInVoiceAsync(ctx);
-        await this.EnsureClientInVoiceAsync(ctx);
 
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
