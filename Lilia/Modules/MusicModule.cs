@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Lavalink;
 using DSharpPlus.SlashCommands;
@@ -22,26 +21,13 @@ public class MusicModule : ApplicationCommandModule
 {
     private LiliaClient _client;
     private LiliaDbContext _dbCtx;
-    
+
+    private TaskCompletionSource<bool> _playbackWaiter;
+
     public MusicModule(LiliaClient client)
     {
         this._client = client;
         this._dbCtx = client.Database.GetContext();
-    }
-    
-    private async Task OnChannelUpdated(DiscordClient sender, ChannelUpdateEventArgs e)
-    {
-        LavalinkExtension lavalinkExtension = sender.GetLavalink();
-        LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
-        LavalinkGuildConnection guildConnection = node.GetGuildConnection(e.Guild);
-
-        if (e.ChannelAfter == guildConnection.Channel)
-        {
-            if (e.ChannelAfter.Users.Count == 1 && guildConnection.IsConnected)
-            {
-                await guildConnection.PauseAsync();
-            }
-        }
     }
 
     private async Task EnsureUserInVoiceAsync(InteractionContext ctx)
@@ -85,8 +71,6 @@ public class MusicModule : ApplicationCommandModule
 
         await this.EnsureUserInVoiceAsync(ctx);
         await this.EnsureClientInVoiceAsync(ctx);
-
-        ctx.Client.ChannelUpdated += OnChannelUpdated;
     }
     
     [SlashCommand("summon", "Jump to your current voice channel")]
@@ -107,15 +91,11 @@ public class MusicModule : ApplicationCommandModule
         {
             if (connection.Channel != channel)
             {
-                // I don't know
-                ctx.Client.ChannelUpdated -= OnChannelUpdated;
-                
                 await connection.DisconnectAsync();
                 await node.ConnectAsync(channel);
                 await (await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id)).SetDeafAsync(true, "Self deaf");
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Jumped to your new voice channel"));
-                ctx.Client.ChannelUpdated += OnChannelUpdated;
             }
             else
             {
@@ -145,8 +125,6 @@ public class MusicModule : ApplicationCommandModule
         await connection.DisconnectAsync();
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent("Left the voice channel"));
-
-        ctx.Client.ChannelUpdated -= OnChannelUpdated;
     }
 
     [SlashCommand("play", "Play music")]
@@ -156,7 +134,7 @@ public class MusicModule : ApplicationCommandModule
         [Choice("soundcloud", "soundcloud")]
         [Choice("stream", "stream")]
         [Option("mode", "Search mode")]
-        string mode = "youtube")
+        string source = "youtube")
     {
         await ctx.DeferAsync();
 
@@ -169,17 +147,17 @@ public class MusicModule : ApplicationCommandModule
 
         LavalinkLoadResult loadResult;
 
-        switch (mode)
+        switch (source)
         {
             case "stream":
             {
                 bool canConstructUri = Uri.TryCreate(search, UriKind.Absolute, out Uri result);
                 if (canConstructUri)
-                    loadResult = await node.Rest.GetTracksAsync(result);
+                    loadResult = await connection.GetTracksAsync(result);
                 else
                 {
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Invalid URI provided"));
+                        .WithContent("Invalid URL provided"));
 
                     return;
                 }
@@ -187,27 +165,30 @@ public class MusicModule : ApplicationCommandModule
                 break;
             }
             case "soundcloud":
-                loadResult = await node.Rest.GetTracksAsync(search, LavalinkSearchType.SoundCloud);
+                loadResult = await connection.GetTracksAsync(search, LavalinkSearchType.SoundCloud);
                 break;
             default:
-                loadResult = await node.Rest.GetTracksAsync(search);
+                loadResult = await connection.GetTracksAsync(search);
                 break;
         }
-
-
+        
         if (!loadResult.Tracks.Any())
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I am unable to find a suitable track from your search"));
+                .WithContent("I can not find a suitable track from your search"));
 
             return;
         }
 
         LavalinkTrack track = loadResult.Tracks.First();
-        await connection.PlayAsync(track);
+
+        this._dbCtx.GetOrCreateGuildRecord(ctx.Guild).IsPlaying = true;
+        await this._dbCtx.SaveChangesAsync();
+        
+        await this.GenericPlayMusicAsync(ctx, track.Uri, TimeSpan.Zero);
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Now playing the track {track.Uri}"));
+            .WithContent($"Now playing: {Formatter.Bold(track.Title)} by {Formatter.Bold(track.Author)}"));
     }
 
     [SlashCommand("playqueue", "Play whole queue")]
@@ -217,69 +198,51 @@ public class MusicModule : ApplicationCommandModule
 
         await this.EnsureUserInVoiceAsync(ctx);
         await this.EnsureClientInVoiceAsync(ctx);
-
+        
+        List<string> tracks;
+        List<string> trackNames;
+        
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
-        LavalinkGuildConnection guildConnection = node.GetGuildConnection(ctx.Guild);
-        
-        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
-        
-        List<string> tracks = string.IsNullOrWhiteSpace(guild.Queue) 
-            ? new() 
-            : guild.Queue.Split("||").ToList();
-            
-        List<string> trackNames = string.IsNullOrWhiteSpace(guild.QueueWithNames)
-            ? new()
-            : guild.QueueWithNames.Split("||").ToList();
+        LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("Processing"));
-        
-        if (tracks.Any() && trackNames.Any())
+        do
         {
-            while (tracks.Any())
+            DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
+            
+            tracks = string.IsNullOrWhiteSpace(guild.QueueItem)
+                ? new()
+                : guild.QueueItem.Split("||").ToList();
+            
+            if (tracks.Any())
             {
-                string id = tracks.First();
-                string full = trackNames.First();
-                
-                tracks.RemoveAt(0);
-                trackNames.RemoveAt(0);
-                
+                string[] item = tracks.First().Split("|");
+                string name = item[0];
+                string url = item[1];
+
                 // In case we are at the end of the list
                 // known issue I guess?
-                if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(full))
+                if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(url))
                 {
-                    guild.Queue = string.Empty;
-                    guild.QueueWithNames = string.Empty;
-                    break;
+                    guild.QueueItem = string.Empty;
+                    await this._dbCtx.SaveChangesAsync();
+                    continue;
                 }
-                
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent($"Processing {full}"));
 
-                LavalinkTrack track = await guildConnection.Node.Rest.DecodeTrackAsync(id);
-                await guildConnection.PlayAsync(track);
-                
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent($"Now playing {full}, use \"/nowplaying\" for more details"));
+                tracks.RemoveAt(0);
+                guild.QueueItem = string.Join("||", tracks);
+                guild.IsPlaying = true;
+                await this._dbCtx.SaveChangesAsync();
 
-                // wait for completion
-                while (guildConnection.CurrentState.CurrentTrack != null) await Task.Delay(2000);
-                
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent($"Finished playing {full}"));
+                    .WithContent($"Now playing: {name}"));
+                
+                LavalinkTrack track = (await connection.GetTracksAsync(url, LavalinkSearchType.Plain)).Tracks.First();
+                await this.GenericPlayMusicAsync(ctx, track.Uri, TimeSpan.Zero);
             }
-            
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("The queue is now empty"));
-        }
-        else
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("The queue is empty"));
-        }
+        } while (tracks.Any());
     }
-    
+
     [SlashCommand("nowplaying", "Check playing track")]
     public async Task NowPlayingCommand(InteractionContext ctx)
     {
@@ -316,10 +279,9 @@ public class MusicModule : ApplicationCommandModule
         }
 
         StringBuilder text = new StringBuilder();
-        text.AppendLine($"{Formatter.Bold("Track title")}: {track.Title}");
-        text.AppendLine($"{Formatter.Bold("Author/Uploader")}: {track.Author}");
-        text.AppendLine(
-            $"{Formatter.Bold("Playback position")}: {connection.CurrentState.PlaybackPosition:g}/{track.Length:g}");
+        text.AppendLine($"{Formatter.Bold("Title")}: {track.Title}");
+        text.AppendLine($"{Formatter.Bold("Uploader")}: {track.Author}");
+        text.AppendLine($"{Formatter.Bold("Position")}: {connection.CurrentState.PlaybackPosition:g}/{track.Length:g}");
         text.AppendLine($"{Formatter.Bold("Source")}: {track.Uri}");
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -332,19 +294,12 @@ public class MusicModule : ApplicationCommandModule
     {
         await ctx.DeferAsync();
 
+        await this.EnsureUserInVoiceAsync(ctx);
+        await this.EnsureClientInVoiceAsync(ctx);
+
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
         LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
-
-        if (connection == null)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I am not in any channel right now"));
-
-            return;
-        }
-
-        LavalinkTrack track = connection.CurrentState.CurrentTrack;
 
         if (connection.CurrentState.CurrentTrack == null)
         {
@@ -354,12 +309,12 @@ public class MusicModule : ApplicationCommandModule
             return;
         }
 
-        DiscordButtonComponent pauseBtn = new DiscordButtonComponent(ButtonStyle.Primary, "pauseBtn", null, false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":pause_button:")));
-        DiscordButtonComponent stopBtn = new DiscordButtonComponent(ButtonStyle.Primary, "stopBtn", null, false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":stop_button:")));
-        DiscordButtonComponent resumeBtn = new DiscordButtonComponent(ButtonStyle.Primary, "resumeBtn", null, false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":play_pause:")));
+        DiscordButtonComponent toggleBtn = new DiscordButtonComponent(ButtonStyle.Primary, "toggleBtn", "Play/Pause", false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":play_pause:")));
+        DiscordButtonComponent stopBtn = new DiscordButtonComponent(ButtonStyle.Primary, "stopBtn", "Stop", false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":stop_button:")));
+        DiscordButtonComponent loopBtn = new DiscordButtonComponent(ButtonStyle.Primary, "loopBtn", "Loop", true, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":arrows_counterclockwise:")));
 
         DiscordMessage message = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .AddComponents(pauseBtn, resumeBtn, stopBtn)
+            .AddComponents(toggleBtn, stopBtn, loopBtn)
             .WithContent("Here's the controls"));
 
         var result = await message.WaitForButtonAsync();
@@ -373,13 +328,39 @@ public class MusicModule : ApplicationCommandModule
         }
 
         string id = result.Result.Id;
-
+        
         switch (id)
         {
-            case "pauseBtn":
-                await connection.PauseAsync();
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Pausing"));
+            case "toggleBtn":
+                DbGuild g = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
+
+                if (g.IsPlaying)
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("Pausing"));
+                    
+                    g.LastPlayedPosition = connection.CurrentState.PlaybackPosition;
+                    g.LastPlayedTrack = connection.CurrentState.CurrentTrack.Uri.ToString();
+                    g.IsPlaying = !g.IsPlaying;
+                    
+                    await connection.PauseAsync();
+                    await this._dbCtx.SaveChangesAsync();
+                }
+                else
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("Resuming"));
+
+                    string track = g.LastPlayedTrack;
+                    TimeSpan pos = g.LastPlayedPosition;
+                    
+                    g.LastPlayedPosition = TimeSpan.Zero;
+                    g.LastPlayedTrack = string.Empty;
+                    g.IsPlaying = !g.IsPlaying;
+                    
+                    await this._dbCtx.SaveChangesAsync();
+                    await this.GenericPlayMusicAsync(ctx, new Uri(track), pos);
+                }
 
                 break;
             case "stopBtn":
@@ -388,12 +369,28 @@ public class MusicModule : ApplicationCommandModule
                     .WithContent("Stopping"));
 
                 break;
-            case "resumeBtn":
-                await connection.ResumeAsync();
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Resuming"));
-
-                break;
         }
+    }
+    private async Task GenericPlayMusicAsync(InteractionContext ctx, Uri uri , TimeSpan start)
+    {
+        if (this._playbackWaiter == null || this._playbackWaiter.Task.IsCompleted)
+            this._playbackWaiter = new TaskCompletionSource<bool>();
+        
+        LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
+        LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
+        LavalinkGuildConnection connection = node.GetGuildConnection(ctx.Guild);
+
+        LavalinkTrack track = (await connection.GetTracksAsync(uri)).Tracks.First();
+        await connection.PlayPartialAsync(track, start, track.Length);
+        
+        this._playbackWaiter.Task.WaitAsync(track.Length.Subtract(start).Add(TimeSpan.FromSeconds(5))).ConfigureAwait(false).GetAwaiter().GetResult();
+        this._playbackWaiter.SetResult(true);
+        
+        connection.PlaybackFinished += (_, _) =>
+        {
+            this._playbackWaiter.SetResult(false);
+            this._playbackWaiter.SetCanceled();
+            return Task.CompletedTask;
+        };
     }
 }
