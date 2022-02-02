@@ -14,8 +14,7 @@ public class LiliaDatabase
     public LiliaDatabase()
     {
         DbContextOptionsBuilder<LiliaDbContext> optionsBuilder = new DbContextOptionsBuilder<LiliaDbContext>();
-        SqliteConnectionStringBuilder connStringBuilder = new SqliteConnectionStringBuilder(
-            $"Data Source=database.db;Password={JsonConfigurationsManager.Configurations.Credentials.DbPassword}");
+        SqliteConnectionStringBuilder connStringBuilder = new SqliteConnectionStringBuilder($"Data Source=database.db;Password={JsonConfigurationsManager.Configurations.Credentials.DbPassword}");
 
         optionsBuilder.UseSqlite(connStringBuilder.ToString());
         this.options = optionsBuilder.Options;
