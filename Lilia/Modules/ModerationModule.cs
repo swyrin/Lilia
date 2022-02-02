@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -119,17 +117,17 @@ public class ModerationModule : ApplicationCommandModule
             .WithContent(stringBuilder.ToString()));
     }
 
-    [SlashCommand("sendpsa", "Send PSA to a channel")]
+    [SlashCommand("notice", "Send a notification to a channel")]
     [SlashRequirePermissions(Permissions.ManageGuild)]
-    public async Task SendPsaCommand(InteractionContext ctx,
+    public async Task SendNoticeCommand(InteractionContext ctx,
         [Option("message_id", "Message ID to copy, same channel as command")] string msgId,
         [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store, ChannelType.NewsThread, ChannelType.PublicThread)]
         [Option("channel", "Channel to send")] DiscordChannel channel)
     {
+        await ctx.DeferAsync();
+        
         try
         {
-            await ctx.DeferAsync();
-
             DiscordMessage msg = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(msgId));
             await channel.SendMessageAsync(msg.Content);
 
@@ -147,7 +145,7 @@ public class ModerationModule : ApplicationCommandModule
                 case FormatException:
                 case OverflowException:
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Invalid ID(s) provided"));
+                        .WithContent($"Invalid ID provided: {Formatter.InlineCode(msgId)}"));
                     break;
                 default:
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -157,26 +155,26 @@ public class ModerationModule : ApplicationCommandModule
         }
     }
     
-    [SlashCommand("editpsa", "Edit an existing PSA")]
+    [SlashCommand("editnotice", "Edit an existing notification")]
     [SlashRequirePermissions(Permissions.ManageGuild)]
-    public async Task EditPsaCommand(InteractionContext ctx,
+    public async Task EditNoticeCommand(InteractionContext ctx,
         [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store, ChannelType.NewsThread, ChannelType.PublicThread)]
-        [Option("channel", "Where the old PSA is is sent")] DiscordChannel channel,
+        [Option("channel", "Where the old notification is sent")] DiscordChannel channel,
         [Option("old_message_id", "Old message ID")] string msgIdOld,
         [Option("new_message_id", "New message ID, same channel as command")] string msgIdNew
         )
     {
+        await ctx.DeferAsync();
+        
         try
         {
-            await ctx.DeferAsync();
-
             DiscordMessage oldMsg = await channel.GetMessageAsync(Convert.ToUInt64(msgIdOld));
             DiscordMessage newMsg = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(msgIdNew));
 
             await oldMsg.ModifyAsync(newMsg.Content);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Edited the PSA"));
+                .WithContent("Edited the notification"));
         }
         catch (Exception ex)
         {
@@ -189,7 +187,7 @@ public class ModerationModule : ApplicationCommandModule
                 case FormatException:
                 case OverflowException:
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Invalid ID(s) provided"));
+                        .WithContent($"Invalid ID(s) provided: {Formatter.InlineCode(msgIdNew)}, {Formatter.InlineCode(msgIdOld)}"));
                     break;
                 case UnauthorizedException:
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -203,23 +201,22 @@ public class ModerationModule : ApplicationCommandModule
         }
     }
     
-    [SlashCommand("copypsa", "Copy a PSA sent by me (with formats)")]
+    [SlashCommand("copynotice", "Copy a notification sent by me (with formats)")]
     [SlashRequirePermissions(Permissions.ManageGuild)]
-    public async Task CopyPsaCommand(InteractionContext ctx,
+    public async Task CopyNoticeCommand(InteractionContext ctx,
         [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store, ChannelType.NewsThread, ChannelType.PublicThread)]
-        [Option("channel", "Where the PSA is sent")] DiscordChannel channel,
+        [Option("channel", "Where the notification is sent")] DiscordChannel channel,
         [Option("message_id", "Message ID to copy")] string msgId)
     {
+        await ctx.DeferAsync();
+        
         try
         {
-            await ctx.DeferAsync();
-            
-            ulong msgIdU = Convert.ToUInt64(msgId); 
-            
+            ulong msgIdU = Convert.ToUInt64(msgId);
             DiscordMessage msg = await channel.GetMessageAsync(msgIdU);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent(msg.Content));
+                .WithContent(Formatter.Sanitize(msg.Content)));
         }
         catch (Exception ex)
         {
@@ -227,16 +224,16 @@ public class ModerationModule : ApplicationCommandModule
             {
                 case NotFoundException:
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent($"I can not find a message with {msgId} in provided channel"));
+                        .WithContent($"I can not find a message with {Formatter.InlineCode(msgId)} in provided channel"));
                     break;
                 case FormatException:
                 case OverflowException:
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Invalid ID(s) provided"));
+                        .WithContent($"Invalid ID provided: {Formatter.InlineCode(msgId)}"));
                     break;
                 case UnauthorizedException:
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("I was not the one to write the PSA"));
+                        .WithContent("I was not the one to write the notification"));
                     break;
                 default:
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
