@@ -16,6 +16,7 @@ using Lilia.Database;
 using Lilia.Database.Extensions;
 using Lilia.Database.Models;
 using Lilia.Services;
+using MoreLinq;
 
 namespace Lilia.Modules;
 
@@ -33,10 +34,10 @@ public class MusicQueueModule : ApplicationCommandModule
 
     [SlashCommand("add", "Add a song to queue")]
     public async Task AddToQueueCommand(InteractionContext ctx,
-        [Option("input", "Search input")] string search,
+        [Option("input", "Search input")] string input,
         [Choice("Youtube", "Youtube")]
         [Choice("SoundCloud", "SoundCloud")]
-        [Option("mode", "Determine place to search")]
+        [Option("source", "Place to search")]
         string source = "Youtube")
     {
         await ctx.DeferAsync();
@@ -46,7 +47,7 @@ public class MusicQueueModule : ApplicationCommandModule
         
         LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
         LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
-        LavalinkLoadResult loadResult = await node.Rest.GetTracksAsync(search, Enum.Parse<LavalinkSearchType>(source));
+        LavalinkLoadResult loadResult = await node.Rest.GetTracksAsync(input, Enum.Parse<LavalinkSearchType>(source));
 
         if (!loadResult.Tracks.Any())
         {
@@ -82,17 +83,17 @@ public class MusicQueueModule : ApplicationCommandModule
             return;
         }
 
+        DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
+            .WithTitle($"Found {index} tracks with query {input} from {source}");
+
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
         
-        DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
-            .WithTitle($"Found {index} tracks with query {search} from {source}");
-
         IEnumerable<Page> pages = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), SplitType.Line, embedBuilder);
-        await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
+        await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.Member, pages);
         
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-            .WithContent($"Type the position of the track you want to get (0 to {index}, inclusive)"));
-        
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent($"Type the position of the track you want to get (1 to {index}, inclusive)"));
+
         int i = 1;
 
         var res = await interactivity.WaitForMessageAsync(x =>
@@ -111,8 +112,7 @@ public class MusicQueueModule : ApplicationCommandModule
 
         DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
 
-        guild.Queue += $"{tracks[i - 1]}||";
-        guild.QueueWithNames += $"{trackNames[i - 1]}||";
+        guild.QueueItem += $"{trackNames[i - 1]}|{tracks[i - 1]}||";
 
         await this._dbCtx.SaveChangesAsync();
 
@@ -120,9 +120,56 @@ public class MusicQueueModule : ApplicationCommandModule
             .WithContent($"Added track selection #{i} to queue."));
     }
 
-    [SlashCommand("addplaylist", "Add songs in a playlist into queue")]
+    [SlashCommand("search", "Search a song, usually used to check if the input is correct")]
+    public async Task SearchTaskCommand(InteractionContext ctx,
+        [Option("input", "Search input")] string input,
+        [Choice("Youtube", "Youtube")]
+        [Choice("SoundCloud", "SoundCloud")]
+        [Option("source", "Place to search")]
+        string source = "Youtube")
+    {
+        await ctx.DeferAsync();
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("Processing"));
+        
+        LavalinkExtension lavalinkExtension = ctx.Client.GetLavalink();
+        LavalinkNodeConnection node = lavalinkExtension.ConnectedNodes.Values.First();
+        LavalinkLoadResult loadResult = await node.Rest.GetTracksAsync(input, Enum.Parse<LavalinkSearchType>(source));
+
+        if (!loadResult.Tracks.Any())
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("I can't find suitable tracks from your search"));
+
+            return;
+        }
+
+        int index = 0;
+        StringBuilder tracksStr = new();
+
+        foreach (var lavalinkTrack in loadResult.Tracks)
+        {
+            string wot = $"{Formatter.Bold(lavalinkTrack.Title)} by {Formatter.Bold(lavalinkTrack.Author)}";
+            if (lavalinkTrack.IsStream) wot = "This is a stream";
+            
+            ++index;
+            tracksStr.AppendLine($"Track #{index}: {Formatter.MaskedUrl(wot, lavalinkTrack.Uri)}");
+        }
+
+        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+        
+        DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
+            .WithTitle($"Found {index} tracks with query {input} from {source}");
+
+        IEnumerable<Page> pages = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), SplitType.Line, embedBuilder);
+        
+        await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
+    }
+
+    [SlashCommand("addplaylist", "Add playlist tracks to queue")]
     public async Task AddPlaylistToQueueCommand(InteractionContext ctx,
-        [Option("source", "Playlist URL")] string source)
+        [Option("source", "Playlist source URL")] string source)
     {
         await ctx.DeferAsync();
 
@@ -141,19 +188,16 @@ public class MusicQueueModule : ApplicationCommandModule
         DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
 
         StringBuilder tracksStr = new();
-        StringBuilder queueApp = new();
-        StringBuilder queueNameApp = new();
+        StringBuilder queueItem = new();
 
-        foreach (var lavalinkTrack in loadResult.Tracks)
+        foreach (var track in loadResult.Tracks)
         {
-            // don't you dare
-            if (lavalinkTrack.IsStream) continue;
+            // ignore livestream, radio, etc.
+            if (track.IsStream) continue;
             
-            string wot = $"{Formatter.Bold(lavalinkTrack.Title)} by {Formatter.Bold(lavalinkTrack.Author)}";
+            string wot = $"{Formatter.Bold(track.Title)} by {Formatter.Bold(track.Author)}";
             tracksStr.AppendLine(wot);
-
-            queueApp.Append($"{lavalinkTrack.Uri}||");
-            queueNameApp.Append($"{wot}||");
+            queueItem.Append($"{wot}|{track.Uri}||");
         }
         
         if (string.IsNullOrWhiteSpace(tracksStr.ToString()))
@@ -164,11 +208,10 @@ public class MusicQueueModule : ApplicationCommandModule
             return;
         }
         
-        DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
+        DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
             .WithTitle($"Found and added {loadResult.Tracks.Count()} tracks from provided playlist URL");
         
-        guild.Queue += queueApp.ToString();
-        guild.QueueWithNames += queueNameApp.ToString();
+        guild.QueueItem += queueItem.ToString();
         await this._dbCtx.SaveChangesAsync();
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
@@ -177,7 +220,7 @@ public class MusicQueueModule : ApplicationCommandModule
         await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
     }
 
-    [SlashCommand("view", "View this server's queue")]
+    [SlashCommand("view", "View the queue of this server")]
     public async Task ViewQueueCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync();
@@ -187,9 +230,9 @@ public class MusicQueueModule : ApplicationCommandModule
 
         DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
         
-        List<string> tracks = string.IsNullOrWhiteSpace(guild.QueueWithNames)
+        List<string> tracks = string.IsNullOrWhiteSpace(guild.QueueItem)
             ? new()
-            : guild.QueueWithNames.Split("||").ToList();
+            : guild.QueueItem.Split("||").ToList();
 
         if (tracks.Any())
         {
@@ -198,18 +241,22 @@ public class MusicQueueModule : ApplicationCommandModule
             int pos = 0;
             foreach (string track in tracks)
             {
+                // should trigger at the end of the list
                 if (string.IsNullOrWhiteSpace(track)) continue;
+                
+                string wot = track.Split('|').First();
                 ++pos;
-                names.AppendLine($"Track #{pos}: {track}");
+                names.AppendLine($"Track #{pos}: {wot}");
             }
 
-            DiscordEmbedBuilder embedBuilder = LiliaUtilities.GetDefaultEmbedTemplate(ctx.Member)
+            DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
                 .WithTitle($"Queue of guild \"{ctx.Guild.Name}\" ({tracks.Count - 1} tracks)");
 
             InteractivityExtension interactivity = ctx.Client.GetInteractivity();
 
             IEnumerable<Page> pages = interactivity.GeneratePagesInEmbed(names.ToString(), SplitType.Line, embedBuilder);
-            await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);       }
+            await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
+        }
         else
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -224,32 +271,25 @@ public class MusicQueueModule : ApplicationCommandModule
         await ctx.DeferAsync();
 
         DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
-
-        List<string> tracks = string.IsNullOrWhiteSpace(guild.Queue)
+        List<string> tracks = string.IsNullOrWhiteSpace(guild.QueueItem)
             ? new()
-            : guild.Queue.Split("||").ToList();
+            : guild.QueueItem.Split("||").ToList();
 
-        List<string> trackNames = string.IsNullOrWhiteSpace(guild.QueueWithNames)
-            ? new()
-            : guild.QueueWithNames.Split("||").ToList();
-
-        if (tracks.Any() && trackNames.Any())
+        int pos = (int) position;
+        
+        if (tracks.Any())
         {
-            int pos = (int) position;
-
+            string trackData = $"track #{position} -> {tracks[pos - 1].Split('|').First()}";
+            
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"Deleting track #{position} -> {trackNames[pos - 1]}"));
+                .WithContent($"Deleting {trackData}"));
 
             tracks.RemoveAt(pos - 1);
-            trackNames.RemoveAt(pos - 1);
-
-            guild.Queue = string.Join("||", tracks);
-            guild.QueueWithNames = string.Join("||", trackNames);
-
+            guild.QueueItem = string.Join("||", tracks);
             await this._dbCtx.SaveChangesAsync();
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"Done deleting track #{position}"));
+                .WithContent($"Done deleting {trackData}"));
         }
         else
         {
@@ -265,12 +305,30 @@ public class MusicQueueModule : ApplicationCommandModule
         await ctx.DeferAsync();
         DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
 
-        guild.Queue = string.Empty;
-        guild.QueueWithNames = string.Empty;
+        guild.QueueItem = string.Empty;
 
         await this._dbCtx.SaveChangesAsync();
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent("Done clearing the queue"));
+    }
+
+    [SlashCommand("shuffle", "Shuffle the queue")]
+    [SlashRequirePermissions(Permissions.ManageGuild)]
+    public async Task ShuffleQueueCommand(InteractionContext ctx)
+    {
+        await ctx.DeferAsync();
+        DbGuild guild = this._dbCtx.GetOrCreateGuildRecord(ctx.Guild);
+
+        List<string> tracks = string.IsNullOrWhiteSpace(guild.QueueItem)
+            ? new()
+            : guild.QueueItem.Split("||").ToList();
+
+        guild.QueueItem = string.Join("||", tracks.Shuffle());
+
+        await this._dbCtx.SaveChangesAsync();
+        
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("Done shuffling the queue"));
     }
 }
