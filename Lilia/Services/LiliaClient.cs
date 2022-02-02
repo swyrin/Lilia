@@ -80,7 +80,6 @@ public class LiliaClient
 
         this.Client.UseInteractivity(new InteractivityConfiguration
         {
-            PaginationBehaviour = PaginationBehaviour.Ignore,
             AckPaginationButtons = true,
             ResponseBehavior = InteractionResponseBehavior.Ack,
             Timeout = TimeSpan.FromSeconds(30)

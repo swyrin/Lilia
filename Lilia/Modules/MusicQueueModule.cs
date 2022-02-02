@@ -63,15 +63,19 @@ public class MusicQueueModule : ApplicationCommandModule
         List<string> tracks = new();
         List<string> trackNames = new();
 
-        foreach (var lavalinkTrack in loadResult.Tracks)
+        foreach (LavalinkTrack track in loadResult.Tracks)
         {
             // ignore livestream, radio, etc.
-            if (lavalinkTrack.IsStream) continue;
+            if (track.IsStream) continue;
+            
+            // branch and bound:tm:
+            // 2048 is maximum length of Discord Embed description
+            string wot = $"{Formatter.Bold(track.Title)} by {Formatter.Bold(track.Author)}";
+            if (tracksStr.Length + wot.Length > 2048) break;
             
             ++index;
-            string wot = $"{Formatter.Bold(lavalinkTrack.Title)} by {Formatter.Bold(lavalinkTrack.Author)}";
-            tracksStr.AppendLine($"Track #{index}: {Formatter.MaskedUrl(wot, lavalinkTrack.Uri)}");
-            tracks.Add(lavalinkTrack.Uri.ToString());
+            tracksStr.AppendLine($"Track #{index}: {Formatter.MaskedUrl(wot, track.Uri)}");
+            tracks.Add(track.Uri.ToString());
             trackNames.Add(wot);
         }
 
@@ -84,16 +88,14 @@ public class MusicQueueModule : ApplicationCommandModule
         }
 
         DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-            .WithTitle($"Found {index} tracks with query {input} from {source}");
+            .WithTitle($"List of {index} tracks with query {input} from {source}")
+            .WithDescription(tracksStr.ToString());
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent($"Type the position of the track you want to get (1 to {index}, inclusive)")
+            .AddEmbed(embedBuilder.Build()));
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-        
-        IEnumerable<Page> pages = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), SplitType.Line, embedBuilder);
-        await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.Member, pages);
-        
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Type the position of the track you want to get (1 to {index}, inclusive)"));
-
         int i = 1;
 
         var res = await interactivity.WaitForMessageAsync(x =>
@@ -117,10 +119,10 @@ public class MusicQueueModule : ApplicationCommandModule
         await this._dbCtx.SaveChangesAsync();
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Added track selection #{i} to queue."));
+            .WithContent($"Added track selection #{i} -> {trackNames[i - 1]} to queue."));
     }
 
-    [SlashCommand("search", "Search a song, usually used to check if the input is correct")]
+    [SlashCommand("search", "In case you need to check if the input is correct")]
     public async Task SearchTaskCommand(InteractionContext ctx,
         [Option("input", "Search input")] string input,
         [Choice("Youtube", "Youtube")]
@@ -146,25 +148,38 @@ public class MusicQueueModule : ApplicationCommandModule
         }
 
         int index = 0;
+
         StringBuilder tracksStr = new();
 
-        foreach (var lavalinkTrack in loadResult.Tracks)
+        foreach (LavalinkTrack track in loadResult.Tracks)
         {
-            string wot = $"{Formatter.Bold(lavalinkTrack.Title)} by {Formatter.Bold(lavalinkTrack.Author)}";
-            if (lavalinkTrack.IsStream) wot = "This is a stream";
+            // ignore livestream, radio, etc.
+            if (track.IsStream) continue;
+            
+            // branch and bound:tm:
+            // 2048 is maximum length of Discord Embed description
+            string wot = $"{Formatter.Bold(track.Title)} by {Formatter.Bold(track.Author)}";
+            if (tracksStr.Length + wot.Length > 2048) break;
             
             ++index;
-            tracksStr.AppendLine($"Track #{index}: {Formatter.MaskedUrl(wot, lavalinkTrack.Uri)}");
+            tracksStr.AppendLine($"Track #{index}: {Formatter.MaskedUrl(wot, track.Uri)}");
         }
 
-        InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-        
-        DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-            .WithTitle($"Found {index} tracks with query {input} from {source}");
+        if (string.IsNullOrWhiteSpace(tracksStr.ToString()))
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Nothing found. Maybe you gave me the radio link and I ignored it."));
 
-        IEnumerable<Page> pages = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), SplitType.Line, embedBuilder);
+            return;
+        }
+
+        DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
+            .WithTitle($"List of {index} tracks with query {input} from {source}")
+            .WithDescription(tracksStr.ToString());
         
-        await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent($"Type the position of the track you want to get (1 to {index}, inclusive)")
+            .AddEmbed(embedBuilder.Build()));
     }
 
     [SlashCommand("addplaylist", "Add playlist tracks to queue")]
@@ -180,7 +195,7 @@ public class MusicQueueModule : ApplicationCommandModule
         if (!loadResult.Tracks.Any())
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("I am unable to find tracks from your playlist URL"));
+                .WithContent("I am unable to retrieve tracks from your playlist URL"));
 
             return;
         }
@@ -215,7 +230,6 @@ public class MusicQueueModule : ApplicationCommandModule
         await this._dbCtx.SaveChangesAsync();
 
         InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-        
         IEnumerable<Page> pages = interactivity.GeneratePagesInEmbed(tracksStr.ToString(), SplitType.Line, embedBuilder);
         await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
     }
