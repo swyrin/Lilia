@@ -7,13 +7,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Forgot to add this into JSON changes">
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment=":thinking:">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/MusicModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Modules/OwnerModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Modules/OwnerModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Services/LiliaClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOGS.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOGS.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,6 +60,7 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/89fbbb69e35e4b11ac51e19cb802f914ba00/ef/53e8acd4/AsyncEvent`2.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/40d9c6632ca3993dcb82583ffa755fbbed8ad19f1b37a7654b7ffaff24b6c/Uri.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OwnerModule.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OwnerModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d82b8ac02bb43d6b94884e283d560e14f18f7caa55c2d41bb0fc59beb77a1d/UriExt.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/ModerationModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OwnerModule.cs" root0="SKIP_HIGHLIGHTING" />
@@ -72,6 +70,7 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/96790fb115a743319102f37c54ece12f14600/d4/a2913bc0/GameMode.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/23e31092363db7107ca21367adea927bccc2e7cf2075f9ee398ad1175b8e87/Nullable.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/cd97f89a1dd485a9e981f4eb33be0e28029fd8e72ed1baed66e8b36dc455dc4/HttpMethod.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/6d/0411b405/DefaultRequestHandler.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
@@ -174,35 +173,7 @@
       <workItem from="1644193492393" duration="2312000" />
       <workItem from="1644196255528" duration="2862000" />
       <workItem from="1644199621052" duration="388000" />
-      <workItem from="1644220789013" duration="12359000" />
-    </task>
-    <task id="LOCAL-00099" summary="Add links">
-      <created>1641038780245</created>
-      <option name="number" value="00099" />
-      <option name="presentableId" value="LOCAL-00099" />
-      <option name="project" value="LOCAL" />
-      <updated>1641038780245</updated>
-    </task>
-    <task id="LOCAL-00100" summary="Suddenly dumb">
-      <created>1641040383704</created>
-      <option name="number" value="00100" />
-      <option name="presentableId" value="LOCAL-00100" />
-      <option name="project" value="LOCAL" />
-      <updated>1641040383704</updated>
-    </task>
-    <task id="LOCAL-00101" summary="Suddenly dumb part 2">
-      <created>1641040470763</created>
-      <option name="number" value="00101" />
-      <option name="presentableId" value="LOCAL-00101" />
-      <option name="project" value="LOCAL" />
-      <updated>1641040470763</updated>
-    </task>
-    <task id="LOCAL-00102" summary="Upload build tasks on different environment">
-      <created>1641086407439</created>
-      <option name="number" value="00102" />
-      <option name="presentableId" value="LOCAL-00102" />
-      <option name="project" value="LOCAL" />
-      <updated>1641086407439</updated>
+      <workItem from="1644220789013" duration="13149000" />
     </task>
     <task id="LOCAL-00103" summary="Remove issue_template.md">
       <created>1641086423254</created>
@@ -519,7 +490,35 @@
       <option name="project" value="LOCAL" />
       <updated>1644230151789</updated>
     </task>
-    <option name="localTasksCounter" value="148" />
+    <task id="LOCAL-00148" summary="Goodbye music o/">
+      <created>1644234137212</created>
+      <option name="number" value="00148" />
+      <option name="presentableId" value="LOCAL-00148" />
+      <option name="project" value="LOCAL" />
+      <updated>1644234137212</updated>
+    </task>
+    <task id="LOCAL-00149" summary="Command name change">
+      <created>1644234151067</created>
+      <option name="number" value="00149" />
+      <option name="presentableId" value="LOCAL-00149" />
+      <option name="project" value="LOCAL" />
+      <updated>1644234151067</updated>
+    </task>
+    <task id="LOCAL-00150" summary="What did I do in this?">
+      <created>1644234190069</created>
+      <option name="number" value="00150" />
+      <option name="presentableId" value="LOCAL-00150" />
+      <option name="project" value="LOCAL" />
+      <updated>1644234190069</updated>
+    </task>
+    <task id="LOCAL-00151" summary=":thinking:">
+      <created>1644234200431</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
+      <option name="project" value="LOCAL" />
+      <updated>1644234200431</updated>
+    </task>
+    <option name="localTasksCounter" value="152" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -579,10 +578,6 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Add IsPlaying field in guild database" />
-    <MESSAGE value="Add fields related to music playback to database" />
-    <MESSAGE value="Add &quot;changes&quot; command" />
-    <MESSAGE value="Handle stream/radio links" />
     <MESSAGE value="Edit to past tense" />
     <MESSAGE value="Sanitize the logging a bit and Happy New Year" />
     <MESSAGE value="Hopefully fixes &quot;This interaction failed&quot; issue" />
@@ -604,7 +599,11 @@
     <MESSAGE value="Prepare to leave lavalink" />
     <MESSAGE value="Better description" />
     <MESSAGE value="Forgot to add this into JSON changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Forgot to add this into JSON changes" />
+    <MESSAGE value="Goodbye music o/" />
+    <MESSAGE value="Command name change" />
+    <MESSAGE value="What did I do in this?" />
+    <MESSAGE value=":thinking:" />
+    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -17,7 +17,6 @@ Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduct
 ### Step 0: Prerequisites
 >You *might* need administrator privileges in your machine - `sudo` in Linux distros (maybe Mac), `Administrator` user in Windows
 - [.NET](https://dotnet.microsoft.com/download), version 6 or higher.
-- [Java](https://www.java.com/en/download/) for [Lavalink](https://github.com/freyacodes/Lavalink). **JDK** 13 or higher. Install either on server or your local machine.
 
 ### Step 1: Grab the files
 Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `app.zip` at the top release then unzip it. Everything should be inside `app/` directory
@@ -29,6 +28,7 @@ Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `ap
 {
   "client": {
     "private_guilds": [],
+    "slash_commands_for_global": true,
     "activity": {
       "type": "Watching",
       "name": "you",
@@ -42,11 +42,6 @@ Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `ap
       "client_id": 0,
       "client_secret": ""
     }
-  },
-  "lavalink": {
-    "host": "localhost",
-    "port": 2333,
-    "password": "youshallnotpass"
   }
 }
 ```

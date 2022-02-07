@@ -13,8 +13,6 @@ public class BotConfiguration : BaseJson
     [JsonProperty("client")] public ClientData Client = new();
 
     [JsonProperty("credentials")] public CredentialsData Credentials = new();
-
-    [JsonProperty("lavalink")] public LavalinkData Lavalink = new();
 }
 
 public class ClientData
@@ -49,13 +47,4 @@ public class OsuData
     [JsonProperty("client_id")] public long ClientId;
     
     [JsonProperty("client_secret")] public string ClientSecret;
-}
-
-public class LavalinkData
-{
-    [JsonProperty("host")] public string Hostname = "localhost";
-
-    [JsonProperty("port")] public int Port = 2333;
-
-    [JsonProperty("password")] public string Password = "youshallnotpass";
 }
