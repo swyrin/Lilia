@@ -1,11 +1,12 @@
 ﻿using System.Data.Common;
 using System.Linq;
-using Lilia.Database;
+using Lilia.Commons;
+using Lilia.Json;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace Lilia.Commons;
+namespace Lilia.Database;
 
 public class LiliaDatabase
 {
@@ -14,7 +15,7 @@ public class LiliaDatabase
     public LiliaDatabase()
     {
         DbContextOptionsBuilder<LiliaDbContext> optionsBuilder = new DbContextOptionsBuilder<LiliaDbContext>();
-        SqliteConnectionStringBuilder connStringBuilder = new SqliteConnectionStringBuilder($"Data Source=database.db;Password={JsonConfigurationsManager.Configurations.Credentials.DbPassword}");
+        SqliteConnectionStringBuilder connStringBuilder = new SqliteConnectionStringBuilder($"Data Source=database.db;Password={JsonManager<BotConfiguration>.Read().Credentials.DbPassword}");
 
         optionsBuilder.UseSqlite(connStringBuilder.ToString());
         this.options = optionsBuilder.Options;
