@@ -7,7 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Finalize everything" />
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment=":thinking:" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -170,21 +170,7 @@
       <workItem from="1644193492393" duration="2312000" />
       <workItem from="1644196255528" duration="2862000" />
       <workItem from="1644199621052" duration="388000" />
-      <workItem from="1644220789013" duration="13466000" />
-    </task>
-    <task id="LOCAL-00105" summary="I feel like I need to do this">
-      <created>1642989839414</created>
-      <option name="number" value="00105" />
-      <option name="presentableId" value="LOCAL-00105" />
-      <option name="project" value="LOCAL" />
-      <updated>1642989839414</updated>
-    </task>
-    <task id="LOCAL-00106" summary="Forgot to edit the timed out response">
-      <created>1642990366834</created>
-      <option name="number" value="00106" />
-      <option name="presentableId" value="LOCAL-00106" />
-      <option name="project" value="LOCAL" />
-      <updated>1642990366834</updated>
+      <workItem from="1644220789013" duration="13870000" />
     </task>
     <task id="LOCAL-00107" summary="Reduce fragmented embed creation process">
       <created>1642990722636</created>
@@ -515,7 +501,21 @@
       <option name="project" value="LOCAL" />
       <updated>1644234726504</updated>
     </task>
-    <option name="localTasksCounter" value="154" />
+    <task id="LOCAL-00154" summary="oops">
+      <created>1644235182748</created>
+      <option name="number" value="00154" />
+      <option name="presentableId" value="LOCAL-00154" />
+      <option name="project" value="LOCAL" />
+      <updated>1644235182748</updated>
+    </task>
+    <task id="LOCAL-00155" summary=":thinking:">
+      <created>1644235197971</created>
+      <option name="number" value="00155" />
+      <option name="presentableId" value="LOCAL-00155" />
+      <option name="project" value="LOCAL" />
+      <updated>1644235197971</updated>
+    </task>
+    <option name="localTasksCounter" value="156" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -575,7 +575,6 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Hopefully fixes &quot;This interaction failed&quot; issue" />
     <MESSAGE value="Reworking on guild queue soon, now is time for Lunar New Year&#10;&#10;Happy New Year everyone! :tada:" />
     <MESSAGE value="Rewrite embed getter" />
     <MESSAGE value="Code cleanup" />
@@ -597,10 +596,11 @@
     <MESSAGE value="Goodbye music o/" />
     <MESSAGE value="Command name change" />
     <MESSAGE value="What did I do in this?" />
-    <MESSAGE value=":thinking:" />
     <MESSAGE value="Push the changelogs" />
     <MESSAGE value="Finalize everything" />
-    <option name="LAST_COMMIT_MESSAGE" value="Finalize everything" />
+    <MESSAGE value="oops" />
+    <MESSAGE value=":thinking:" />
+    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -1,6 +1,3 @@
-# Writer's note
-Please note that this file only lists the latest changes. If you need a history, go visit [`CHANGELOGS.md`](https://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md)
-
 # What's new in `release-1.0.0`???
 > Woah, first major update :tada:
 ## New commands
