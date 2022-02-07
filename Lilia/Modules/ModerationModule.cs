@@ -155,7 +155,7 @@ public class ModerationModule : ApplicationCommandModule
         }
     }
     
-    [SlashCommand("editnotice", "Edit an existing notification")]
+    [SlashCommand("editnotice", "Edit an existing notification sent by me")]
     [SlashRequirePermissions(Permissions.ManageGuild)]
     public async Task EditNoticeCommand(InteractionContext ctx,
         [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store, ChannelType.NewsThread, ChannelType.PublicThread)]
