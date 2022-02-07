@@ -75,7 +75,7 @@ public class LiliaClient
             ResponseBehavior = InteractionResponseBehavior.Ack,
             Timeout = TimeSpan.FromSeconds(30)
         });
-        
+
         if (this.BotConfiguration.Client.PrivateGuildIds.Any())
         {
             this.BotConfiguration.Client.PrivateGuildIds.ForEach(guildId =>
@@ -108,6 +108,8 @@ public class LiliaClient
     private async Task OnReady(DiscordClient sender, ReadyEventArgs e)
     {
         ClientActivityData activityData = this.BotConfiguration.Client.Activity;
+        
+        Log.Logger.Information("Setting client activity");
         
         if (!Enum.TryParse(activityData.Type, out ActivityType activityType))
         {
