@@ -31,7 +31,7 @@ public class OwnerModule : ApplicationCommandModule
         this._client.Cts.Cancel();
     }
 
-    [SlashCommand("cmdrefresh", "Refreshes slash commands")]
+    [SlashCommand("refresh", "Refreshes slash commands")]
     [SlashRequireOwner]
     public async Task CommandRefreshCommand(InteractionContext ctx)
     {
@@ -41,7 +41,10 @@ public class OwnerModule : ApplicationCommandModule
 
         StringBuilder response = new();
         SlashCommandsExtension slasher = ctx.Client.GetSlashCommands();
-
+        
+        // actually I can do this but I need more "verbose"
+        // await slasher.RefreshCommands();
+        
         var guildRegisteredCommands = slasher.RegisteredCommands;
         
         foreach (var (key, value) in guildRegisteredCommands)
