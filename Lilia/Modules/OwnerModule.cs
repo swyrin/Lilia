@@ -1,4 +1,5 @@
-﻿using Lilia.Services;
+﻿using System.Text;
+using Lilia.Services;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
@@ -28,5 +29,37 @@ public class OwnerModule : ApplicationCommandModule
             .WithContent("Goodbye"));
 
         this._client.Cts.Cancel();
+    }
+
+    [SlashCommand("cmdrefresh", "Refreshes slash commands")]
+    [SlashRequireOwner]
+    public async Task CommandRefreshCommand(InteractionContext ctx)
+    {
+        await ctx.DeferAsync();
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("Processing"));
+
+        StringBuilder response = new();
+        SlashCommandsExtension slasher = ctx.Client.GetSlashCommands();
+
+        var guildRegisteredCommands = slasher.RegisteredCommands;
+        
+        foreach (var (key, value) in guildRegisteredCommands)
+        {
+            if (key == null)
+            {
+                Log.Logger.Warning("Refreshing slash commands in global scope");
+                response.AppendLine("Refreshing slash commands in global scope");
+                await ctx.Client.BulkOverwriteGlobalApplicationCommandsAsync(value);
+                continue;
+            }
+            
+            Log.Logger.Warning($"Refreshing slash commands for private guild with ID {key.GetValueOrDefault()}");
+            response.AppendLine($"Refreshing slash commands for private guild with ID {key.GetValueOrDefault()}");
+            await ctx.Client.BulkOverwriteGuildApplicationCommandsAsync(key.Value, value);
+        }
+        
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent(response.ToString()));
     }
 }
