@@ -1,0 +1,59 @@
+name: Build (All platforms)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master  
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Add NuGet sources
+        run: dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --nologo --configuration Release Lilia --output app/
+      - name: Test
+        run: dotnet test --no-build --nologo --verbosity normal --configuration Release
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Add NuGet sources
+        run: dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --nologo --configuration Release Lilia --output app/
+      - name: Test
+        run: dotnet test --no-build --nologo --verbosity normal --configuration Release
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Add NuGet sources
+        run: dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --nologo --configuration Release Lilia --output app/
+      - name: Test
+        run: dotnet test --no-build --nologo --verbosity normal --configuration Release

@@ -1,13 +1,13 @@
 # Welcome to `Lilia` repo
 Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduction.
 
-| Build (Windows)                                                                              | Build (macOS)                                                                            | Build (Linux)                                                                                 |
-|----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| ![WinBuild](https://github.com/Swyreee/Lilia/actions/workflows/dotnet_windows.yml/badge.svg) | ![MacBuild](https://github.com/Swyreee/Lilia/actions/workflows/dotnet_mac.yml/badge.svg) | ![LinuxBuild](https://github.com/Swyreee/Lilia/actions/workflows/dotnet_ubuntu.yml/badge.svg) |
+| Build (All platforms)                                                              | Release (All platforms)                                                              |
+|------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| ![Builds](https://github.com/Swyreee/Lilia/actions/workflows/dotnet.yml/badge.svg) | ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg) |
 
-| Code inspection (CodeQL)                                                                    | Release build (All platforms)                                                        |
-|---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| ![CodeQL](https://github.com/Swyreee/Lilia/actions/workflows/codeql-analysis.yml/badge.svg) | ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg) |
+| Code inspection (CodeQL)                                                                    |
+|---------------------------------------------------------------------------------------------|
+| ![CodeQL](https://github.com/Swyreee/Lilia/actions/workflows/codeql-analysis.yml/badge.svg) |
 
 # Changelogs
 - All stable versions: Check [here](https://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md)
