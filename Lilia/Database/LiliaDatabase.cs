@@ -10,11 +10,11 @@ namespace Lilia.Database;
 
 public class LiliaDatabase
 {
-    private DbContextOptions<LiliaDbContext> options;
+    private DbContextOptions<LiliaDatabaseContext> options;
 
     public LiliaDatabase()
     {
-        DbContextOptionsBuilder<LiliaDbContext> optionsBuilder = new DbContextOptionsBuilder<LiliaDbContext>();
+        DbContextOptionsBuilder<LiliaDatabaseContext> optionsBuilder = new DbContextOptionsBuilder<LiliaDatabaseContext>();
         SqliteConnectionStringBuilder connStringBuilder = new SqliteConnectionStringBuilder($"Data Source=database.db;Password={JsonManager<BotConfiguration>.Read().Credentials.DbPassword}");
 
         optionsBuilder.UseSqlite(connStringBuilder.ToString());
@@ -26,11 +26,11 @@ public class LiliaDatabase
     {
         Log.Logger.Information("Executing database migrations, if any");
 
-        using LiliaDbContext context = new LiliaDbContext(this.options);
+        using LiliaDatabaseContext context = new LiliaDatabaseContext(this.options);
         while (context.Database.GetPendingMigrations().Any())
         {
             string nextMigration = context.Database.GetPendingMigrations().First();
-            using LiliaDbContext migrationContext = new LiliaDbContext(this.options);
+            using LiliaDatabaseContext migrationContext = new LiliaDatabaseContext(this.options);
             migrationContext.Database.Migrate();
             migrationContext.SaveChanges();
         }
@@ -39,9 +39,9 @@ public class LiliaDatabase
         context.SaveChanges();
     }
 
-    public LiliaDbContext GetContext()
+    public LiliaDatabaseContext GetContext()
     {
-        LiliaDbContext context = new LiliaDbContext(this.options);
+        LiliaDatabaseContext context = new LiliaDatabaseContext(this.options);
         context.Database.SetCommandTimeout(30);
         DbConnection conn = context.Database.GetDbConnection();
         conn.Open();

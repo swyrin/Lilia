@@ -2,18 +2,16 @@
 using Lilia.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
 namespace Lilia.Migrations
 {
-    [DbContext(typeof(LiliaDbContext))]
-    [Migration("20220125031251_AddIsPlayingState")]
-    partial class AddIsPlayingState
+    [DbContext(typeof(LiliaDatabaseContext))]
+    partial class LiliaDatabaseContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
@@ -26,15 +24,6 @@ namespace Lilia.Migrations
 
                     b.Property<ulong>("DiscordGuildId")
                         .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsPlaying")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Queue")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("QueueWithNames")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("DbGuildId");
 
@@ -55,6 +44,9 @@ namespace Lilia.Migrations
 
                     b.Property<string>("OsuUsername")
                         .HasColumnType("TEXT");
+
+                    b.Property<short>("WarnCount")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("DbUserId");
 

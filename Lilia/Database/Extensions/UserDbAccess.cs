@@ -7,7 +7,7 @@ namespace Lilia.Database.Extensions;
 
 public static class UserDbAccess
 {
-    public static DbUser GetOrCreateUserRecord(this LiliaDbContext ctx, DiscordUser discordUser)
+    public static DbUser GetOrCreateUserRecord(this LiliaDatabaseContext ctx, DiscordUser discordUser)
     {
         DbSet<DbUser> users = ctx.Users;
         DbUser user = users.FirstOrDefault(entity => entity.DiscordUserId == discordUser.Id);
@@ -16,7 +16,9 @@ public static class UserDbAccess
         {
             user = new DbUser
             {
-                DiscordUserId = discordUser.Id
+                DiscordUserId = discordUser.Id,
+                OsuMode = string.Empty,
+                OsuUsername = string.Empty,
             };
 
             users.Add(user);

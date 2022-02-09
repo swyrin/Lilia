@@ -4,7 +4,7 @@
 
 namespace Lilia.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class InitialModel : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,9 +14,7 @@ namespace Lilia.Migrations
                 {
                     DbGuildId = table.Column<ulong>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    DiscordGuildId = table.Column<ulong>(type: "INTEGER", nullable: false),
-                    Queue = table.Column<string>(type: "TEXT", nullable: true),
-                    QueueWithNames = table.Column<string>(type: "TEXT", nullable: true)
+                    DiscordGuildId = table.Column<ulong>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -30,6 +28,7 @@ namespace Lilia.Migrations
                     DbUserId = table.Column<ulong>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     DiscordUserId = table.Column<ulong>(type: "INTEGER", nullable: false),
+                    WarnCount = table.Column<short>(type: "INTEGER", nullable: false),
                     OsuMode = table.Column<string>(type: "TEXT", nullable: true),
                     OsuUsername = table.Column<string>(type: "TEXT", nullable: true)
                 },

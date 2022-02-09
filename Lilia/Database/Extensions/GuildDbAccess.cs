@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using DSharpPlus.Entities;
 using Lilia.Database.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +7,7 @@ namespace Lilia.Database.Extensions;
 
 public static class GuildDbAccess
 {
-    public static DbGuild GetOrCreateGuildRecord(this LiliaDbContext ctx, DiscordGuild discordGuild)
+    public static DbGuild GetOrCreateGuildRecord(this LiliaDatabaseContext ctx, DiscordGuild discordGuild)
     {
         DbSet<DbGuild> guilds = ctx.Guilds;
         DbGuild guild = guilds.FirstOrDefault(entity => entity.DiscordGuildId == discordGuild.Id);
@@ -17,11 +16,7 @@ public static class GuildDbAccess
         {
             guild = new DbGuild
             {
-                DiscordGuildId = discordGuild.Id,
-                IsPlaying = false,
-                QueueItem = string.Empty,
-                LastPlayedPosition = TimeSpan.Zero,
-                LastPlayedTrack = string.Empty
+                DiscordGuildId = discordGuild.Id
             };
 
             guilds.Add(guild);
