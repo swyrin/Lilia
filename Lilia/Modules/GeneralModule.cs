@@ -64,9 +64,11 @@ public class GeneralModule : ApplicationCommandModule
 
         TimeSpan timeDiff = DateTime.Now.Subtract(this._client.StartTime);
 
-        bool isValidLink = true;
+        bool isValidBotInviteLink = this._client.BotConfiguration.Client.BotInviteLink.IsDiscordValidBotInvite();
+        bool isValidGuildInviteLink = this._client.BotConfiguration.Client.SupportGuildInviteLink.IsDiscordValidGuildInvite();
 
-        DiscordLinkButtonComponent inviteBtn = new DiscordLinkButtonComponent(this._client.BotConfiguration.Client.BotInviteLink, "Invite me!", isValidLink);
+        DiscordLinkButtonComponent inviteBtn = new DiscordLinkButtonComponent(this._client.BotConfiguration.Client.BotInviteLink, "Invite me!", isValidBotInviteLink);
+        DiscordLinkButtonComponent supportGuildBtn = new DiscordLinkButtonComponent(this._client.BotConfiguration.Client.SupportGuildInviteLink, "Support guild!", isValidGuildInviteLink);
 
         DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
             .WithTitle("Something about me :D")
@@ -79,6 +81,7 @@ public class GeneralModule : ApplicationCommandModule
             .AddField("Start since", this._client.StartTime.ToLongDateString() + " " + this._client.StartTime.ToLongTimeString(), true);
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .AddEmbed(embedBuilder.Build()));
+            .AddEmbed(embedBuilder.Build())
+            .AddComponents(inviteBtn, supportGuildBtn));
     }
 }
