@@ -43,8 +43,7 @@ public class OwnerModule : ApplicationCommandModule
         SlashCommandsExtension slasher = ctx.Client.GetSlashCommands();
         
         // actually I can do this but I need more "verbose"
-        // await slasher.RefreshCommands();
-        
+        // await slasher.RefreshCommands()
         var guildRegisteredCommands = slasher.RegisteredCommands;
         
         foreach (var (key, value) in guildRegisteredCommands)
