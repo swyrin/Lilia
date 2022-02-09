@@ -21,7 +21,7 @@ public class ClientData
 
     [JsonProperty("client_invite_link")] public string BotInviteLink = "";
 
-    [JsonProperty("support_server_invite_link")] public string SupportServerInviteLink = "";
+    [JsonProperty("support_guild_invite_link")] public string SupportGuildInviteLink = "";
 
     [JsonProperty("slash_commands_for_global")] public bool SlashCommandsForGlobal = true;
 
