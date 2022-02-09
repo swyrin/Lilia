@@ -19,6 +19,7 @@ using Lilia.Json;
 using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
+using System.Collections.Generic;
 
 namespace Lilia.Services;
 
@@ -27,7 +28,7 @@ public class LiliaClient
     public CancellationTokenSource Cts;
     public BotConfiguration BotConfiguration;
     public LiliaDatabase Database;
-    public ServiceProvider Services;
+    public List<DiscordGuild> JoinedGuilds;
     public DateTime StartTime;
 
     private SlashCommandsExtension _slashCommandsExtension;
@@ -49,9 +50,7 @@ public class LiliaClient
         Log.Logger.Information("Setting up databases");
         this.Database = new LiliaDatabase();
 
-        OsuData osuData = this.BotConfiguration.Credentials.Osu;
-
-        this.Services = new ServiceCollection()
+        ServiceProvider services = new ServiceCollection()
             .AddLogging(x => x.AddSerilog())
             .AddDefaultSerializer()
             .AddDefaultRequestHandler()
@@ -66,8 +65,10 @@ public class LiliaClient
 
         this._slashCommandsExtension = client.UseSlashCommands(new SlashCommandsConfiguration
         {
-            Services = this.Services
+            Services = services
         });
+
+        this.JoinedGuilds = new();
 
         client.UseInteractivity(new InteractivityConfiguration
         {
@@ -91,26 +92,18 @@ public class LiliaClient
             this._slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly());
         }
         
+        // handling events
         client.Ready += this.OnReady;
         client.GuildAvailable += this.OnGuildAvailable;
+        client.GuildUnavailable += this.OnGuildUnavailable;
         client.ClientErrored += this.OnClientErrored;
-        
         this._slashCommandsExtension.SlashCommandErrored += this.OnSlashCommandErrored;
 
-        await client.ConnectAsync();
-
-        while (!Cts.IsCancellationRequested) await Task.Delay(200);
-
-        await client.DisconnectAsync();
-        await this.Database.GetContext().DisposeAsync();
-    }
-
-    private async Task OnReady(DiscordClient sender, ReadyEventArgs e)
-    {
-        ClientActivityData activityData = this.BotConfiguration.Client.Activity;
-        
         Log.Logger.Information("Setting client activity");
-        
+
+        #region Activity Setup
+        ClientActivityData activityData = this.BotConfiguration.Client.Activity;
+
         if (!Enum.TryParse(activityData.Type, out ActivityType activityType))
         {
             Log.Logger.Warning($"Can not convert \"{activityData.Type}\" to a valid activity type, using \"Playing\"");
@@ -130,16 +123,34 @@ public class LiliaClient
             ActivityType = activityType,
             Name = activityData.Name
         };
+        #endregion
 
-        await sender.UpdateStatusAsync(activity, userStatus);
-        
+        await client.ConnectAsync(activity, userStatus);
+
+        while (!Cts.IsCancellationRequested) await Task.Delay(200);
+
+        await client.DisconnectAsync();
+        await this.Database.GetContext().DisposeAsync();
+    }
+
+    private Task OnReady(DiscordClient sender, ReadyEventArgs e)
+    {
         Log.Logger.Information("Client is ready");
         this.StartTime = DateTime.Now;
+        return Task.CompletedTask;
     }
 
     private Task OnGuildAvailable(DiscordClient _, GuildCreateEventArgs e)
     {
-        Log.Logger.Information($"Guild cached: {e.Guild.Name} (ID: {e.Guild.Id})");
+        Log.Logger.Debug($"Guild cache added: {e.Guild.Name} (ID: {e.Guild.Id})");
+        this.JoinedGuilds.Add(e.Guild);
+        return Task.CompletedTask;
+    }
+
+    private Task OnGuildUnavailable(DiscordClient _, GuildDeleteEventArgs e)
+    {
+        Log.Logger.Debug($"Guild cache removed: {e.Guild.Name} (ID: {e.Guild.Id})");
+        this.JoinedGuilds.Remove(e.Guild);
         return Task.CompletedTask;
     }
 
