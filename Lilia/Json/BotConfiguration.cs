@@ -19,8 +19,12 @@ public class ClientData
 {
     [JsonProperty("private_guilds")] public List<ulong> PrivateGuildIds = new();
 
+    [JsonProperty("client_invite_link")] public string BotInviteLink = "";
+
+    [JsonProperty("support_server_invite_link")] public string SupportServerInviteLink = "";
+
     [JsonProperty("slash_commands_for_global")] public bool SlashCommandsForGlobal = true;
-    
+
     [JsonProperty("activity")] public ClientActivityData Activity = new();
 }
 
