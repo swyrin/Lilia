@@ -33,7 +33,7 @@ public class OsuModule : ApplicationCommandModule
         this._osuClient = osuClient;
     }
     
-    [SlashCommand("link", "Update your osu! profile in my database for future searches")]
+    [SlashCommand("update", "Update your osu! profile infomation in my database")]
     public async Task SetOsuUsernameCommand(InteractionContext ctx,
         [Option("username", "Your osu! username")]
         string username,
@@ -58,7 +58,7 @@ public class OsuModule : ApplicationCommandModule
             .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(mode)}"));
     }
 
-    [SlashCommand("me", "Get your linked data with me")]
+    [SlashCommand("myinfo", "Get your linked data with me")]
     public async Task CheckMyProfileCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
@@ -105,140 +105,9 @@ public class OsuModule : ApplicationCommandModule
         }
 
         if (mode == "Linked") mode = dbUser.OsuMode;
-
         Enum.TryParse(mode, out GameMode omode);
 
-        try
-        {
-            IUser osuUser = await this._osuClient.GetUserAsync(dbUser.OsuUsername, omode);
-
-            if (type == "profile")
-            {
-                StringBuilder sb = new StringBuilder();
-
-                sb
-                    .AppendLine($"{Formatter.Bold("Join Date")}: {osuUser.JoinDate:d}")
-                    .AppendLine($"{Formatter.Bold("Country")}: {osuUser.Country.Name} :flag_{osuUser.Country.Code.ToLower()}:")
-                    .AppendLine($"{Formatter.Bold("Total Score")}: {osuUser.Statistics.TotalScore} - {osuUser.Statistics.RankedScore} ranked score")
-                    .AppendLine($"{Formatter.Bold("PP")}: {osuUser.Statistics.Pp}pp (Country: #{osuUser.Statistics.CountryRank} - Global: #{osuUser.Statistics.GlobalRank})")
-                    .AppendLine($"{Formatter.Bold("Accuracy")}: {osuUser.Statistics.HitAccuracy}%")
-                    .AppendLine($"{Formatter.Bold("Level")}: {osuUser.Statistics.UserLevel.Current} ({osuUser.Statistics.UserLevel.Progress}%)")
-                    .AppendLine($"{Formatter.Bold("Play Count")}: {osuUser.Statistics.PlayCount} with {osuUser.Statistics.PlayTime:g} of play time")
-                    .AppendLine($"{Formatter.Bold("Current status")}: {(osuUser.IsOnline ? "Online" : "Offline/Invisible")}");
-
-                DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-                    .WithAuthor($"{osuUser.Username}'s osu! profile {(osuUser.IsSupporter ? DiscordEmoji.FromName(ctx.Client, ":heart:").ToString() : string.Empty)}", $"https://osu.ppy.sh/users/{osuUser.Id}")
-                    .AddField("Basic Information", sb.ToString())
-                    .WithThumbnail(osuUser.AvatarUrl.ToString());
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent($"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
-                    .AddEmbed(embedBuilder.Build()));
-            }
-            else
-            {
-                InteractivityExtension interactivity = ctx.Client.GetInteractivity();
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("How many scores do you want to get?"));
-
-                int r = 1;
-
-                var res = await interactivity.WaitForMessageAsync(m =>
-                {
-                    bool canDo = int.TryParse(m.Content, out r);
-                    return r is >= 1 and <= 100;
-                });
-
-                if (res.TimedOut)
-                {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Time exceeded"));
-
-                    return;
-                }
-
-                IReadOnlyList<IScore> scores = new List<IScore>();
-
-                switch (type)
-                {
-                    case "best":
-                        scores = await this._osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Best, false, omode, r);
-                        break;
-                    case "recent":
-                        DiscordButtonComponent yesBtn = new DiscordButtonComponent(ButtonStyle.Success, "yesBtn", "Yes please!");
-                        DiscordButtonComponent noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not!");
-
-                        DiscordMessage failAsk = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                            .WithContent("Do you want to include fail scores?")
-                            .AddComponents(yesBtn, noBtn));
-
-                        var btnRes = await failAsk.WaitForButtonAsync(ctx.Member);
-
-                        if (btnRes.TimedOut)
-                        {
-                            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                                .WithContent("Timed out"));
-
-                            return;
-                        }
-
-                        bool includeFails = btnRes.Result.Id == "yesBtn";
-
-                        scores = await this._osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Recent, includeFails, omode, r);
-                        break;
-                    case "firsts":
-                        scores = await this._osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Firsts, false, omode, r);
-                        break;
-                }
-
-                if (!scores.Any())
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent("I found nothing, sorry"));
-                else
-                {
-                    DiscordFollowupMessageBuilder builder = new DiscordFollowupMessageBuilder();
-                    StringBuilder sb = new StringBuilder();
-                    DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-                        .WithAuthor($"{(type == "best" ? "Best" : "Recent")} score(s) of {osuUser.Username} in mode {omode}", $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString());
-
-                    foreach (IScore score in scores)
-                    {
-                        IBeatmap beatmap = await this._osuClient.GetBeatmapAsync(score.Beatmap.Id);
-                        IBeatmapset bmSet = await this._osuClient.GetBeatmapsetAsync(beatmap.BeatmapsetId);
-
-                        sb
-                            .AppendLine($"{Formatter.Bold("Map link")}: {beatmap.Url}")
-                            .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore} - Global rank #{score.GlobalRank.GetValueOrDefault()}, Country rank #{score.CountryRank.GetValueOrDefault()}")
-                            .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
-                            .AppendLine($"{Formatter.Bold("Accuracy")}: {Math.Round(score.Accuracy * 100, 2, MidpointRounding.ToEven)}%")
-                            .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
-                            .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
-                            .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints}pp -> {Math.Round(score.Weight.PerformancePoints, 2, MidpointRounding.ToEven)}pp {Math.Round(score.Weight.Percentage, 2, MidpointRounding.ToEven)}% weighted")
-                            .AppendLine($"{Formatter.Bold("Submission Time")}: {score.CreatedAt:f}");
-                        
-                        embedBuilder
-                            .AddField($"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{beatmap.Version}]{(score.Mods.Any() ? $" +{Formatter.Bold(string.Join(string.Empty, score.Mods))}" : string.Empty)}", sb.ToString());
-                        
-                        sb.Clear();
-                    }
-
-                    builder.AddEmbed(embedBuilder.Build());
-                    builder.WithContent($"{(type == "best" ? "Best" : "Recent")} scores of user {osuUser.Username}");
-                    await ctx.FollowUpAsync(builder);
-                }
-            }
-        }
-        catch (ApiException)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when sending the request"));
-        }
-        catch (OsuDeserializationException)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when parsing the response"));
-        }
+        await this.GetOsuProfile(ctx, dbUser.OsuUsername, omode, type);
     }
 
     [SlashCommand("profile", "Get osu! profile from provided username")]
@@ -260,9 +129,13 @@ public class OsuModule : ApplicationCommandModule
         string mode = "Osu")
     {
         await ctx.DeferAsync();
-
         Enum.TryParse(mode, out GameMode omode);
 
+        await this.GetOsuProfile(ctx, username, omode, type);
+    }
+
+    private async Task GetOsuProfile(InteractionContext ctx, string username, GameMode omode, string type)
+    {
         try
         {
             IUser osuUser = await this._osuClient.GetUserAsync(username, omode);
@@ -371,10 +244,10 @@ public class OsuModule : ApplicationCommandModule
                             .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
                             .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints}pp -> {Math.Round(score.Weight.PerformancePoints, 2, MidpointRounding.ToEven)}pp {Math.Round(score.Weight.Percentage, 2, MidpointRounding.ToEven)}% weighted")
                             .AppendLine($"{Formatter.Bold("Submission Time")}: {score.CreatedAt:f}");
-                        
+
                         embedBuilder
                             .AddField($"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{beatmap.Version}]{(score.Mods.Any() ? $" +{Formatter.Bold(string.Join(string.Empty, score.Mods))}" : string.Empty)}", sb.ToString());
-                        
+
                         sb.Clear();
                     }
 

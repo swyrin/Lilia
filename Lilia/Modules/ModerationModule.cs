@@ -134,7 +134,7 @@ public class ModerationModule : ApplicationCommandModule
             [Option("target_channel", "Channel to send")]
             DiscordChannel channel)
         {
-            await ctx.DeferAsync();
+            await ctx.DeferAsync(true);
 
             try
             {
@@ -145,10 +145,11 @@ public class ModerationModule : ApplicationCommandModule
                 DiscordMessage msg = await chn.GetMessageAsync(resolved.Item3);
                 DiscordMessage noticeMsg = await channel.SendMessageAsync(msg.Content);
 
+                DiscordLinkButtonComponent jumpToMessageBtn = new DiscordLinkButtonComponent(noticeMsg.JumpLink.ToString(), "Jump to message");
+
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .AddEmbed(ctx.Member.GetDefaultEmbedTemplateForMember()
-                        .WithTitle("Notice sent")
-                        .AddField("Jump link", Formatter.MaskedUrl("Click me!", noticeMsg.JumpLink))));
+                    .WithContent("Sent the notice")
+                    .AddComponents(jumpToMessageBtn));
             }
             catch (Exception)
             {
@@ -166,7 +167,7 @@ public class ModerationModule : ApplicationCommandModule
             string msgJumpNew
         )
         {
-            await ctx.DeferAsync();
+            await ctx.DeferAsync(true);
 
             try
             {
@@ -199,7 +200,7 @@ public class ModerationModule : ApplicationCommandModule
             [Option("target_message_jump_link", "Message jump link to copy, can be from other guild, at least as I am in there")]
             string msgJump)
         {
-            await ctx.DeferAsync();
+            await ctx.DeferAsync(true);
 
             try
             {
