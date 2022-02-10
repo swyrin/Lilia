@@ -1,19 +1,25 @@
 # Welcome to `Lilia` repo
+
 Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduction.
 
-This project undergoes heavy development 99% of the time so *please* don't expect everything here will work perfectly, especially the database part.
+This project undergoes heavy development 99% of the time so *please* don't expect everything here will work perfectly,
+especially the database part.
 
 | Build                                                                              | Release                                                                              | Code inspection (CodeQL)                                                                    |
 |------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | ![Build](https://github.com/Swyreee/Lilia/actions/workflows/dotnet.yml/badge.svg)  | ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg) | ![CodeQL](https://github.com/Swyreee/Lilia/actions/workflows/codeql-analysis.yml/badge.svg) |
 
 # Self-hosting guide
+
 ## Step 1: Grab the files
-Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `app.zip` from the latest release then unzip it. Everything should be inside `app/` directory.
-Then open the folder matching your OS.
+
+Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `app.zip` from the latest release then
+unzip it. Everything should be inside `app/` directory. Then open the folder matching your OS.
 
 ## Step 2: Configurations
+
 - Create the file `config.json` with the following template **at the same place with the executable file**
+
 ```json
 {
   "client": {
@@ -37,13 +43,18 @@ Then open the folder matching your OS.
   }
 }
 ```
+
 - See [here](https://github.com/Swyreee/Lilia/wiki/Configuration-101) for help on filling stuffs.
 
 ## Step 3: Run the bot
+
 - Just simply run it like how you run other apps in your OS
 
 # So... Where are the commands?
-Well, the bot runs under [Discord's "Application Command"](https://discord.com/blog/slash-commands-are-here) so just simply type `/` on the message box or Right Click if you are on PC or Web version of Discord.
+
+Well, the bot runs under [Discord's "Application Command"](https://discord.com/blog/slash-commands-are-here) so just
+simply type `/` on the message box or Right Click if you are on PC or Web version of Discord.
 
 # Are there any roadmaps?
+
 Maybe get some reputations first.

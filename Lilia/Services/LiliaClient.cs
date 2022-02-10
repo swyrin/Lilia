@@ -1,74 +1,73 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using Lilia.Commons;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
+using Lilia.Commons;
 using Lilia.Database;
 using Lilia.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
-using System.Collections.Generic;
 
 namespace Lilia.Services;
 
 public class LiliaClient
 {
-    public CancellationTokenSource Cts;
+    private SlashCommandsExtension _slashCommandsExtension;
     public BotConfiguration BotConfiguration;
+    public CancellationTokenSource Cts;
     public LiliaDatabase Database;
     public List<DiscordGuild> JoinedGuilds;
     public DateTime StartTime;
 
-    private SlashCommandsExtension _slashCommandsExtension;
-
     public async Task Run()
     {
         Log.Logger.Information("Loading configurations");
-        this.BotConfiguration = JsonManager<BotConfiguration>.Read();
+        BotConfiguration = JsonManager<BotConfiguration>.Read();
 
-        this.Cts = new CancellationTokenSource();
+        Cts = new CancellationTokenSource();
 
-        DiscordClient client = new DiscordClient(new DiscordConfiguration
+        var client = new DiscordClient(new DiscordConfiguration
         {
-            Token = this.BotConfiguration.Credentials.DiscordToken,
+            Token = BotConfiguration.Credentials.DiscordToken,
             TokenType = TokenType.Bot,
             LoggerFactory = new LoggerFactory().AddSerilog()
         });
 
         Log.Logger.Information("Setting up databases");
-        this.Database = new LiliaDatabase();
+        Database = new LiliaDatabase();
 
-        ServiceProvider services = new ServiceCollection()
+        var services = new ServiceCollection()
             .AddLogging(x => x.AddSerilog())
             .AddDefaultSerializer()
             .AddDefaultRequestHandler()
             .AddOsuSharp(x => x.Configuration = new OsuClientConfiguration
             {
                 ModFormatSeparator = string.Empty,
-                ClientId = this.BotConfiguration.Credentials.Osu.ClientId,
-                ClientSecret = this.BotConfiguration.Credentials.Osu.ClientSecret
+                ClientId = BotConfiguration.Credentials.Osu.ClientId,
+                ClientSecret = BotConfiguration.Credentials.Osu.ClientSecret
             })
             .AddSingleton(this)
             .BuildServiceProvider();
 
-        this._slashCommandsExtension = client.UseSlashCommands(new SlashCommandsConfiguration
+        _slashCommandsExtension = client.UseSlashCommands(new SlashCommandsConfiguration
         {
             Services = services
         });
 
-        this.JoinedGuilds = new();
+        JoinedGuilds = new List<DiscordGuild>();
 
         client.UseInteractivity(new InteractivityConfiguration
         {
@@ -77,32 +76,31 @@ public class LiliaClient
             Timeout = TimeSpan.FromSeconds(30)
         });
 
-        if (this.BotConfiguration.Client.PrivateGuildIds.Any())
-        {
-            this.BotConfiguration.Client.PrivateGuildIds.ForEach(guildId =>
+        if (BotConfiguration.Client.PrivateGuildIds.Any())
+            BotConfiguration.Client.PrivateGuildIds.ForEach(guildId =>
             {
                 Log.Logger.Warning($"Registering slash commands for private guild with ID \"{guildId}\"");
-                this._slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly(), guildId);    
+                _slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly(), guildId);
             });
-        }
-        
-        if (this.BotConfiguration.Client.SlashCommandsForGlobal)
+
+        if (BotConfiguration.Client.SlashCommandsForGlobal)
         {
             Log.Logger.Warning("Registering slash commands in global scope");
-            this._slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly());
+            _slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly());
         }
-        
+
         // handling events
-        client.Ready += this.OnReady;
-        client.GuildAvailable += this.OnGuildAvailable;
-        client.GuildUnavailable += this.OnGuildUnavailable;
-        client.ClientErrored += this.OnClientErrored;
-        this._slashCommandsExtension.SlashCommandErrored += this.OnSlashCommandErrored;
+        client.Ready += OnReady;
+        client.GuildAvailable += OnGuildAvailable;
+        client.GuildUnavailable += OnGuildUnavailable;
+        client.ClientErrored += OnClientErrored;
+        _slashCommandsExtension.SlashCommandErrored += OnSlashCommandErrored;
 
         Log.Logger.Information("Setting client activity");
 
         #region Activity Setup
-        ClientActivityData activityData = this.BotConfiguration.Client.Activity;
+
+        var activityData = BotConfiguration.Client.Activity;
 
         if (!Enum.TryParse(activityData.Type, out ActivityType activityType))
         {
@@ -118,11 +116,12 @@ public class LiliaClient
             userStatus = UserStatus.Online;
         }
 
-        DiscordActivity activity = new DiscordActivity
+        var activity = new DiscordActivity
         {
             ActivityType = activityType,
             Name = activityData.Name
         };
+
         #endregion
 
         await client.ConnectAsync(activity, userStatus);
@@ -130,27 +129,27 @@ public class LiliaClient
         while (!Cts.IsCancellationRequested) await Task.Delay(200);
 
         await client.DisconnectAsync();
-        await this.Database.GetContext().DisposeAsync();
+        await Database.GetContext().DisposeAsync();
     }
 
     private Task OnReady(DiscordClient sender, ReadyEventArgs e)
     {
         Log.Logger.Information("Client is ready");
-        this.StartTime = DateTime.Now;
+        StartTime = DateTime.Now;
         return Task.CompletedTask;
     }
 
     private Task OnGuildAvailable(DiscordClient _, GuildCreateEventArgs e)
     {
         Log.Logger.Debug($"Guild cache added: {e.Guild.Name} (ID: {e.Guild.Id})");
-        this.JoinedGuilds.Add(e.Guild);
+        JoinedGuilds.Add(e.Guild);
         return Task.CompletedTask;
     }
 
     private Task OnGuildUnavailable(DiscordClient _, GuildDeleteEventArgs e)
     {
         Log.Logger.Debug($"Guild cache removed: {e.Guild.Name} (ID: {e.Guild.Id})");
-        this.JoinedGuilds.Remove(e.Guild);
+        JoinedGuilds.Remove(e.Guild);
         return Task.CompletedTask;
     }
 

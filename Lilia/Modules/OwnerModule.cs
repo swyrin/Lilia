@@ -1,20 +1,20 @@
 ﻿using System.Text;
-using Lilia.Services;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using Lilia.Services;
 using Serilog;
 
 namespace Lilia.Modules;
 
 public class OwnerModule : ApplicationCommandModule
 {
-    private LiliaClient _client;
+    private readonly LiliaClient _client;
 
     public OwnerModule(LiliaClient client)
     {
-        this._client = client;
+        _client = client;
     }
 
     [SlashCommand("shutdown", "Shutdown the bot")]
@@ -28,7 +28,7 @@ public class OwnerModule : ApplicationCommandModule
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent("Goodbye"));
 
-        this._client.Cts.Cancel();
+        _client.Cts.Cancel();
     }
 
     [SlashCommand("refresh", "Refreshes slash commands")]
@@ -40,12 +40,12 @@ public class OwnerModule : ApplicationCommandModule
             .WithContent("Processing"));
 
         StringBuilder response = new();
-        SlashCommandsExtension slasher = ctx.Client.GetSlashCommands();
-        
+        var slasher = ctx.Client.GetSlashCommands();
+
         // actually I can do this but I need more "verbose"
         // await slasher.RefreshCommands()
         var guildRegisteredCommands = slasher.RegisteredCommands;
-        
+
         foreach (var (key, value) in guildRegisteredCommands)
         {
             if (key == null)
@@ -55,12 +55,12 @@ public class OwnerModule : ApplicationCommandModule
                 await ctx.Client.BulkOverwriteGlobalApplicationCommandsAsync(value);
                 continue;
             }
-            
+
             Log.Logger.Warning($"Refreshing slash commands for private guild with ID {key.GetValueOrDefault()}");
             response.AppendLine($"Refreshing slash commands for private guild with ID {key.GetValueOrDefault()}");
             await ctx.Client.BulkOverwriteGuildApplicationCommandsAsync(key.Value, value);
         }
-        
+
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent(response.ToString()));
     }

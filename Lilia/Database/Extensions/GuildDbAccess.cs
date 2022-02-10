@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using DSharpPlus.Entities;
 using Lilia.Database.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Lilia.Database.Extensions;
 
@@ -9,8 +8,8 @@ public static class GuildDbAccess
 {
     public static DbGuild GetOrCreateGuildRecord(this LiliaDatabaseContext ctx, DiscordGuild discordGuild)
     {
-        DbSet<DbGuild> guilds = ctx.Guilds;
-        DbGuild guild = guilds.FirstOrDefault(entity => entity.DiscordGuildId == discordGuild.Id);
+        var guilds = ctx.Guilds;
+        var guild = guilds.FirstOrDefault(entity => entity.DiscordGuildId == discordGuild.Id);
 
         if (guild == default(DbGuild))
         {

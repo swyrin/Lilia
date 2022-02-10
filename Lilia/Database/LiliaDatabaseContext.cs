@@ -1,8 +1,8 @@
-﻿using Lilia.Database.Models;
+﻿using System;
+using Lilia.Database.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using System;
 
 namespace Lilia.Database;
 
@@ -10,13 +10,13 @@ public class LiliaDatabaseContextFactory : IDesignTimeDbContextFactory<LiliaData
 {
     public LiliaDatabaseContext CreateDbContext(string[] args)
     {
-        DbContextOptionsBuilder<LiliaDatabaseContext> optionsBuilder = new DbContextOptionsBuilder<LiliaDatabaseContext>();
-        SqliteConnectionStringBuilder connStringBuilder =
+        var optionsBuilder = new DbContextOptionsBuilder<LiliaDatabaseContext>();
+        var connStringBuilder =
             new SqliteConnectionStringBuilder(
                 $"Data Source=database.db;Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}");
 
         optionsBuilder.UseSqlite(connStringBuilder.ToString());
-        LiliaDatabaseContext ctx = new LiliaDatabaseContext(optionsBuilder.Options);
+        var ctx = new LiliaDatabaseContext(optionsBuilder.Options);
         ctx.Database.SetCommandTimeout(30);
         return ctx;
     }
@@ -24,12 +24,12 @@ public class LiliaDatabaseContextFactory : IDesignTimeDbContextFactory<LiliaData
 
 public class LiliaDatabaseContext : DbContext
 {
-    public DbSet<DbGuild> Guilds { get; set; }
-    public DbSet<DbUser> Users { get; set; }
-
     public LiliaDatabaseContext(DbContextOptions<LiliaDatabaseContext> options) : base(options)
     {
     }
+
+    public DbSet<DbGuild> Guilds { get; set; }
+    public DbSet<DbUser> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
