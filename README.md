@@ -3,17 +3,9 @@ Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduct
 
 This project undergoes heavy development 99% of the time so *please* don't expect everything here will work perfectly, especially the database part.
 
-| Build                                                                              | Release                                                                              |
-|------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| ![Build](https://github.com/Swyreee/Lilia/actions/workflows/dotnet.yml/badge.svg)  | ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg) |
-
-| Code inspection (CodeQL)                                                                    |
-|---------------------------------------------------------------------------------------------|
-| ![CodeQL](https://github.com/Swyreee/Lilia/actions/workflows/codeql-analysis.yml/badge.svg) |
-
-# Changelogs
-- All stable versions: Check [here](https://github.com/Swyreee/Lilia/blob/master/CHANGELOGS.md)
-- In development version: Check [here](https://github.com/Swyreee/Lilia/blob/master/CHANGELOG.md)
+| Build                                                                              | Release                                                                              | Code inspection (CodeQL)                                                                    |
+|------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| ![Build](https://github.com/Swyreee/Lilia/actions/workflows/dotnet.yml/badge.svg)  | ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg) | ![CodeQL](https://github.com/Swyreee/Lilia/actions/workflows/codeql-analysis.yml/badge.svg) |
 
 # Self-hosting guide
 ### Step 0: Prerequisites
