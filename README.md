@@ -1,9 +1,11 @@
 # Welcome to `Lilia` repo
 Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduction.
 
-| Build (All platforms)                                                              | Release (All platforms)                                                              |
+This project undergoes heavy development 99% of the time so *please* don't expect everything here will work perfectly, especially the database part.
+
+| Build                                                                              | Release                                                                              |
 |------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| ![Builds](https://github.com/Swyreee/Lilia/actions/workflows/dotnet.yml/badge.svg) | ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg) |
+| ![Build](https://github.com/Swyreee/Lilia/actions/workflows/dotnet.yml/badge.svg)  | ![Release](https://github.com/Swyreee/Lilia/actions/workflows/release.yml/badge.svg) |
 
 | Code inspection (CodeQL)                                                                    |
 |---------------------------------------------------------------------------------------------|
@@ -15,7 +17,7 @@ Lilia is a multi-purpose bot for Discord, I guess that's enough for an introduct
 
 # Self-hosting guide
 ### Step 0: Prerequisites
->You *might* need administrator privileges in your machine - `sudo` in Linux distros (maybe Mac), `Administrator` user in Windows
+>You *might* need administrator privileges in your machine
 - [.NET](https://dotnet.microsoft.com/download), version 6 or higher.
 
 ### Step 1: Grab the files
@@ -23,11 +25,12 @@ Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `ap
 
 ### Step 2: Configurations
 - Create the file `config.json` with the following template
->If you are really lazy to do some clicks, follow step 3 first then go back here
 ```json
 {
   "client": {
     "private_guilds": [],
+    "bot_invite_link": "",
+    "support_guild_invite_link": "",
     "slash_commands_for_global": true,
     "activity": {
       "type": "Watching",

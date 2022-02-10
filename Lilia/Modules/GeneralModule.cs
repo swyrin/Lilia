@@ -5,6 +5,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Lilia.Commons;
+using Lilia.Json;
 using Lilia.Services;
 
 namespace Lilia.Modules;
@@ -63,22 +64,29 @@ public class GeneralModule : ApplicationCommandModule
         }
 
         TimeSpan timeDiff = DateTime.Now.Subtract(this._client.StartTime);
-
-        bool isValidBotInviteLink = this._client.BotConfiguration.Client.BotInviteLink.IsDiscordValidBotInvite();
-        bool isValidGuildInviteLink = this._client.BotConfiguration.Client.SupportGuildInviteLink.IsDiscordValidGuildInvite();
-
-        DiscordLinkButtonComponent inviteBtn = new DiscordLinkButtonComponent(this._client.BotConfiguration.Client.BotInviteLink, "Invite me!", isValidBotInviteLink);
-        DiscordLinkButtonComponent supportGuildBtn = new DiscordLinkButtonComponent(this._client.BotConfiguration.Client.SupportGuildInviteLink, "Support guild!", isValidGuildInviteLink);
+        
+        ClientData clientData = this._client.BotConfiguration.Client;
+        string botInv = clientData.BotInviteLink;
+        string guildInv = clientData.SupportGuildInviteLink;
+        
+        // dodge 400
+        if (string.IsNullOrWhiteSpace(botInv)) botInv = "https://placehold.er";
+        if (string.IsNullOrWhiteSpace(guildInv)) guildInv = "https://placehold.er";
+        
+        bool isValidBotInviteLink = botInv.IsDiscordValidBotInvite();
+        bool isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
+        
+        DiscordLinkButtonComponent inviteBtn = new DiscordLinkButtonComponent(botInv, "Interested in me? Invite me!", !isValidBotInviteLink);
+        DiscordLinkButtonComponent supportGuildBtn = new DiscordLinkButtonComponent(guildInv, "Need some support? Click me!", !isValidGuildInviteLink);
 
         DiscordEmbedBuilder embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
             .WithTitle("Something about me :D")
             .WithThumbnail(ctx.Client.CurrentUser.AvatarUrl)
-            .WithDescription($"Hi, I am {ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}, a bot runs under the source code of {Formatter.MaskedUrl("Lilia", new Uri("https://github.com/Swyreee/Lilia"))} made by Swyrin#7193")
+            .WithDescription($"Hi, I am {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")}, a bot running on the source code of {Formatter.MaskedUrl("Lilia", new Uri("https://github.com/Swyreee/Lilia"))} made by Swyrin#7193")
             .AddField("Servers count", this._client.JoinedGuilds.Count.ToString(), true)
             .AddField("Members count", memberCount.ToString(), true)
             .AddField("Owners", owners.ToString(), true)
-            .AddField("Uptime (d.h\\:m\\:s)", timeDiff.ToString(@"dd\.hh\:mm\:ss"), true)
-            .AddField("Start since", this._client.StartTime.ToLongDateString() + " " + this._client.StartTime.ToLongTimeString(), true);
+            .AddField("Uptime (d.h\\:m\\:s)", $"{timeDiff:dd\\.hh\\:mm\\:ss} since {this._client.StartTime.ToLongDateString()}, {this._client.StartTime.ToLongTimeString()}");
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .AddEmbed(embedBuilder.Build())

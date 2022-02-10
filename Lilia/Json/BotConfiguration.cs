@@ -19,7 +19,7 @@ public class ClientData
 {
     [JsonProperty("private_guilds")] public List<ulong> PrivateGuildIds = new();
 
-    [JsonProperty("client_invite_link")] public string BotInviteLink = "";
+    [JsonProperty("bot_invite_link")] public string BotInviteLink = "";
 
     [JsonProperty("support_guild_invite_link")] public string SupportGuildInviteLink = "";
 
