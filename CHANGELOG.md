@@ -1,17 +1,19 @@
-# What's new in `release-1.0.0`???
-> Woah, first major update :tada:
 ## New commands
-- Added `uptime` command to check bot uptime
-- Added `changes` command to see the changelogs
-- Added `copynotice` command to copy a notification
+- Added `info` command to check bot infomations
+- Added `refresh` command to refresh commands
 ## Old commands reworks/removals
-- Removed `music` commands because sanity cost is on the moon now
-  - Maybe developed again in future?
-- Changed `psa` to `notice`
-  - Also changed `sendpsa` to `notice`
-- Fixed critical behavior issue in `ban` and `kick` when it only shows the last victim
-- Added default reason for `ban` and `kick`
-## Bot behaviors reworks/removals
-- Separated `guild` and `global` command registrations
-  - Reflected in JSON change
-- Extended response wait time for `ban` and `kick` from 30 seconds to 5 minutes
+- Removed `changes` commands
+- Created `mod` command category
+  - Moved `kick`, `ban` into `mod general`
+  - Moved `notice`, `copynotice` and `editnotice` into `mod notice`
+    - Changed the name of the commands:
+      - `notice` -> `mod notice send`
+      - `copynotice` -> `mod notice copy`
+      - `editnotice` -> `mod notice edit`
+  - `mod notice send` (formerly `notice`) now gives you the jump link to the notice message
+  - `mod notice copy` (formerly `copynotice`) now gives you the jump link to the linked message
+  - Both of the commands listed above this now requires message jump link instead of message ID(s)
+## Codebase changes (don't care if you don't plan to contribute the the source)
+- Squashed the database
+- Sanitized the codebase
+- Add tests for `LiliaUtilities.cs`

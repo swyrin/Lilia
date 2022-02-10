@@ -8,19 +8,18 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0306FDCC-DE6B-42DC-9D79-EAB668E7F312}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		LICENSE = LICENSE
-		README.md = README.md
-		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
-		.github\workflows\release.yml = .github\workflows\release.yml
-		CHANGELOGS.md = CHANGELOGS.md
-		CHANGELOG.md = CHANGELOG.md
-		.github\pull_request_template.md = .github\pull_request_template.md
 		.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
-		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
+		CHANGELOG.md = CHANGELOG.md
+		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
 		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
+		LICENSE = LICENSE
+		.github\pull_request_template.md = .github\pull_request_template.md
+		README.md = README.md
+		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lilia.Tests", "Lilia.Tests\Lilia.Tests.csproj", "{66BC1789-196B-49AC-98C8-DAF166AD688F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lilia.Tests", "Lilia.Tests\Lilia.Tests.csproj", "{66BC1789-196B-49AC-98C8-DAF166AD688F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,10 +27,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{07E5A517-188B-4F8B-9E7A-9F3BD75EFDBC}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{07E5A517-188B-4F8B-9E7A-9F3BD75EFDBC}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{07E5A517-188B-4F8B-9E7A-9F3BD75EFDBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{07E5A517-188B-4F8B-9E7A-9F3BD75EFDBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E5A517-188B-4F8B-9E7A-9F3BD75EFDBC}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E5A517-188B-4F8B-9E7A-9F3BD75EFDBC}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{66BC1789-196B-49AC-98C8-DAF166AD688F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{66BC1789-196B-49AC-98C8-DAF166AD688F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66BC1789-196B-49AC-98C8-DAF166AD688F}.Release|Any CPU.ActiveCfg = Release|Any CPU
