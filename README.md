@@ -9,10 +9,11 @@ This project undergoes heavy development 99% of the time so *please* don't expec
 
 # Self-hosting guide
 ## Step 1: Grab the files
-Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `app.zip` from the latest release then unzip it. Everything should be inside `app/` directory
+Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `app.zip` from the latest release then unzip it. Everything should be inside `app/` directory.
+Then open the folder matching your OS.
 
 ## Step 2: Configurations
-- Create the file `config.json` with the following template
+- Create the file `config.json` with the following template **at the same place with the executable file**
 ```json
 {
   "client": {
@@ -39,8 +40,7 @@ Head to [releases page](https://github.com/Swyreee/Lilia/releases), download `ap
 - See [here](https://github.com/Swyreee/Lilia/wiki/Configuration-101) for help on filling stuffs.
 
 ## Step 3: Run the bot
-- Pick a folder with your desired OS inside `app`
-- Just simply run it like how you run other apps
+- Just simply run it like how you run other apps in your OS
 
 # So... Where are the commands?
 Well, the bot runs under [Discord's "Application Command"](https://discord.com/blog/slash-commands-are-here) so just simply type `/` on the message box or Right Click if you are on PC or Web version of Discord.
