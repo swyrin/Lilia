@@ -25,7 +25,6 @@ namespace Lilia.Services;
 
 public class LiliaClient
 {
-    private SlashCommandsExtension _slashCommandsExtension;
     public BotConfiguration BotConfiguration;
     public CancellationTokenSource Cts;
     public LiliaDatabase Database;
@@ -62,7 +61,7 @@ public class LiliaClient
             .AddSingleton(this)
             .BuildServiceProvider();
 
-        _slashCommandsExtension = client.UseSlashCommands(new SlashCommandsConfiguration
+        SlashCommandsExtension slash = client.UseSlashCommands(new SlashCommandsConfiguration
         {
             Services = services
         });
@@ -80,13 +79,13 @@ public class LiliaClient
             BotConfiguration.Client.PrivateGuildIds.ForEach(guildId =>
             {
                 Log.Logger.Warning($"Registering slash commands for private guild with ID \"{guildId}\"");
-                _slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly(), guildId);
+                slash.RegisterCommands(Assembly.GetExecutingAssembly(), guildId);
             });
 
         if (BotConfiguration.Client.SlashCommandsForGlobal)
         {
             Log.Logger.Warning("Registering slash commands in global scope");
-            _slashCommandsExtension.RegisterCommands(Assembly.GetExecutingAssembly());
+            slash.RegisterCommands(Assembly.GetExecutingAssembly());
         }
 
         // handling events
@@ -94,7 +93,8 @@ public class LiliaClient
         client.GuildAvailable += OnGuildAvailable;
         client.GuildUnavailable += OnGuildUnavailable;
         client.ClientErrored += OnClientErrored;
-        _slashCommandsExtension.SlashCommandErrored += OnSlashCommandErrored;
+        slash.SlashCommandErrored += OnSlashCommandErrored;
+        Console.CancelKeyPress += (_, _) => this.Cts.Cancel();
 
         Log.Logger.Information("Setting client activity");
 
