@@ -29,7 +29,7 @@ jobs:
         dotnet publish -r linux-x64 -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix linux-x64 --output app/linux-x64
         dotnet publish -r linux-arm -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix linux-arm --output app/linux-arm
         dotnet publish -r linux-arm64 -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix linux-arm64 --output app/linux-arm64
-        dotnet publish -r osx64 -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix osx-x64 --output app/osx64
+        dotnet publish -r osx-x64 -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix osx-x64 --output app/osx-x64
     - name: Create archive of built files
       run: |
             pushd /home/runner/work/Lilia/Lilia/

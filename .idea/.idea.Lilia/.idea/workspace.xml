@@ -7,7 +7,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment=":thinking:" />
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="New README.md">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -49,37 +54,24 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Program.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/89fbbb69e35e4b11ac51e19cb802f914ba00/ef/53e8acd4/AsyncEvent`2.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OwnerModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OwnerModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/ModerationModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Services/LiliaClient.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/cd97f89a1dd485a9e981f4eb33be0e28029fd8e72ed1baed66e8b36dc455dc4/HttpMethod.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/6d/0411b405/DefaultRequestHandler.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/efd3e9c4749621d4a53b45d7117d2a581e02a265c444a040f1387a155db/Dictionary.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/974fa14c57bab8fe29f1bddd39b1a6548b9cc8cf9e0ef5e670c2407a56d9/String.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/ModerationModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/40d9c6632ca3993dcb82583ffa755fbbed8ad19f1b37a7654b7ffaff24b6c/Uri.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d82b8ac02bb43d6b94884e283d560e14f18f7caa55c2d41bb0fc59beb77a1d/UriExt.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/OwnerModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1e8feaadf5c3fa14d36ea2a638c432a2e1a47b7837d8b83d88303c5d9c15cf/AsyncValueTaskMethodBuilderT.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/d5/8679c663/OsuClient.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/96790fb115a743319102f37c54ece12f14600/d4/a2913bc0/GameMode.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/89fbbb69e35e4b11ac51e19cb802f914ba00/ef/53e8acd4/AsyncEvent`2.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/40d9c6632ca3993dcb82583ffa755fbbed8ad19f1b37a7654b7ffaff24b6c/Uri.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/23e31092363db7107ca21367adea927bccc2e7cf2075f9ee398ad1175b8e87/Nullable.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Modules/MusicModule.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/cd97f89a1dd485a9e981f4eb33be0e28029fd8e72ed1baed66e8b36dc455dc4/HttpMethod.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d82b8ac02bb43d6b94884e283d560e14f18f7caa55c2d41bb0fc59beb77a1d/UriExt.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/6d/0411b405/DefaultRequestHandler.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/efd3e9c4749621d4a53b45d7117d2a581e02a265c444a040f1387a155db/Dictionary.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1e8feaadf5c3fa14d36ea2a638c432a2e1a47b7837d8b83d88303c5d9c15cf/AsyncValueTaskMethodBuilderT.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/575c31ecc35a636b6f962cb71d53992552941a18982aae1c8e6c16305cc3761b/ExceptionDispatchInfo.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://D:/something I made when I have free time/Lilia/Lilia/Json/BotConfiguration.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="SWEA" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectId" id="1ynCgyB2aA0goTk0uyRlhbOpr7l" />
   <component name="ProjectLevelVcsManager">
@@ -91,6 +83,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="DatabaseDriversLRU" value="sqlite" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -170,147 +163,13 @@
       <workItem from="1644193492393" duration="2312000" />
       <workItem from="1644196255528" duration="2862000" />
       <workItem from="1644199621052" duration="388000" />
-      <workItem from="1644220789013" duration="13870000" />
-    </task>
-    <task id="LOCAL-00107" summary="Reduce fragmented embed creation process">
-      <created>1642990722636</created>
-      <option name="number" value="00107" />
-      <option name="presentableId" value="LOCAL-00107" />
-      <option name="project" value="LOCAL" />
-      <updated>1642990722636</updated>
-    </task>
-    <task id="LOCAL-00108" summary="Add queuing commands">
-      <created>1642990737023</created>
-      <option name="number" value="00108" />
-      <option name="presentableId" value="LOCAL-00108" />
-      <option name="project" value="LOCAL" />
-      <updated>1642990737023</updated>
-    </task>
-    <task id="LOCAL-00109" summary="Reduce fragmented embed creation processes">
-      <created>1642990757613</created>
-      <option name="number" value="00109" />
-      <option name="presentableId" value="LOCAL-00109" />
-      <option name="project" value="LOCAL" />
-      <updated>1642990757613</updated>
-    </task>
-    <task id="LOCAL-00110" summary="Add uptime command">
-      <created>1642994666844</created>
-      <option name="number" value="00110" />
-      <option name="presentableId" value="LOCAL-00110" />
-      <option name="project" value="LOCAL" />
-      <updated>1642994666844</updated>
-    </task>
-    <task id="LOCAL-00111" summary="Add uptime command">
-      <created>1642994686492</created>
-      <option name="number" value="00111" />
-      <option name="presentableId" value="LOCAL-00111" />
-      <option name="project" value="LOCAL" />
-      <updated>1642994686492</updated>
-    </task>
-    <task id="LOCAL-00112" summary="Clean up">
-      <created>1642994703370</created>
-      <option name="number" value="00112" />
-      <option name="presentableId" value="LOCAL-00112" />
-      <option name="project" value="LOCAL" />
-      <updated>1642994703370</updated>
-    </task>
-    <task id="LOCAL-00113" summary="Fix critical bug and clean up">
-      <created>1642994733761</created>
-      <option name="number" value="00113" />
-      <option name="presentableId" value="LOCAL-00113" />
-      <option name="project" value="LOCAL" />
-      <updated>1642994733761</updated>
-    </task>
-    <task id="LOCAL-00114" summary="Bump version">
-      <created>1642994761070</created>
-      <option name="number" value="00114" />
-      <option name="presentableId" value="LOCAL-00114" />
-      <option name="project" value="LOCAL" />
-      <updated>1642994761070</updated>
-    </task>
-    <task id="LOCAL-00115" summary="Edit CHANGELOG.md">
-      <created>1642994779784</created>
-      <option name="number" value="00115" />
-      <option name="presentableId" value="LOCAL-00115" />
-      <option name="project" value="LOCAL" />
-      <updated>1642994779784</updated>
-    </task>
-    <task id="LOCAL-00116" summary="Update meta files">
-      <created>1642995274956</created>
-      <option name="number" value="00116" />
-      <option name="presentableId" value="LOCAL-00116" />
-      <option name="project" value="LOCAL" />
-      <updated>1642995274956</updated>
-    </task>
-    <task id="LOCAL-00117" summary="Oops, my bad">
-      <created>1643008721823</created>
-      <option name="number" value="00117" />
-      <option name="presentableId" value="LOCAL-00117" />
-      <option name="project" value="LOCAL" />
-      <updated>1643008721824</updated>
-    </task>
-    <task id="LOCAL-00118" summary="Eventually fix for future bugs">
-      <created>1643009183936</created>
-      <option name="number" value="00118" />
-      <option name="presentableId" value="LOCAL-00118" />
-      <option name="project" value="LOCAL" />
-      <updated>1643009183936</updated>
-    </task>
-    <task id="LOCAL-00119" summary="No wonder why it doesn't save">
-      <created>1643009322297</created>
-      <option name="number" value="00119" />
-      <option name="presentableId" value="LOCAL-00119" />
-      <option name="project" value="LOCAL" />
-      <updated>1643009322297</updated>
-    </task>
-    <task id="LOCAL-00120" summary="New database model">
-      <created>1643077892496</created>
-      <option name="number" value="00120" />
-      <option name="presentableId" value="LOCAL-00120" />
-      <option name="project" value="LOCAL" />
-      <updated>1643077892496</updated>
-    </task>
-    <task id="LOCAL-00121" summary="Fix the issue when the /addplaylist not adding tracks">
-      <created>1643077924920</created>
-      <option name="number" value="00121" />
-      <option name="presentableId" value="LOCAL-00121" />
-      <option name="project" value="LOCAL" />
-      <updated>1643077924920</updated>
-    </task>
-    <task id="LOCAL-00122" summary="Add IsPlaying field in guild database">
-      <created>1643080875840</created>
-      <option name="number" value="00122" />
-      <option name="presentableId" value="LOCAL-00122" />
-      <option name="project" value="LOCAL" />
-      <updated>1643080875841</updated>
-    </task>
-    <task id="LOCAL-00123" summary="Add fields related to music playback to database">
-      <created>1643363945673</created>
-      <option name="number" value="00123" />
-      <option name="presentableId" value="LOCAL-00123" />
-      <option name="project" value="LOCAL" />
-      <updated>1643363945674</updated>
-    </task>
-    <task id="LOCAL-00124" summary="Add &quot;changes&quot; command">
-      <created>1643363985160</created>
-      <option name="number" value="00124" />
-      <option name="presentableId" value="LOCAL-00124" />
-      <option name="project" value="LOCAL" />
-      <updated>1643363985160</updated>
-    </task>
-    <task id="LOCAL-00125" summary="Handle stream/radio links">
-      <created>1643364070822</created>
-      <option name="number" value="00125" />
-      <option name="presentableId" value="LOCAL-00125" />
-      <option name="project" value="LOCAL" />
-      <updated>1643364070822</updated>
-    </task>
-    <task id="LOCAL-00126" summary="Edit to past tense">
-      <created>1643364101920</created>
-      <option name="number" value="00126" />
-      <option name="presentableId" value="LOCAL-00126" />
-      <option name="project" value="LOCAL" />
-      <updated>1643364101920</updated>
+      <workItem from="1644220789013" duration="14301000" />
+      <workItem from="1644293625691" duration="2863000" />
+      <workItem from="1644297458794" duration="6580000" />
+      <workItem from="1644388821757" duration="1428000" />
+      <workItem from="1644398207830" duration="404000" />
+      <workItem from="1644398869147" duration="6000000" />
+      <workItem from="1644464373487" duration="1554000" />
     </task>
     <task id="LOCAL-00127" summary="Sanitize the logging a bit and Happy New Year">
       <created>1643713646093</created>
@@ -515,7 +374,147 @@
       <option name="project" value="LOCAL" />
       <updated>1644235197971</updated>
     </task>
-    <option name="localTasksCounter" value="156" />
+    <task id="LOCAL-00156" summary="Hmmm, I did something wrong?">
+      <created>1644235483145</created>
+      <option name="number" value="00156" />
+      <option name="presentableId" value="LOCAL-00156" />
+      <option name="project" value="LOCAL" />
+      <updated>1644235483146</updated>
+    </task>
+    <task id="LOCAL-00157" summary="Merge builds into one">
+      <created>1644294314453</created>
+      <option name="number" value="00157" />
+      <option name="presentableId" value="LOCAL-00157" />
+      <option name="project" value="LOCAL" />
+      <updated>1644294314454</updated>
+    </task>
+    <task id="LOCAL-00158" summary="Merge builds into one">
+      <created>1644294446296</created>
+      <option name="number" value="00158" />
+      <option name="presentableId" value="LOCAL-00158" />
+      <option name="project" value="LOCAL" />
+      <updated>1644294446296</updated>
+    </task>
+    <task id="LOCAL-00159" summary="Add tests for LiliaUtilities.cs">
+      <created>1644389425232</created>
+      <option name="number" value="00159" />
+      <option name="presentableId" value="LOCAL-00159" />
+      <option name="project" value="LOCAL" />
+      <updated>1644389425233</updated>
+    </task>
+    <task id="LOCAL-00160" summary="Add tests for LiliaUtilities.cs">
+      <created>1644401658646</created>
+      <option name="number" value="00160" />
+      <option name="presentableId" value="LOCAL-00160" />
+      <option name="project" value="LOCAL" />
+      <updated>1644401658646</updated>
+    </task>
+    <task id="LOCAL-00161" summary="Squash old database">
+      <created>1644401705229</created>
+      <option name="number" value="00161" />
+      <option name="presentableId" value="LOCAL-00161" />
+      <option name="project" value="LOCAL" />
+      <updated>1644401705229</updated>
+    </task>
+    <task id="LOCAL-00162" summary="Squash old database model and rename classes">
+      <created>1644401748051</created>
+      <option name="number" value="00162" />
+      <option name="presentableId" value="LOCAL-00162" />
+      <option name="project" value="LOCAL" />
+      <updated>1644401748051</updated>
+    </task>
+    <task id="LOCAL-00163" summary="Squash old database model and rename classes">
+      <created>1644401873756</created>
+      <option name="number" value="00163" />
+      <option name="presentableId" value="LOCAL-00163" />
+      <option name="project" value="LOCAL" />
+      <updated>1644401873756</updated>
+    </task>
+    <task id="LOCAL-00164" summary="Add necessary fields and remove some useless variables">
+      <created>1644401925605</created>
+      <option name="number" value="00164" />
+      <option name="presentableId" value="LOCAL-00164" />
+      <option name="project" value="LOCAL" />
+      <updated>1644401925605</updated>
+    </task>
+    <task id="LOCAL-00165" summary="Clarification for future me">
+      <created>1644401937342</created>
+      <option name="number" value="00165" />
+      <option name="presentableId" value="LOCAL-00165" />
+      <option name="project" value="LOCAL" />
+      <updated>1644401937342</updated>
+    </task>
+    <task id="LOCAL-00166" summary="opps">
+      <created>1644402132565</created>
+      <option name="number" value="00166" />
+      <option name="presentableId" value="LOCAL-00166" />
+      <option name="project" value="LOCAL" />
+      <updated>1644402132565</updated>
+    </task>
+    <task id="LOCAL-00167" summary="Add more fields">
+      <created>1644402214408</created>
+      <option name="number" value="00167" />
+      <option name="presentableId" value="LOCAL-00167" />
+      <option name="project" value="LOCAL" />
+      <updated>1644402214408</updated>
+    </task>
+    <task id="LOCAL-00168" summary="Add /info command">
+      <created>1644403018174</created>
+      <option name="number" value="00168" />
+      <option name="presentableId" value="LOCAL-00168" />
+      <option name="project" value="LOCAL" />
+      <updated>1644403018174</updated>
+    </task>
+    <task id="LOCAL-00169" summary="Group the commands together">
+      <created>1644403037074</created>
+      <option name="number" value="00169" />
+      <option name="presentableId" value="LOCAL-00169" />
+      <option name="project" value="LOCAL" />
+      <updated>1644403037074</updated>
+    </task>
+    <task id="LOCAL-00170" summary="Remove empty line">
+      <created>1644403051525</created>
+      <option name="number" value="00170" />
+      <option name="presentableId" value="LOCAL-00170" />
+      <option name="project" value="LOCAL" />
+      <updated>1644403051526</updated>
+    </task>
+    <task id="LOCAL-00171" summary="Some minor changes">
+      <created>1644403068528</created>
+      <option name="number" value="00171" />
+      <option name="presentableId" value="LOCAL-00171" />
+      <option name="project" value="LOCAL" />
+      <updated>1644403068528</updated>
+    </task>
+    <task id="LOCAL-00172" summary="Rename field">
+      <created>1644403542947</created>
+      <option name="number" value="00172" />
+      <option name="presentableId" value="LOCAL-00172" />
+      <option name="project" value="LOCAL" />
+      <updated>1644403542947</updated>
+    </task>
+    <task id="LOCAL-00173" summary="Code updates">
+      <created>1644403555433</created>
+      <option name="number" value="00173" />
+      <option name="presentableId" value="LOCAL-00173" />
+      <option name="project" value="LOCAL" />
+      <updated>1644403555433</updated>
+    </task>
+    <task id="LOCAL-00174" summary="Messing with the Actions, chapter 4">
+      <created>1644465217821</created>
+      <option name="number" value="00174" />
+      <option name="presentableId" value="LOCAL-00174" />
+      <option name="project" value="LOCAL" />
+      <updated>1644465217821</updated>
+    </task>
+    <task id="LOCAL-00175" summary="New README.md">
+      <created>1644465475431</created>
+      <option name="number" value="00175" />
+      <option name="presentableId" value="LOCAL-00175" />
+      <option name="project" value="LOCAL" />
+      <updated>1644465475432</updated>
+    </task>
+    <option name="localTasksCounter" value="176" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -575,23 +574,6 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Reworking on guild queue soon, now is time for Lunar New Year&#10;&#10;Happy New Year everyone! :tada:" />
-    <MESSAGE value="Rewrite embed getter" />
-    <MESSAGE value="Code cleanup" />
-    <MESSAGE value="Remove formatting utils" />
-    <MESSAGE value="Fix a critical bug where the bot is unable to send the error&#10;&#10;Also better error information" />
-    <MESSAGE value="Update packages" />
-    <MESSAGE value="Rewrite music commands" />
-    <MESSAGE value="One-liners gang" />
-    <MESSAGE value="Make better user experience" />
-    <MESSAGE value="Update current changelog" />
-    <MESSAGE value="Better voice channel presence checking" />
-    <MESSAGE value="Something needs to be announced publicly" />
-    <MESSAGE value="Code cleanups" />
-    <MESSAGE value="Moved logging to Program.cs" />
-    <MESSAGE value="Add commands to refresh slash commands" />
-    <MESSAGE value="Prepare to leave lavalink" />
-    <MESSAGE value="Better description" />
     <MESSAGE value="Forgot to add this into JSON changes" />
     <MESSAGE value="Goodbye music o/" />
     <MESSAGE value="Command name change" />
@@ -600,7 +582,24 @@
     <MESSAGE value="Finalize everything" />
     <MESSAGE value="oops" />
     <MESSAGE value=":thinking:" />
-    <option name="LAST_COMMIT_MESSAGE" value=":thinking:" />
+    <MESSAGE value="Hmmm, I did something wrong?" />
+    <MESSAGE value="Merge builds into one" />
+    <MESSAGE value="Add tests for LiliaUtilities.cs" />
+    <MESSAGE value="Squash old database" />
+    <MESSAGE value="Squash old database model and rename classes" />
+    <MESSAGE value="Add necessary fields and remove some useless variables" />
+    <MESSAGE value="Clarification for future me" />
+    <MESSAGE value="opps" />
+    <MESSAGE value="Add more fields" />
+    <MESSAGE value="Add /info command" />
+    <MESSAGE value="Group the commands together" />
+    <MESSAGE value="Remove empty line" />
+    <MESSAGE value="Some minor changes" />
+    <MESSAGE value="Rename field" />
+    <MESSAGE value="Code updates" />
+    <MESSAGE value="Messing with the Actions, chapter 4" />
+    <MESSAGE value="New README.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="New README.md" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
