@@ -102,8 +102,8 @@ public class OsuModule : ApplicationCommandModule
     public async Task GetOsuProfileMentionCommand(InteractionContext ctx,
         [Option("user", "Someone in this Discord server")]
         DiscordUser discordUser,
-        [Option("search_type", "Search type")] UserSearchChoice searchType = UserSearchChoice.Profile,
-        [Option("search_mode", "Search mode")] ModeSearchChoice searchMode = ModeSearchChoice.Linked)
+        [Option("type", "Search type")] UserSearchChoice searchType = UserSearchChoice.Profile,
+        [Option("mode", "Search mode")] ModeSearchChoice searchMode = ModeSearchChoice.Linked)
     {
         await ctx.DeferAsync();
 
@@ -122,15 +122,15 @@ public class OsuModule : ApplicationCommandModule
         if (searchMode == ModeSearchChoice.Linked) Enum.TryParse(dbUser.OsuMode, out omode);
         else omode = FromModeChoice(searchMode);
 
-        await GenericProcessing(ctx, dbUser.OsuUsername, searchType, FromModeChoice(searchMode));
+        await GenericProcessing(ctx, dbUser.OsuUsername, searchType, omode);
     }
 
     [SlashCommand("profile", "Get osu! profile from provided username")]
     public async Task GetOsuProfileStringCommand(InteractionContext ctx,
         [Option("username", "Someone's osu! username")]
         string username,
-        [Option("search_type", "Search type")] UserSearchChoice searchType = UserSearchChoice.Profile,
-        [Option("search_mode", "Search mode")] ModeSearchChoice searchMode = ModeSearchChoice.Osu)
+        [Option("type", "Search type")] UserSearchChoice searchType = UserSearchChoice.Profile,
+        [Option("mode", "Search mode")] ModeSearchChoice searchMode = ModeSearchChoice.Osu)
     {
         await ctx.DeferAsync();
 

@@ -9,7 +9,7 @@ namespace Lilia.Commons;
 
 public static class JsonManager<T> where T : BaseJson
 {
-    private static void EnsureFileGenerated(string filePath, bool createIfNotExist = false)
+    private static void EnsureFileExists(string filePath, bool createIfNotExist = false)
     {
         if (!File.Exists(filePath))
         {
@@ -17,12 +17,8 @@ public static class JsonManager<T> where T : BaseJson
             {
                 File.Create(filePath);
                 File.WriteAllText(filePath, JsonConvert.SerializeObject(typeof(T), Formatting.Indented));
-                Log.Logger.Debug(
-                    $"Created JSON file with path \"{filePath}\" since one doesn't exist and throwing the exception");
-                throw new FileNotFoundException("Unable to find the requested file, but created the new one", filePath);
+                Log.Logger.Warning($"Created JSON file with path \"{filePath}\" since one doesn't exist");
             }
-
-            throw new FileNotFoundException("Unable to find the requested file", filePath);
         }
     }
 
@@ -41,12 +37,12 @@ public static class JsonManager<T> where T : BaseJson
             if (string.IsNullOrWhiteSpace(filePath))
                 throw new ArgumentException("Invalid file path", nameof(filePath));
 
-            EnsureFileGenerated(filePath);
+            EnsureFileExists(filePath);
             return JsonConvert.DeserializeObject<T>(File.ReadAllText(filePath));
         }
         catch (NullReferenceException)
         {
-            Log.Logger.Fatal("Error in reading JSON, maybe you did not set a constructor with FilePath overridden");
+            Log.Logger.Fatal("Error in reading JSON, maybe you did not set a constructor with FilePath field overridden");
             throw;
         }
     }

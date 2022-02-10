@@ -46,19 +46,19 @@ public class OwnerModule : ApplicationCommandModule
         // await slasher.RefreshCommands()
         var guildRegisteredCommands = slasher.RegisteredCommands;
 
-        foreach (var (key, value) in guildRegisteredCommands)
+        foreach (var (guildId, commands) in guildRegisteredCommands)
         {
-            if (key == null)
+            if (guildId == null)
             {
                 Log.Logger.Warning("Refreshing slash commands in global scope");
                 response.AppendLine("Refreshing slash commands in global scope");
-                await ctx.Client.BulkOverwriteGlobalApplicationCommandsAsync(value);
+                await ctx.Client.BulkOverwriteGlobalApplicationCommandsAsync(commands);
                 continue;
             }
 
-            Log.Logger.Warning($"Refreshing slash commands for private guild with ID {key.GetValueOrDefault()}");
-            response.AppendLine($"Refreshing slash commands for private guild with ID {key.GetValueOrDefault()}");
-            await ctx.Client.BulkOverwriteGuildApplicationCommandsAsync(key.Value, value);
+            Log.Logger.Warning($"Refreshing slash commands for private guild with ID {guildId.GetValueOrDefault()}");
+            response.AppendLine($"Refreshing slash commands for private guild with ID {guildId.GetValueOrDefault()}");
+            await ctx.Client.BulkOverwriteGuildApplicationCommandsAsync(guildId.Value, commands);
         }
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()

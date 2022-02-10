@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
@@ -65,8 +66,7 @@ public class ModerationModule : ApplicationCommandModule
                 }
                 else
                 {
-                    await ctx.Guild.BanMemberAsync(member, 0,
-                        $"Banned by {ctx.Member.DisplayName}#{ctx.Member.Discriminator} -> Reason: {reason}");
+                    await ctx.Guild.BanMemberAsync(member, 0, $"Banned by {ctx.Member.DisplayName}#{ctx.Member.Discriminator} - Reason: {reason}");
                     stringBuilder.AppendLine($"Banned {member.DisplayName}#{member.Discriminator}");
                 }
             }
@@ -87,7 +87,7 @@ public class ModerationModule : ApplicationCommandModule
 
             var interactivity = ctx.Client.GetInteractivity();
 
-            var res = await interactivity.WaitForMessageAsync(x => x.MentionedUsers.Any(), TimeSpan.FromMinutes(5));
+            InteractivityResult<DiscordMessage> res = await interactivity.WaitForMessageAsync(x => x.MentionedUsers.Any(), TimeSpan.FromMinutes(5));
 
             if (res.TimedOut)
             {
@@ -112,8 +112,7 @@ public class ModerationModule : ApplicationCommandModule
                 }
                 else
                 {
-                    await ctx.Guild.BanMemberAsync(member, 0,
-                        $"Kicked by {ctx.Member.DisplayName}#{ctx.Member.Discriminator} -> Reason: {reason}");
+                    await ctx.Guild.BanMemberAsync(member, 0, $"Kicked by {ctx.Member.DisplayName}#{ctx.Member.Discriminator} -> Reason: {reason}");
                     stringBuilder.AppendLine($"Kicked {member.DisplayName}#{member.Discriminator}");
                 }
             }
@@ -129,21 +128,28 @@ public class ModerationModule : ApplicationCommandModule
         [SlashCommand("send", "Send a notification to a channel")]
         [SlashRequirePermissions(Permissions.ManageGuild)]
         public async Task SendNoticeCommand(InteractionContext ctx,
-            [Option("target_message_jump_link",
-                "Message jump link to copy, can be from other guild, at least as I am in there")]
+            [Option("target_message_jump_link", "Target message jump link, must be a message in this guild")]
             string msgJump,
-            [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store, ChannelType.NewsThread,
-                ChannelType.PublicThread)]
-            [Option("target_channel", "Channel to send")]
+            [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store, ChannelType.NewsThread, ChannelType.PublicThread)]
+            [Option("target_channel", "Target channel to send")]
             DiscordChannel channel)
         {
             await ctx.DeferAsync(true);
 
             try
             {
-                var resolved = msgJump.ResolveDiscordMessageJumpLink();
+                Tuple<ulong, ulong, ulong> resolved = msgJump.ResolveDiscordMessageJumpLink();
 
                 var guild = await ctx.Client.GetGuildAsync(resolved.Item1);
+                
+                if (guild != ctx.Guild)
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("The target message must be from this guild"));
+
+                    return;
+                }
+
                 var chn = guild.GetChannel(resolved.Item2);
                 var msg = await chn.GetMessageAsync(resolved.Item3);
                 var noticeMsg = await channel.SendMessageAsync(msg.Content);
@@ -151,7 +157,7 @@ public class ModerationModule : ApplicationCommandModule
                 var jumpToMessageBtn = new DiscordLinkButtonComponent(noticeMsg.JumpLink.ToString(), "Jump to message");
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Sent the notice")
+                    .WithContent($"I sent the notice to the target channel: #{chn.Name}")
                     .AddComponents(jumpToMessageBtn));
             }
             catch (Exception)
@@ -161,14 +167,12 @@ public class ModerationModule : ApplicationCommandModule
             }
         }
 
-        [SlashCommand("edit", "Edit an existing notification sent by me")]
+        [SlashCommand("override", "Override an existing notification sent by me")]
         [SlashRequirePermissions(Permissions.ManageGuild)]
         public async Task EditNoticeCommand(InteractionContext ctx,
-            [Option("old_message_jump_link",
-                "Old message jump link, can be from other guild, at least as I am in there")]
+            [Option("old_message_jump_link", "Old message jump link, must be a message in this guild")]
             string msgJumpOld,
-            [Option("new_message_jump_link",
-                "New message jump link, can be from other guild, at least as I am in there")]
+            [Option("new_message_jump_link", "New message jump link, must be a message in this guild")]
             string msgJumpNew
         )
         {
@@ -176,14 +180,39 @@ public class ModerationModule : ApplicationCommandModule
 
             try
             {
-                var resolved1 = msgJumpOld.ResolveDiscordMessageJumpLink();
-                var resolved2 = msgJumpNew.ResolveDiscordMessageJumpLink();
+                Tuple<ulong, ulong, ulong> resolved1 = msgJumpOld.ResolveDiscordMessageJumpLink();
+                Tuple<ulong, ulong, ulong> resolved2 = msgJumpNew.ResolveDiscordMessageJumpLink();
 
                 var g1 = await ctx.Client.GetGuildAsync(resolved1.Item1);
                 var g2 = await ctx.Client.GetGuildAsync(resolved2.Item1);
+                
+
+                if (g1 != g2)
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("These two message must originate from the same guild"));
+
+                    return;
+                }
+
+                if (g1 != ctx.Guild)
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("The old one must be from this guild"));
+
+                    return;
+                }
+
+                if (g2 != ctx.Guild)
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("The new one must be from this guild"));
+
+                    return;
+                }
+
                 var c1 = g1.GetChannel(resolved1.Item2);
                 var c2 = g2.GetChannel(resolved2.Item2);
-
                 var oldMsg = await c1.GetMessageAsync(resolved1.Item3);
                 var newMsg = await c2.GetMessageAsync(resolved2.Item3);
 
@@ -202,25 +231,35 @@ public class ModerationModule : ApplicationCommandModule
         [SlashCommand("copy", "Copy a notification sent by me (with formats)")]
         [SlashRequirePermissions(Permissions.ManageGuild)]
         public async Task CopyNoticeCommand(InteractionContext ctx,
-            [Option("target_message_jump_link",
-                "Message jump link to copy, can be from other guild, at least as I am in there")]
+            [Option("target_message_jump_link", "Target message jump link, must be a message in this guild")]
             string msgJump)
         {
             await ctx.DeferAsync(true);
 
             try
             {
-                var resolved = msgJump.ResolveDiscordMessageJumpLink();
+                Tuple<ulong, ulong, ulong> resolved = msgJump.ResolveDiscordMessageJumpLink();
 
                 var guild = await ctx.Client.GetGuildAsync(resolved.Item1);
+                
+                if (guild != ctx.Guild)
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("The target message must be from this guild"));
+
+                    return;
+                }
+
                 var chn = guild.GetChannel(resolved.Item2);
                 var msg = await chn.GetMessageAsync(resolved.Item3);
 
+                DiscordLinkButtonComponent jumpBtn = new DiscordLinkButtonComponent(msg.JumpLink.ToString(), "Source message");
+
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .AddEmbed(ctx.Member.GetDefaultEmbedTemplateForMember()
-                        .WithTitle("Notice received")
-                        .WithDescription(msg.Content)
-                        .AddField("Jump link", Formatter.MaskedUrl("Click me!", msg.JumpLink))));
+                        .WithTitle("Notice copied")
+                        .WithDescription(msg.Content))
+                    .AddComponents(jumpBtn));
             }
             catch (Exception)
             {
