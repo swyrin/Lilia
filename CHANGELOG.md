@@ -1,5 +1,5 @@
 ## New commands
-- Added `info` command to check bot infomations
+- Added `info` command to check bot information
 - Added `refresh` command to refresh commands
 ## Old commands reworks/removals
 - Removed `changes` commands
@@ -16,4 +16,5 @@
 ## Codebase changes (don't care if you don't plan to contribute the the source)
 - Squashed the database
 - Sanitized the codebase
+- Reworked on the build, release and code analysis system
 - Add tests for `LiliaUtilities.cs`
