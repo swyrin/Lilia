@@ -5,8 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using Lilia.Commons;
 using Lilia.Database;
 using Lilia.Database.Extensions;
@@ -16,30 +18,6 @@ using OsuSharp.Exceptions;
 using OsuSharp.Interfaces;
 
 namespace Lilia.Modules;
-
-public enum UserSearchChoice
-{
-    [ChoiceName("profile")] Profile,
-
-    [ChoiceName("best_plays")] Best,
-
-    [ChoiceName("first_place_plays")] First,
-
-    [ChoiceName("recent_plays")] Recent
-}
-
-public enum ModeSearchChoice
-{
-    [ChoiceName("linked")] Linked,
-
-    [ChoiceName("standard")] Osu,
-
-    [ChoiceName("mania")] Mania,
-
-    [ChoiceName("catch_the_beat")] Fruits,
-
-    [ChoiceName("taiko")] Taiko
-}
 
 [SlashCommandGroup("osu", "osu! commands for Bancho server")]
 public class OsuModule : ApplicationCommandModule
@@ -56,29 +34,62 @@ public class OsuModule : ApplicationCommandModule
     }
 
     [SlashCommand("update", "Update your osu! profile information in my database")]
-    public async Task SetOsuUsernameCommand(InteractionContext ctx,
+    public async Task SetSelfOsuUsernameCommand(InteractionContext ctx,
         [Option("username", "Your osu! username")]
         string username,
-        [Choice("standard", "Osu")]
-        [Choice("taiko", "Taiko")]
-        [Choice("catch", "Fruits")]
-        [Choice("mania", "Mania")]
-        [Option("mode", "osu! mode to link")]
-        string mode = "Osu")
+        [Option("mode", "Mode")]
+        ModeSearchChoice searchMode = ModeSearchChoice.Osu)
     {
         await ctx.DeferAsync(true);
 
-        var dbUser = _dbCtx.GetOrCreateUserRecord(ctx.Member);
+        if (searchMode == ModeSearchChoice.Linked)
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Invalid mode"));
 
+            return;
+        }
+
+        var dbUser = _dbCtx.GetOrCreateUserRecord(ctx.Member);
         dbUser.OsuUsername = username;
-        dbUser.OsuMode = mode;
+        dbUser.OsuMode = FromModeChoice(searchMode).ToString();
 
         _dbCtx.Update(dbUser);
         await _dbCtx.SaveChangesAsync();
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent(
-                $"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(mode)}"));
+            .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchMode.GetName())}"));
+    }
+
+    [SlashCommand("forceupdate", "Update an user's osu! profile information in my database")]
+    [SlashRequirePermissions(Permissions.ManageGuild)]
+    public async Task SetMemberOsuUsernameCommand(InteractionContext ctx,
+        [Option("user", "User to update, should be an user from your guild")]
+        DiscordUser user,
+        [Option("username", "osu! username")]
+        string username,
+        [Option("mode", "Mode")]
+        ModeSearchChoice searchMode = ModeSearchChoice.Osu)
+    {
+        await ctx.DeferAsync(true);
+
+        if (searchMode == ModeSearchChoice.Linked)
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Invalid mode"));
+
+            return;
+        }
+
+        var dbUser = _dbCtx.GetOrCreateUserRecord(user);
+        dbUser.OsuUsername = username;
+        dbUser.OsuMode = FromModeChoice(searchMode).ToString();
+
+        _dbCtx.Update(dbUser);
+        await _dbCtx.SaveChangesAsync();
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchMode.GetName())}"));
     }
 
     [SlashCommand("myinfo", "Get your linked data with me")]
@@ -101,14 +112,15 @@ public class OsuModule : ApplicationCommandModule
     [SlashCommand("lookup", "Get a member's osu! profile information")]
     public async Task GetOsuProfileMentionCommand(InteractionContext ctx,
         [Option("user", "Someone in this Discord server")]
-        DiscordUser discordUser,
-        [Option("type", "Search type")] UserSearchChoice searchType = UserSearchChoice.Profile,
-        [Option("mode", "Search mode")] ModeSearchChoice searchMode = ModeSearchChoice.Linked)
+        DiscordUser user,
+        [Option("type", "Search type")]
+        UserSearchChoice searchType = UserSearchChoice.Profile,
+        [Option("mode", "Search mode")]
+        ModeSearchChoice searchMode = ModeSearchChoice.Linked)
     {
         await ctx.DeferAsync();
 
-        var member = (DiscordMember) discordUser;
-        var dbUser = _dbCtx.GetOrCreateUserRecord(member);
+        var dbUser = _dbCtx.GetOrCreateUserRecord(user);
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
@@ -122,243 +134,92 @@ public class OsuModule : ApplicationCommandModule
         if (searchMode == ModeSearchChoice.Linked) Enum.TryParse(dbUser.OsuMode, out omode);
         else omode = FromModeChoice(searchMode);
 
-        await GenericProcessing(ctx, dbUser.OsuUsername, searchType, omode);
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, searchType, omode);
     }
 
     [SlashCommand("profile", "Get osu! profile from provided username")]
     public async Task GetOsuProfileStringCommand(InteractionContext ctx,
         [Option("username", "Someone's osu! username")]
         string username,
-        [Option("type", "Search type")] UserSearchChoice searchType = UserSearchChoice.Profile,
-        [Option("mode", "Search mode")] ModeSearchChoice searchMode = ModeSearchChoice.Osu)
+        [Option("type", "Search type")]
+        UserSearchChoice searchType = UserSearchChoice.Profile,
+        [Option("mode", "Search mode")]
+        ModeSearchChoice searchMode = ModeSearchChoice.Osu)
     {
         await ctx.DeferAsync();
 
         if (searchMode == ModeSearchChoice.Linked)
+        {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Invalid mode"));
 
-        await GenericProcessing(ctx, username, searchType, FromModeChoice(searchMode));
+            return;
+        }
+
+        await GenericOsuProcessing(ctx, username, searchType, FromModeChoice(searchMode));
     }
 
-    [ContextMenu(ApplicationCommandType.UserContextMenu, "[osu!] View profile of this user")]
+    [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get profile")]
     public async Task GetOsuProfileContextMenu(ContextMenuContext ctx)
     {
         await ctx.DeferAsync(true);
 
-        try
-        {
-            DiscordUser member = ctx.TargetMember;
-            var dbUser = _dbCtx.GetOrCreateUserRecord(member);
+        DiscordUser member = ctx.TargetMember;
+        var dbUser = _dbCtx.GetOrCreateUserRecord(member);
 
-            if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("That user doesn't exist in my database"));
-
-                return;
-            }
-
-            Enum.TryParse(dbUser.OsuMode, out GameMode omode);
-
-            var osuUser = await _osuClient.GetUserAsync(dbUser.OsuUsername, omode);
-            var sb = new StringBuilder();
-
-            sb
-                .AppendLine($"{Formatter.Bold("Join Date")}: {osuUser.JoinDate:d}")
-                .AppendLine(
-                    $"{Formatter.Bold("Country")}: {osuUser.Country.Name} :flag_{osuUser.Country.Code.ToLower()}:")
-                .AppendLine(
-                    $"{Formatter.Bold("Total Score")}: {osuUser.Statistics.TotalScore} - {osuUser.Statistics.RankedScore} ranked score")
-                .AppendLine(
-                    $"{Formatter.Bold("PP")}: {osuUser.Statistics.Pp}pp (Country: #{osuUser.Statistics.CountryRank} - Global: #{osuUser.Statistics.GlobalRank})")
-                .AppendLine($"{Formatter.Bold("Accuracy")}: {osuUser.Statistics.HitAccuracy}%")
-                .AppendLine(
-                    $"{Formatter.Bold("Level")}: {osuUser.Statistics.UserLevel.Current} ({osuUser.Statistics.UserLevel.Progress}%)")
-                .AppendLine(
-                    $"{Formatter.Bold("Play Count")}: {osuUser.Statistics.PlayCount} with {osuUser.Statistics.PlayTime:g} of play time")
-                .AppendLine(
-                    $"{Formatter.Bold("Current status")}: {(osuUser.IsOnline ? "Online" : "Offline/Invisible")}");
-
-            var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-                .WithAuthor(
-                    $"{osuUser.Username}'s osu! profile {(osuUser.IsSupporter ? DiscordEmoji.FromName(ctx.Client, ":heart:").ToString() : string.Empty)}",
-                    $"https://osu.ppy.sh/users/{osuUser.Id}")
-                .AddField("Basic Information", sb.ToString())
-                .WithThumbnail(osuUser.AvatarUrl.ToString());
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
-                .AddEmbed(embedBuilder.Build()));
-        }
-        catch (ApiException)
+        if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when sending the request"));
+                .WithContent("That user doesn't exist in my database"));
+
+            return;
         }
-        catch (OsuDeserializationException)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when parsing the response"));
-        }
+
+        Enum.TryParse(dbUser.OsuMode, out GameMode omode);
+
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserSearchChoice.Profile, omode);
     }
 
-    [ContextMenu(ApplicationCommandType.UserContextMenu, "[osu!] View most recent scores of this user")]
+    [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get latest score")]
     public async Task GetOsuRecentContextMenu(ContextMenuContext ctx)
     {
         await ctx.DeferAsync(true);
 
-        try
-        {
-            DiscordUser member = ctx.TargetMember;
-            var dbUser = _dbCtx.GetOrCreateUserRecord(member);
+        DiscordUser member = ctx.TargetMember;
+        var dbUser = _dbCtx.GetOrCreateUserRecord(member);
 
-            if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("That user doesn't exist in my database"));
-
-                return;
-            }
-
-            Enum.TryParse(dbUser.OsuMode, out GameMode omode);
-
-            var scores =
-                await GetOsuScoresAsync(dbUser.OsuUsername, omode, UserSearchChoice.Recent);
-            var osuUser = await _osuClient.GetUserAsync(dbUser.OsuUsername, omode);
-
-            if (!scores.Any())
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("I found nothing, sorry"));
-            }
-            else
-            {
-                var builder = new DiscordFollowupMessageBuilder();
-                var sb = new StringBuilder();
-                var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-                    .WithAuthor($"Most recent score of {osuUser.Username} in mode {omode}",
-                        $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString());
-
-                foreach (var score in scores)
-                {
-                    var beatmap = await _osuClient.GetBeatmapAsync(score.Beatmap.Id);
-
-                    sb
-                        .AppendLine($"{Formatter.Bold("Map link")}: {beatmap.Url}")
-                        .AppendLine(
-                            $"{Formatter.Bold("Score")}: {score.TotalScore} - Global rank #{score.GlobalRank.GetValueOrDefault()}, Country rank #{score.CountryRank.GetValueOrDefault()}")
-                        .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
-                        .AppendLine(
-                            $"{Formatter.Bold("Accuracy")}: {Math.Round(score.Accuracy * 100, 2, MidpointRounding.ToEven)}%")
-                        .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
-                        .AppendLine(
-                            $"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
-                        .AppendLine(
-                            $"{Formatter.Bold("PP")}: {score.PerformancePoints}pp -> {Math.Round(score.Weight.PerformancePoints, 2, MidpointRounding.ToEven)}pp {Math.Round(score.Weight.Percentage, 2, MidpointRounding.ToEven)}% weighted")
-                        .AppendLine($"{Formatter.Bold("Submission Time")}: {score.CreatedAt:f}");
-
-                    embedBuilder
-                        .AddField(
-                            $"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{beatmap.Version}]{(score.Mods.Any() ? $" +{Formatter.Bold(string.Join(string.Empty, score.Mods))}" : string.Empty)}",
-                            sb.ToString());
-
-                    sb.Clear();
-                }
-
-                builder.AddEmbed(embedBuilder.Build());
-                await ctx.FollowUpAsync(builder);
-            }
-        }
-        catch (ApiException)
+        if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when sending the request"));
+                .WithContent("That user doesn't exist in my database"));
+
+            return;
         }
-        catch (OsuDeserializationException)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when parsing the response"));
-        }
+
+        Enum.TryParse(dbUser.OsuMode, out GameMode omode);
+
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserSearchChoice.Recent, omode);
     }
 
-    [ContextMenu(ApplicationCommandType.UserContextMenu, "[osu!] View the best play of this user")]
+    [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get best play")]
     public async Task GetOsuBestContextMenu(ContextMenuContext ctx)
     {
         await ctx.DeferAsync(true);
 
-        try
-        {
-            DiscordUser member = ctx.TargetMember;
-            var dbUser = _dbCtx.GetOrCreateUserRecord(member);
+        DiscordUser member = ctx.TargetMember;
+        var dbUser = _dbCtx.GetOrCreateUserRecord(member);
 
-            if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("That user doesn't exist in my database"));
-
-                return;
-            }
-
-            Enum.TryParse(dbUser.OsuMode, out GameMode omode);
-
-            var scores =
-                await GetOsuScoresAsync(dbUser.OsuUsername, omode, UserSearchChoice.Best);
-            var osuUser = await _osuClient.GetUserAsync(dbUser.OsuUsername, omode);
-
-            if (!scores.Any())
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("I found nothing, sorry"));
-            }
-            else
-            {
-                var builder = new DiscordFollowupMessageBuilder();
-                var sb = new StringBuilder();
-                var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-                    .WithAuthor($"Best score of {osuUser.Username} in mode {omode}",
-                        $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString());
-
-                foreach (var score in scores)
-                {
-                    var beatmap = await _osuClient.GetBeatmapAsync(score.Beatmap.Id);
-
-                    sb
-                        .AppendLine($"{Formatter.Bold("Map link")}: {beatmap.Url}")
-                        .AppendLine(
-                            $"{Formatter.Bold("Score")}: {score.TotalScore} - Global rank #{score.GlobalRank.GetValueOrDefault()}, Country rank #{score.CountryRank.GetValueOrDefault()}")
-                        .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
-                        .AppendLine(
-                            $"{Formatter.Bold("Accuracy")}: {Math.Round(score.Accuracy * 100, 2, MidpointRounding.ToEven)}%")
-                        .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
-                        .AppendLine(
-                            $"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
-                        .AppendLine(
-                            $"{Formatter.Bold("PP")}: {score.PerformancePoints}pp -> {Math.Round(score.Weight.PerformancePoints, 2, MidpointRounding.ToEven)}pp {Math.Round(score.Weight.Percentage, 2, MidpointRounding.ToEven)}% weighted")
-                        .AppendLine($"{Formatter.Bold("Submission Time")}: {score.CreatedAt:f}");
-
-                    embedBuilder
-                        .AddField(
-                            $"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{beatmap.Version}]{(score.Mods.Any() ? $" +{Formatter.Bold(string.Join(string.Empty, score.Mods))}" : string.Empty)}",
-                            sb.ToString());
-
-                    sb.Clear();
-                }
-
-                builder.AddEmbed(embedBuilder.Build());
-                await ctx.FollowUpAsync(builder);
-            }
-        }
-        catch (ApiException)
+        if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when sending the request"));
+                .WithContent("That user doesn't exist in my database"));
+
+            return;
         }
-        catch (OsuDeserializationException)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when parsing the response"));
-        }
+
+        Enum.TryParse(dbUser.OsuMode, out GameMode omode);
+
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserSearchChoice.Best, omode); 
     }
 
     private static GameMode FromModeChoice(ModeSearchChoice choice)
@@ -373,8 +234,7 @@ public class OsuModule : ApplicationCommandModule
         };
     }
 
-    private async Task<IReadOnlyList<IScore>> GetOsuScoresAsync(string username, GameMode omode,
-        UserSearchChoice searchType, bool includeFails = false, int count = 1)
+    private async Task<IReadOnlyList<IScore>> GetOsuScoresAsync(string username, GameMode omode, UserSearchChoice searchType, bool includeFails = false, int count = 1)
     {
         var osuUser = await _osuClient.GetUserAsync(username, omode);
         IReadOnlyList<IScore> scores = new List<IScore>();
@@ -400,71 +260,66 @@ public class OsuModule : ApplicationCommandModule
         return scores;
     }
 
-    private async Task GenericProcessing(InteractionContext ctx, string username, UserSearchChoice searchType,
-        GameMode omode)
+    private async Task GenericOsuProcessing(BaseContext ctx, string username, UserSearchChoice searchType, GameMode omode)
     {
         try
         {
+            bool isContextMenu = ctx is ContextMenuContext;
+
             var osuUser = await _osuClient.GetUserAsync(username, omode);
 
             if (searchType == UserSearchChoice.Profile)
             {
-                var sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
 
                 sb
                     .AppendLine($"{Formatter.Bold("Join Date")}: {osuUser.JoinDate:d}")
-                    .AppendLine(
-                        $"{Formatter.Bold("Country")}: {osuUser.Country.Name} :flag_{osuUser.Country.Code.ToLower()}:")
-                    .AppendLine(
-                        $"{Formatter.Bold("Total Score")}: {osuUser.Statistics.TotalScore} - {osuUser.Statistics.RankedScore} ranked score")
-                    .AppendLine(
-                        $"{Formatter.Bold("PP")}: {osuUser.Statistics.Pp}pp (Country: #{osuUser.Statistics.CountryRank} - Global: #{osuUser.Statistics.GlobalRank})")
+                    .AppendLine($"{Formatter.Bold("Country")}: {osuUser.Country.Name} :flag_{osuUser.Country.Code.ToLower()}:")
+                    .AppendLine($"{Formatter.Bold("Total Score")}: {osuUser.Statistics.TotalScore} - {osuUser.Statistics.RankedScore} ranked score")
+                    .AppendLine($"{Formatter.Bold("PP")}: {osuUser.Statistics.Pp}pp (Country: #{osuUser.Statistics.CountryRank} - Global: #{osuUser.Statistics.GlobalRank})")
                     .AppendLine($"{Formatter.Bold("Accuracy")}: {osuUser.Statistics.HitAccuracy}%")
-                    .AppendLine(
-                        $"{Formatter.Bold("Level")}: {osuUser.Statistics.UserLevel.Current} ({osuUser.Statistics.UserLevel.Progress}%)")
-                    .AppendLine(
-                        $"{Formatter.Bold("Play Count")}: {osuUser.Statistics.PlayCount} with {osuUser.Statistics.PlayTime:g} of play time")
-                    .AppendLine(
-                        $"{Formatter.Bold("Current status")}: {(osuUser.IsOnline ? "Online" : "Offline/Invisible")}");
+                    .AppendLine($"{Formatter.Bold("Level")}: {osuUser.Statistics.UserLevel.Current} ({osuUser.Statistics.UserLevel.Progress}%)")
+                    .AppendLine($"{Formatter.Bold("Play Count")}: {osuUser.Statistics.PlayCount} with {osuUser.Statistics.PlayTime:g} of play time")
+                    .AppendLine($"{Formatter.Bold("Current status")}: {(osuUser.IsOnline ? "Online" : "Offline/Invisible")}");
 
                 var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-                    .WithAuthor(
-                        $"{osuUser.Username}'s osu! profile {(osuUser.IsSupporter ? DiscordEmoji.FromName(ctx.Client, ":heart:").ToString() : string.Empty)}",
-                        $"https://osu.ppy.sh/users/{osuUser.Id}")
+                    .WithAuthor($"{osuUser.Username}'s osu! profile {(osuUser.IsSupporter ? DiscordEmoji.FromName(ctx.Client, ":heart:").ToString() : string.Empty)}", $"https://osu.ppy.sh/users/{osuUser.Id}")
                     .AddField("Basic Information", sb.ToString())
                     .WithThumbnail(osuUser.AvatarUrl.ToString());
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent(
-                        $"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
+                    .WithContent($"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
                     .AddEmbed(embedBuilder.Build()));
             }
             else
             {
-                var interactivity = ctx.Client.GetInteractivity();
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("How many scores do you want to get?"));
-
                 var r = 1;
 
-                var res = await interactivity.WaitForMessageAsync(m =>
+                if (!isContextMenu)
                 {
-                    var canDo = int.TryParse(m.Content, out r);
-                    return r is >= 1 and <= 100;
-                });
+                    var interactivity = ctx.Client.GetInteractivity();
 
-                if (res.TimedOut)
-                {
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Timed out"));
+                        .WithContent("How many scores do you want to get?"));
 
-                    return;
+                    InteractivityResult<DiscordMessage> res = await interactivity.WaitForMessageAsync(m =>
+                    {
+                        var canDo = int.TryParse(m.Content, out r);
+                        return r is >= 1 and <= 100;
+                    });
+
+                    if (res.TimedOut)
+                    {
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                            .WithContent("Timed out"));
+
+                        return;
+                    }
                 }
-
+                
                 var includeFails = false;
 
-                if (searchType == UserSearchChoice.Recent)
+                if (searchType == UserSearchChoice.Recent && !isContextMenu)
                 {
                     var yesBtn = new DiscordButtonComponent(ButtonStyle.Success, "yesBtn", "Yes please!");
                     var noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not!");
@@ -498,9 +353,7 @@ public class OsuModule : ApplicationCommandModule
                     var builder = new DiscordFollowupMessageBuilder();
                     var sb = new StringBuilder();
                     var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-                        .WithAuthor(
-                            $"{(searchType == UserSearchChoice.Best ? "Best" : "Recent")} score(s) of {osuUser.Username} in mode {omode}",
-                            $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString());
+                        .WithAuthor($"{(searchType == UserSearchChoice.Best ? "Best" : "Recent")} score(s) of {osuUser.Username} in mode {omode}", $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString());
 
                     foreach (var score in scores)
                     {
@@ -508,29 +361,22 @@ public class OsuModule : ApplicationCommandModule
 
                         sb
                             .AppendLine($"{Formatter.Bold("Map link")}: {beatmap.Url}")
-                            .AppendLine(
-                                $"{Formatter.Bold("Score")}: {score.TotalScore} - Global rank #{score.GlobalRank.GetValueOrDefault()}, Country rank #{score.CountryRank.GetValueOrDefault()}")
+                            .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore} - Global #{score.GlobalRank.GetValueOrDefault()}, Country #{score.CountryRank.GetValueOrDefault()}")
                             .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
-                            .AppendLine(
-                                $"{Formatter.Bold("Accuracy")}: {Math.Round(score.Accuracy * 100, 2, MidpointRounding.ToEven)}%")
+                            .AppendLine($"{Formatter.Bold("Accuracy")}: {Math.Round(score.Accuracy * 100, 2, MidpointRounding.ToEven)}%")
                             .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
-                            .AppendLine(
-                                $"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
-                            .AppendLine(
-                                $"{Formatter.Bold("PP")}: {score.PerformancePoints}pp -> {Math.Round(score.Weight.PerformancePoints, 2, MidpointRounding.ToEven)}pp {Math.Round(score.Weight.Percentage, 2, MidpointRounding.ToEven)}% weighted")
+                            .AppendLine($"{Formatter.Bold("Hit Count")}: [{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}]")
+                            .AppendLine($"{Formatter.Bold("PP")}: {score.PerformancePoints}pp -> {Math.Round(score.Weight.PerformancePoints, 2, MidpointRounding.ToEven)}pp {Math.Round(score.Weight.Percentage, 2, MidpointRounding.ToEven)}% weighted")
                             .AppendLine($"{Formatter.Bold("Submission Time")}: {score.CreatedAt:f}");
 
                         embedBuilder
-                            .AddField(
-                                $"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{beatmap.Version}]{(score.Mods.Any() ? $" +{Formatter.Bold(string.Join(string.Empty, score.Mods))}" : string.Empty)}",
-                                sb.ToString());
+                            .AddField($"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{beatmap.Version}]{(score.Mods.Any() ? $" +{Formatter.Bold(string.Join(string.Empty, score.Mods))}" : string.Empty)}", sb.ToString());
 
                         sb.Clear();
                     }
 
                     builder.AddEmbed(embedBuilder.Build());
-                    builder.WithContent(
-                        $"{(searchType == UserSearchChoice.Best ? "Best" : "Recent")} scores of user {osuUser.Username}");
+                    builder.WithContent($"{(searchType == UserSearchChoice.Best ? "Best" : "Recent")} scores of {osuUser.Username}");
                     await ctx.FollowUpAsync(builder);
                 }
             }
@@ -546,4 +392,37 @@ public class OsuModule : ApplicationCommandModule
                 .WithContent("Something went wrong when parsing the response"));
         }
     }
+}
+
+public enum UserSearchChoice
+{
+    [ChoiceName("profile")]
+    Profile,
+
+    [ChoiceName("best_plays")]
+    Best,
+
+    [ChoiceName("first_place_plays")]
+    First,
+
+    [ChoiceName("recent_plays")]
+    Recent
+}
+
+public enum ModeSearchChoice
+{
+    [ChoiceName("linked")]
+    Linked,
+
+    [ChoiceName("standard")]
+    Osu,
+
+    [ChoiceName("mania")]
+    Mania,
+
+    [ChoiceName("catch_the_beat")]
+    Fruits,
+
+    [ChoiceName("taiko")]
+    Taiko
 }
