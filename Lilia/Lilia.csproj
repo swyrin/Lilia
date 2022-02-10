@@ -3,10 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <StartupObject>Lilia.Program</StartupObject>
-        <LangVersion>latestmajor</LangVersion>
-        <Nullable>disable</Nullable>
         <PlatformTarget>AnyCPU</PlatformTarget>
-        <IsPackable>false</IsPackable>
         <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
 
