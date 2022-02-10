@@ -5,12 +5,13 @@
         <StartupObject>Lilia.Program</StartupObject>
         <PlatformTarget>AnyCPU</PlatformTarget>
         <TargetFramework>net6.0</TargetFramework>
+        <PublishSingleFile>true</PublishSingleFile>
+        <Nullable>disable</Nullable>
+        <Version>1.0.1-*</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <Optimize>False</Optimize>
-        <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

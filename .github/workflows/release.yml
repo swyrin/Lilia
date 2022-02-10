@@ -14,14 +14,21 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    - name: Add NuGet sources
-      run: dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
     - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore --nologo --configuration Release Lilia --output app/
-    - name: Test
-      run: dotnet test --no-build --nologo --verbosity normal --configuration Release
+      run: | 
+            dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
+            dotnet restore
+    - name: Build and Test
+      run: |
+            dotnet build --no-restore --nologo --configuration Release Lilia --output app/
+            dotnet test --no-build --no-restore --nologo --verbosity normal
+    - name: Prepare executables
+      run: |
+        dotnet publish -r win-x86 -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix win-x86 --output app/
+        dotnet publish -r linux-x64 -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix linux-x64 --output app/
+        dotnet publish -r linux-arm -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix linux-arm --output app/
+        dotnet publish -r linux-arm64 -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix linux-arm64 --output app/
+        dotnet publish -r osx64 -c Release --self-contained true -p:EnableCompressionInSingleFile=true --version-suffix osx64 --output app/
     - name: Create archive of built files
       run: |
             pushd /home/runner/work/Lilia/Lilia/

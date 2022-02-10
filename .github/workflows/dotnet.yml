@@ -21,7 +21,7 @@ jobs:
         run: |
                 dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
                 dotnet restore
-      - name: Build
-        run: dotnet build --no-restore --nologo
-      - name: Test
-        run: dotnet test --no-build --no-restore --nologo
+      - name: Build and Test
+        run: |
+                dotnet build --no-restore --nologo
+                dotnet test --no-build --no-restore --nologo
