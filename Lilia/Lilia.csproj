@@ -3,9 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <StartupObject>Lilia.Program</StartupObject>
-        <PlatformTarget>AnyCPU</PlatformTarget>
         <TargetFramework>net6.0</TargetFramework>
-        <PublishSingleFile>true</PublishSingleFile>
         <Nullable>disable</Nullable>
         <RuntimeIdentifiers>win-x64;win-x86;osx-x64;linux-x64;linux-arm;linux-arm64</RuntimeIdentifiers>
     </PropertyGroup>
