@@ -18,7 +18,8 @@ public static class UserDbAccess
             {
                 DiscordUserId = discordUser.Id,
                 OsuMode = string.Empty,
-                OsuUsername = string.Empty
+                OsuUsername = string.Empty,
+                WarnCount = 0
             };
 
             users.Add(user);
