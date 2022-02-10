@@ -7,11 +7,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="New README.md">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
+    <list default="true" id="01fa735c-4364-4bfb-8cdb-26cea5f864d9" name="Changes" comment="Messing with the Actions, chapter 8">
+      <change afterPath="$PROJECT_DIR$/run.bat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lilia/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lilia/Lilia.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Lilia/Lilia.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,23 +53,24 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/974fa14c57bab8fe29f1bddd39b1a6548b9cc8cf9e0ef5e670c2407a56d9/String.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/d5/8679c663/OsuClient.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/96790fb115a743319102f37c54ece12f14600/d4/a2913bc0/GameMode.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Lilia/Modules/GeneralModule.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/89fbbb69e35e4b11ac51e19cb802f914ba00/ef/53e8acd4/AsyncEvent`2.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/40d9c6632ca3993dcb82583ffa755fbbed8ad19f1b37a7654b7ffaff24b6c/Uri.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d82b8ac02bb43d6b94884e283d560e14f18f7caa55c2d41bb0fc59beb77a1d/UriExt.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1e8feaadf5c3fa14d36ea2a638c432a2e1a47b7837d8b83d88303c5d9c15cf/AsyncValueTaskMethodBuilderT.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/d5/8679c663/OsuClient.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/96790fb115a743319102f37c54ece12f14600/d4/a2913bc0/GameMode.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/23e31092363db7107ca21367adea927bccc2e7cf2075f9ee398ad1175b8e87/Nullable.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/cd97f89a1dd485a9e981f4eb33be0e28029fd8e72ed1baed66e8b36dc455dc4/HttpMethod.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d82b8ac02bb43d6b94884e283d560e14f18f7caa55c2d41bb0fc59beb77a1d/UriExt.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7603801502d448acb2042f827f654e4911400/6d/0411b405/DefaultRequestHandler.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/efd3e9c4749621d4a53b45d7117d2a581e02a265c444a040f1387a155db/Dictionary.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1e8feaadf5c3fa14d36ea2a638c432a2e1a47b7837d8b83d88303c5d9c15cf/AsyncValueTaskMethodBuilderT.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/575c31ecc35a636b6f962cb71d53992552941a18982aae1c8e6c16305cc3761b/ExceptionDispatchInfo.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="SWEA" />
   </component>
   <component name="ProjectId" id="1ynCgyB2aA0goTk0uyRlhbOpr7l" />
   <component name="ProjectLevelVcsManager">
@@ -169,49 +168,7 @@
       <workItem from="1644388821757" duration="1428000" />
       <workItem from="1644398207830" duration="404000" />
       <workItem from="1644398869147" duration="6000000" />
-      <workItem from="1644464373487" duration="1554000" />
-    </task>
-    <task id="LOCAL-00127" summary="Sanitize the logging a bit and Happy New Year">
-      <created>1643713646093</created>
-      <option name="number" value="00127" />
-      <option name="presentableId" value="LOCAL-00127" />
-      <option name="project" value="LOCAL" />
-      <updated>1643713646093</updated>
-    </task>
-    <task id="LOCAL-00128" summary="Hopefully fixes &quot;This interaction failed&quot; issue">
-      <created>1643714605615</created>
-      <option name="number" value="00128" />
-      <option name="presentableId" value="LOCAL-00128" />
-      <option name="project" value="LOCAL" />
-      <updated>1643714605615</updated>
-    </task>
-    <task id="LOCAL-00129" summary="Reworking on guild queue soon, now is time for Lunar New Year&#10;&#10;Happy New Year everyone! :tada:">
-      <created>1643716934381</created>
-      <option name="number" value="00129" />
-      <option name="presentableId" value="LOCAL-00129" />
-      <option name="project" value="LOCAL" />
-      <updated>1643716934381</updated>
-    </task>
-    <task id="LOCAL-00130" summary="Rewrite embed getter">
-      <created>1643771372171</created>
-      <option name="number" value="00130" />
-      <option name="presentableId" value="LOCAL-00130" />
-      <option name="project" value="LOCAL" />
-      <updated>1643771372171</updated>
-    </task>
-    <task id="LOCAL-00131" summary="Code cleanup">
-      <created>1643771408037</created>
-      <option name="number" value="00131" />
-      <option name="presentableId" value="LOCAL-00131" />
-      <option name="project" value="LOCAL" />
-      <updated>1643771408037</updated>
-    </task>
-    <task id="LOCAL-00132" summary="Remove formatting utils">
-      <created>1643771994874</created>
-      <option name="number" value="00132" />
-      <option name="presentableId" value="LOCAL-00132" />
-      <option name="project" value="LOCAL" />
-      <updated>1643771994874</updated>
+      <workItem from="1644464373487" duration="6943000" />
     </task>
     <task id="LOCAL-00133" summary="Fix a critical bug where the bot is unable to send the error&#10;&#10;Also better error information">
       <created>1643772032742</created>
@@ -514,7 +471,49 @@
       <option name="project" value="LOCAL" />
       <updated>1644465475432</updated>
     </task>
-    <option name="localTasksCounter" value="176" />
+    <task id="LOCAL-00176" summary="Messing with the Actions, chapter 5">
+      <created>1644465999447</created>
+      <option name="number" value="00176" />
+      <option name="presentableId" value="LOCAL-00176" />
+      <option name="project" value="LOCAL" />
+      <updated>1644465999447</updated>
+    </task>
+    <task id="LOCAL-00177" summary="oops">
+      <created>1644466176958</created>
+      <option name="number" value="00177" />
+      <option name="presentableId" value="LOCAL-00177" />
+      <option name="project" value="LOCAL" />
+      <updated>1644466176958</updated>
+    </task>
+    <task id="LOCAL-00178" summary="Messing with the Actions, chapter 6">
+      <created>1644467462325</created>
+      <option name="number" value="00178" />
+      <option name="presentableId" value="LOCAL-00178" />
+      <option name="project" value="LOCAL" />
+      <updated>1644467462325</updated>
+    </task>
+    <task id="LOCAL-00179" summary="Change environment to Windows">
+      <created>1644467681141</created>
+      <option name="number" value="00179" />
+      <option name="presentableId" value="LOCAL-00179" />
+      <option name="project" value="LOCAL" />
+      <updated>1644467681141</updated>
+    </task>
+    <task id="LOCAL-00180" summary="Messing with the Actions, chapter 7">
+      <created>1644470400531</created>
+      <option name="number" value="00180" />
+      <option name="presentableId" value="LOCAL-00180" />
+      <option name="project" value="LOCAL" />
+      <updated>1644470400531</updated>
+    </task>
+    <task id="LOCAL-00181" summary="Messing with the Actions, chapter 8">
+      <created>1644470742945</created>
+      <option name="number" value="00181" />
+      <option name="presentableId" value="LOCAL-00181" />
+      <option name="project" value="LOCAL" />
+      <updated>1644470742945</updated>
+    </task>
+    <option name="localTasksCounter" value="182" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -574,13 +573,7 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Forgot to add this into JSON changes" />
-    <MESSAGE value="Goodbye music o/" />
-    <MESSAGE value="Command name change" />
-    <MESSAGE value="What did I do in this?" />
-    <MESSAGE value="Push the changelogs" />
     <MESSAGE value="Finalize everything" />
-    <MESSAGE value="oops" />
     <MESSAGE value=":thinking:" />
     <MESSAGE value="Hmmm, I did something wrong?" />
     <MESSAGE value="Merge builds into one" />
@@ -599,7 +592,13 @@
     <MESSAGE value="Code updates" />
     <MESSAGE value="Messing with the Actions, chapter 4" />
     <MESSAGE value="New README.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="New README.md" />
+    <MESSAGE value="Messing with the Actions, chapter 5" />
+    <MESSAGE value="oops" />
+    <MESSAGE value="Messing with the Actions, chapter 6" />
+    <MESSAGE value="Change environment to Windows" />
+    <MESSAGE value="Messing with the Actions, chapter 7" />
+    <MESSAGE value="Messing with the Actions, chapter 8" />
+    <option name="LAST_COMMIT_MESSAGE" value="Messing with the Actions, chapter 8" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
