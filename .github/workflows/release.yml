@@ -24,11 +24,6 @@ jobs:
           dotnet build --no-restore --nologo -c Release
           dotnet test --no-build --no-restore --nologo --verbosity normal -c Release
 
-      - name: Single file (win-x64)
-        run: |
-          dotnet build Lilia -r win-x64 --self-contained --no-restore --nologo -c Release
-          dotnet publish Lilia -r win-x64 -c Release --self-contained true --nologo --no-build --no-restore --output app/win-x64
-
       - name: Single file (win-x86)
         run: |
           dotnet build Lilia -r win-x86 --self-contained --no-restore --nologo -c Release
@@ -48,11 +43,6 @@ jobs:
         run: |
           dotnet build Lilia -r linux-arm --self-contained --no-restore --nologo -c Release
           dotnet publish Lilia -r linux-arm -c Release --self-contained true --nologo --no-build --no-restore --output app/linux-arm
-
-      - name: Single file (linux-arm64)
-        run: |
-          dotnet build Lilia -r linux-arm64 --self-contained --no-restore --nologo -c Release
-          dotnet publish Lilia -r linux-arm64 -c Release --self-contained true --nologo --no-build --no-restore --output app/linux-arm64
 
       - name: Single file (osx-x64)
         run: |
