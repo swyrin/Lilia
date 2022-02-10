@@ -18,7 +18,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore --config ./nuget.config
       - name: Build
         run: dotnet build --no-restore --nologo
       - name: Test
