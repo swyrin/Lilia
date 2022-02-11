@@ -53,18 +53,15 @@ public class GeneralModule : ApplicationCommandModule
         foreach (var owner in ctx.Client.CurrentApplication.Owners)
             owners.AppendLine($"{owner.Username}#{owner.Discriminator}");
 
-        var clientData = _client.BotConfiguration.Client;
-        var botInv = clientData.BotInviteLink;
-        var guildInv = clientData.SupportGuildInviteLink;
+        // a delicious slash command please :D
+        var botInv = ctx.Client.CurrentApplication.GenerateBotOAuth(LiliaClient.RequiredPermissions).Replace("scope=bot", "scope=bot%20applications.commands");
+        var guildInv =  _client.BotConfiguration.Client.SupportGuildInviteLink;
 
         // dodge 400
-        if (string.IsNullOrWhiteSpace(botInv)) botInv = "https://placehold.er";
         if (string.IsNullOrWhiteSpace(guildInv)) guildInv = "https://placehold.er";
-
-        var isValidBotInviteLink = botInv.IsDiscordValidBotInvite();
         var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 
-        var inviteBtn = new DiscordLinkButtonComponent(botInv, "Interested in me?", !isValidBotInviteLink);
+        var inviteBtn = new DiscordLinkButtonComponent(botInv, "Interested in me?");
         var supportGuildBtn = new DiscordLinkButtonComponent(guildInv, "Need supports?", !isValidGuildInviteLink);
         var selfHostBtn = new DiscordLinkButtonComponent("https://github.com/Swyreee/Lilia", "Want to host your own bot?");
 
@@ -78,11 +75,12 @@ public class GeneralModule : ApplicationCommandModule
         var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
             .WithTitle("Something about me :D")
             .WithThumbnail(ctx.Client.CurrentUser.AvatarUrl)
-            .WithDescription($"Hi, I am {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")}, a bot running on the source code of {Formatter.MaskedUrl("Lilia", new Uri("https://github.com/Swyreee/Lilia"))} written by Swyrin#7193")
+            .WithDescription($"Hi, I am {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")}, a bot running on the source code of {Formatter.Bold("Lilia")} written by {Formatter.Bold("Swyrin#7193")}")
             .AddField("Server count", _client.JoinedGuilds.Count.ToString(), true)
             .AddField("Member count", memberCount.ToString(), true)
             .AddField("Owner(s)", owners.ToString())
-            .AddField("Uptime", $"{Formatter.Bold(uptimeStr.ToString())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}");
+            .AddField("Uptime", $"{Formatter.Bold(uptimeStr.ToString())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
+            .AddField("How to invite me?", "Either click the \"Interested in me?\" button below or click on me, choose \"Add to Server\", if any");
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .AddEmbed(embedBuilder.Build())

@@ -22,9 +22,6 @@ public class ClientData
     [JsonProperty("activity")]
     public ClientActivityData Activity = new();
 
-    [JsonProperty("bot_invite_link")]
-    public string BotInviteLink = "";
-
     [JsonProperty("private_guilds")]
     public List<ulong> PrivateGuildIds = new();
 

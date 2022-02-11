@@ -30,6 +30,13 @@ public class LiliaClient
     public LiliaDatabase Database;
     public List<DiscordGuild> JoinedGuilds;
     public DateTime StartTime;
+    public const Permissions RequiredPermissions = Permissions.AccessChannels | Permissions.SendMessages |
+                                                   Permissions.SendMessagesInThreads | Permissions.ManageRoles |
+                                                   Permissions.KickMembers | Permissions.BanMembers |
+                                                   Permissions.ReadMessageHistory | Permissions.EmbedLinks |
+                                                   Permissions.AttachFiles | Permissions.MentionEveryone |
+                                                   Permissions.UseExternalEmojis | Permissions.UseExternalStickers |
+                                                   Permissions.AddReactions;
 
     public async Task Run()
     {
