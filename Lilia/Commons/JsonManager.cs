@@ -11,15 +11,12 @@ public static class JsonManager<T> where T : BaseJson
 {
     private static void EnsureFileExists(string filePath, bool createIfNotExist = false)
     {
-        if (!File.Exists(filePath))
-        {
-            if (createIfNotExist)
-            {
-                File.Create(filePath);
-                File.WriteAllText(filePath, JsonConvert.SerializeObject(typeof(T), Formatting.Indented));
-                Log.Logger.Warning($"Created JSON file with path \"{filePath}\" since one doesn't exist");
-            }
-        }
+        if (File.Exists(filePath)) return;
+        if (!createIfNotExist) return;
+        
+        File.Create(filePath);
+        File.WriteAllText(filePath, JsonConvert.SerializeObject(typeof(T), Formatting.Indented));
+        Log.Logger.Warning($"Created JSON file with path \"{filePath}\" since one doesn't exist");
     }
 
     public static T Read()
