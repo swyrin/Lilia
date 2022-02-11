@@ -13,3 +13,4 @@
 ## Codebase changes (don't care if you don't plan to contribute the the source)
 - `LiliaUtilities.GetDefaultEmbedTemplateForMember` now requires `DiscordUser`
 - Redesigned whole `README.md`
+- Added more handlers when the bot joins or leaves a guild

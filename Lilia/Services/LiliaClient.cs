@@ -94,13 +94,15 @@ public class LiliaClient
             Log.Logger.Warning("Registering slash commands in global scope");
             slash.RegisterCommands(Assembly.GetExecutingAssembly());
         }
-
-        // handling events
+        
         client.Ready += OnReady;
         client.GuildAvailable += OnGuildAvailable;
         client.GuildUnavailable += OnGuildUnavailable;
-        client.ClientErrored += OnClientErrored;
+        client.GuildCreated += OnGuildAvailable;
+        client.GuildDeleted += OnGuildUnavailable;
+
         slash.SlashCommandErrored += OnSlashCommandErrored;
+        
         Console.CancelKeyPress += (_, _) => this.Cts.Cancel();
 
         Log.Logger.Information("Setting client activity");
@@ -122,7 +124,8 @@ public class LiliaClient
             Log.Logger.Information("Valid options are: Online, Invisible, Idle, DoNotDisturb");
             userStatus = UserStatus.Online;
         }
-
+        
+        
         var activity = new DiscordActivity
         {
             ActivityType = activityType,
