@@ -100,6 +100,7 @@ public class LiliaClient
         client.GuildUnavailable += OnGuildUnavailable;
         client.GuildCreated += OnGuildAvailable;
         client.GuildDeleted += OnGuildUnavailable;
+        client.ClientErrored += OnClientErrored;
 
         slash.SlashCommandErrored += OnSlashCommandErrored;
         
@@ -124,7 +125,6 @@ public class LiliaClient
             Log.Logger.Information("Valid options are: Online, Invisible, Idle, DoNotDisturb");
             userStatus = UserStatus.Online;
         }
-        
         
         var activity = new DiscordActivity
         {
