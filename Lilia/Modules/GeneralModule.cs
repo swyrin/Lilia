@@ -84,7 +84,6 @@ public class GeneralModule : ApplicationCommandModule
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .AddEmbed(embedBuilder.Build())
-            .AddComponents(inviteBtn, supportGuildBtn)
-            .AddComponents(selfHostBtn));
+            .AddComponents(inviteBtn, supportGuildBtn, selfHostBtn));
     }
 }
