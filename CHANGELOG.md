@@ -1,25 +1,12 @@
 ## New commands
-
-- Added `info` command to check bot information
-- Added `refresh` command to refresh commands
+- Added context menu commands for `osu` module
+- Added `warnadd` and `warnremove` in `mod general` module for warning members
+- Added `message` command group in `mod` module for sending messages to moderators
 
 ## Old commands reworks/removals
 
-- Removed `changes` commands
-- Created `mod` command category
-    - Moved `kick`, `ban` into `mod general`
-    - Moved `notice`, `copynotice` and `editnotice` into `mod notice`
-        - Changed the name of the commands:
-            - `notice` -> `mod notice send`
-            - `copynotice` -> `mod notice copy`
-            - `editnotice` -> `mod notice edit`
-    - `mod notice send` (formerly `notice`) now gives you the jump link to the notice message
-    - `mod notice copy` (formerly `copynotice`) now gives you the jump link to the linked message
-    - Both of the commands listed above this now requires message jump link instead of message ID(s)
+- Beatmap related parts of osu! commands now include beatmap image as embed thumbnail
+- Prompt for score count now includes range
 
 ## Codebase changes (don't care if you don't plan to contribute the the source)
-
-- Squashed the database
-- Sanitized the codebase
-- Reworked on the build, release and code analysis system
-- Add tests for `LiliaUtilities.cs`
+- `LiliaUtilities.GetDefaultEmbedTemplateForMember` now requires `DiscordUser`

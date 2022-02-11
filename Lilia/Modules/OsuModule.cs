@@ -38,11 +38,11 @@ public class OsuModule : ApplicationCommandModule
         [Option("username", "Your osu! username")]
         string username,
         [Option("mode", "Mode")]
-        ModeSearchChoice searchMode = ModeSearchChoice.Osu)
+        UserProfileSearchMode searchUserProfileSearchMode = UserProfileSearchMode.Osu)
     {
         await ctx.DeferAsync(true);
 
-        if (searchMode == ModeSearchChoice.Linked)
+        if (searchUserProfileSearchMode == UserProfileSearchMode.Linked)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Invalid mode"));
@@ -52,13 +52,13 @@ public class OsuModule : ApplicationCommandModule
 
         var dbUser = _dbCtx.GetOrCreateUserRecord(ctx.Member);
         dbUser.OsuUsername = username;
-        dbUser.OsuMode = FromModeChoice(searchMode).ToString();
+        dbUser.OsuMode = FromModeChoice(searchUserProfileSearchMode).ToString();
 
         _dbCtx.Update(dbUser);
         await _dbCtx.SaveChangesAsync();
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchMode.GetName())}"));
+            .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchUserProfileSearchMode.GetName())}"));
     }
 
     [SlashCommand("forceupdate", "Update an user's osu! profile information in my database")]
@@ -69,11 +69,11 @@ public class OsuModule : ApplicationCommandModule
         [Option("username", "osu! username")]
         string username,
         [Option("mode", "Mode")]
-        ModeSearchChoice searchMode = ModeSearchChoice.Osu)
+        UserProfileSearchMode searchUserProfileSearchMode = UserProfileSearchMode.Osu)
     {
         await ctx.DeferAsync(true);
 
-        if (searchMode == ModeSearchChoice.Linked)
+        if (searchUserProfileSearchMode == UserProfileSearchMode.Linked)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Invalid mode"));
@@ -83,13 +83,13 @@ public class OsuModule : ApplicationCommandModule
 
         var dbUser = _dbCtx.GetOrCreateUserRecord(user);
         dbUser.OsuUsername = username;
-        dbUser.OsuMode = FromModeChoice(searchMode).ToString();
+        dbUser.OsuMode = FromModeChoice(searchUserProfileSearchMode).ToString();
 
         _dbCtx.Update(dbUser);
         await _dbCtx.SaveChangesAsync();
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchMode.GetName())}"));
+            .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchUserProfileSearchMode.GetName())}"));
     }
 
     [SlashCommand("myinfo", "Get your linked data with me")]
@@ -114,9 +114,9 @@ public class OsuModule : ApplicationCommandModule
         [Option("user", "Someone in this Discord server")]
         DiscordUser user,
         [Option("type", "Search type")]
-        UserSearchChoice searchType = UserSearchChoice.Profile,
+        UserProfileSearchType profileSearchType = UserProfileSearchType.Profile,
         [Option("mode", "Search mode")]
-        ModeSearchChoice searchMode = ModeSearchChoice.Linked)
+        UserProfileSearchMode searchUserProfileSearchMode = UserProfileSearchMode.Linked)
     {
         await ctx.DeferAsync();
 
@@ -131,10 +131,10 @@ public class OsuModule : ApplicationCommandModule
         }
 
         GameMode omode;
-        if (searchMode == ModeSearchChoice.Linked) Enum.TryParse(dbUser.OsuMode, out omode);
-        else omode = FromModeChoice(searchMode);
+        if (searchUserProfileSearchMode == UserProfileSearchMode.Linked) Enum.TryParse(dbUser.OsuMode, out omode);
+        else omode = FromModeChoice(searchUserProfileSearchMode);
 
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, searchType, omode);
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, profileSearchType, omode);
     }
 
     [SlashCommand("profile", "Get osu! profile from provided username")]
@@ -142,13 +142,13 @@ public class OsuModule : ApplicationCommandModule
         [Option("username", "Someone's osu! username")]
         string username,
         [Option("type", "Search type")]
-        UserSearchChoice searchType = UserSearchChoice.Profile,
+        UserProfileSearchType profileSearchType = UserProfileSearchType.Profile,
         [Option("mode", "Search mode")]
-        ModeSearchChoice searchMode = ModeSearchChoice.Osu)
+        UserProfileSearchMode searchUserProfileSearchMode = UserProfileSearchMode.Osu)
     {
         await ctx.DeferAsync();
 
-        if (searchMode == ModeSearchChoice.Linked)
+        if (searchUserProfileSearchMode == UserProfileSearchMode.Linked)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Invalid mode"));
@@ -156,7 +156,7 @@ public class OsuModule : ApplicationCommandModule
             return;
         }
 
-        await GenericOsuProcessing(ctx, username, searchType, FromModeChoice(searchMode));
+        await GenericOsuProcessing(ctx, username, profileSearchType, FromModeChoice(searchUserProfileSearchMode));
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get profile")]
@@ -177,7 +177,7 @@ public class OsuModule : ApplicationCommandModule
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
 
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserSearchChoice.Profile, omode);
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Profile, omode);
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get latest score")]
@@ -198,7 +198,7 @@ public class OsuModule : ApplicationCommandModule
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
 
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserSearchChoice.Recent, omode);
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Recent, omode);
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get best play")]
@@ -219,56 +219,55 @@ public class OsuModule : ApplicationCommandModule
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
 
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserSearchChoice.Best, omode); 
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Best, omode); 
     }
 
-    private static GameMode FromModeChoice(ModeSearchChoice choice)
+    private static GameMode FromModeChoice(UserProfileSearchMode choice)
     {
         return choice switch
         {
-            ModeSearchChoice.Fruits => GameMode.Fruits,
-            ModeSearchChoice.Mania => GameMode.Mania,
-            ModeSearchChoice.Taiko => GameMode.Taiko,
-            ModeSearchChoice.Osu => GameMode.Osu,
+            UserProfileSearchMode.Fruits => GameMode.Fruits,
+            UserProfileSearchMode.Mania => GameMode.Mania,
+            UserProfileSearchMode.Taiko => GameMode.Taiko,
+            UserProfileSearchMode.Osu => GameMode.Osu,
             _ => GameMode.Osu
         };
     }
 
-    private async Task<IReadOnlyList<IScore>> GetOsuScoresAsync(string username, GameMode omode, UserSearchChoice searchType, bool includeFails = false, int count = 1)
+    private async Task<IReadOnlyList<IScore>> GetOsuScoresAsync(string username, GameMode omode, UserProfileSearchType profileSearchType, bool includeFails = false, int count = 1)
     {
         var osuUser = await _osuClient.GetUserAsync(username, omode);
         IReadOnlyList<IScore> scores = new List<IScore>();
 
-        switch (searchType)
+        switch (profileSearchType)
         {
-            case UserSearchChoice.Best:
+            case UserProfileSearchType.Best:
                 scores = await _osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Best, false, omode, count);
                 break;
-            case UserSearchChoice.Recent:
+            case UserProfileSearchType.Recent:
                 scores = await _osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Recent, includeFails, omode,
                     count);
                 break;
-            case UserSearchChoice.First:
+            case UserProfileSearchType.First:
                 scores = await _osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Firsts, false, omode, count);
                 break;
-            case UserSearchChoice.Profile:
+            case UserProfileSearchType.Profile:
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(searchType), searchType, null);
+                throw new ArgumentOutOfRangeException(nameof(profileSearchType), profileSearchType, null);
         }
 
         return scores;
     }
 
-    private async Task GenericOsuProcessing(BaseContext ctx, string username, UserSearchChoice searchType, GameMode omode)
+    private async Task GenericOsuProcessing(BaseContext ctx, string username, UserProfileSearchType profileSearchType, GameMode omode)
     {
         try
         {
-            bool isContextMenu = ctx is ContextMenuContext;
-
+            var isContextMenu = ctx is ContextMenuContext;
             var osuUser = await _osuClient.GetUserAsync(username, omode);
 
-            if (searchType == UserSearchChoice.Profile)
+            if (profileSearchType == UserProfileSearchType.Profile)
             {
                 StringBuilder sb = new StringBuilder();
 
@@ -288,7 +287,7 @@ public class OsuModule : ApplicationCommandModule
                     .WithThumbnail(osuUser.AvatarUrl.ToString());
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent($"osu! profile of user {osuUser.Username} with mode {Formatter.Bold(omode.ToString())}")
+                    .WithContent($"osu! profile of user {osuUser.Username} in mode {Formatter.Bold(omode.ToString())}")
                     .AddEmbed(embedBuilder.Build()));
             }
             else
@@ -300,7 +299,7 @@ public class OsuModule : ApplicationCommandModule
                     var interactivity = ctx.Client.GetInteractivity();
 
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("How many scores do you want to get?"));
+                        .WithContent("How many scores do you want to get? (1 to 100)"));
 
                     InteractivityResult<DiscordMessage> res = await interactivity.WaitForMessageAsync(m =>
                     {
@@ -319,7 +318,7 @@ public class OsuModule : ApplicationCommandModule
                 
                 var includeFails = false;
 
-                if (searchType == UserSearchChoice.Recent && !isContextMenu)
+                if (profileSearchType == UserProfileSearchType.Recent && !isContextMenu)
                 {
                     var yesBtn = new DiscordButtonComponent(ButtonStyle.Success, "yesBtn", "Yes please!");
                     var noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not!");
@@ -341,7 +340,7 @@ public class OsuModule : ApplicationCommandModule
                     includeFails = btnRes.Result.Id == "yesBtn";
                 }
 
-                var scores = await GetOsuScoresAsync(username, omode, searchType, includeFails, r);
+                var scores = await GetOsuScoresAsync(username, omode, profileSearchType, includeFails, r);
 
                 if (!scores.Any())
                 {
@@ -353,7 +352,7 @@ public class OsuModule : ApplicationCommandModule
                     var builder = new DiscordFollowupMessageBuilder();
                     var sb = new StringBuilder();
                     var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
-                        .WithAuthor($"{(searchType == UserSearchChoice.Best ? "Best" : "Recent")} score(s) of {osuUser.Username} in mode {omode}", $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString());
+                        .WithAuthor($"{(profileSearchType == UserProfileSearchType.Best ? "Best" : "Recent")} score(s) of {osuUser.Username} in mode {omode}", $"https://osu.ppy.sh/users/{osuUser.Id}", osuUser.AvatarUrl.ToString());
 
                     foreach (var score in scores)
                     {
@@ -361,7 +360,7 @@ public class OsuModule : ApplicationCommandModule
 
                         sb
                             .AppendLine($"{Formatter.Bold("Map link")}: {beatmap.Url}")
-                            .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore} - Global #{score.GlobalRank.GetValueOrDefault()}, Country #{score.CountryRank.GetValueOrDefault()}")
+                            .AppendLine($"{Formatter.Bold("Score")}: {score.TotalScore}")
                             .AppendLine($"{Formatter.Bold("Ranking")}: {score.Rank}")
                             .AppendLine($"{Formatter.Bold("Accuracy")}: {Math.Round(score.Accuracy * 100, 2, MidpointRounding.ToEven)}%")
                             .AppendLine($"{Formatter.Bold("Combo")}: {score.MaxCombo}x/{beatmap.MaxCombo}x")
@@ -370,13 +369,14 @@ public class OsuModule : ApplicationCommandModule
                             .AppendLine($"{Formatter.Bold("Submission Time")}: {score.CreatedAt:f}");
 
                         embedBuilder
+                            .WithThumbnail(score.Beatmapset.Covers.Card2x)
                             .AddField($"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{beatmap.Version}]{(score.Mods.Any() ? $" +{Formatter.Bold(string.Join(string.Empty, score.Mods))}" : string.Empty)}", sb.ToString());
 
                         sb.Clear();
                     }
 
                     builder.AddEmbed(embedBuilder.Build());
-                    builder.WithContent($"{(searchType == UserSearchChoice.Best ? "Best" : "Recent")} scores of {osuUser.Username}");
+                    builder.WithContent($"{(profileSearchType == UserProfileSearchType.Best ? "Best" : "Recent")} score(s) of {osuUser.Username}");
                     await ctx.FollowUpAsync(builder);
                 }
             }
@@ -394,7 +394,7 @@ public class OsuModule : ApplicationCommandModule
     }
 }
 
-public enum UserSearchChoice
+public enum UserProfileSearchType
 {
     [ChoiceName("profile")]
     Profile,
@@ -409,7 +409,7 @@ public enum UserSearchChoice
     Recent
 }
 
-public enum ModeSearchChoice
+public enum UserProfileSearchMode
 {
     [ChoiceName("linked")]
     Linked,
