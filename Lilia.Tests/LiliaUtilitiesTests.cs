@@ -15,35 +15,21 @@ public class LiliaUtilitiesTests
     private const string DiscordGuildInvTestString = "https://discord.gg/discord";
 
     [TestMethod]
-    public void JumpLinkResolveGuildTest()
+    public void JumpLinkResolveTest()
     {
         var result = JumpLinkTestString.ResolveDiscordMessageJumpLink();
 
         ulong actualGuildId = 708668574201544745;
         var expectedGuildId = result.Item1;
-
-        Assert.AreEqual(actualGuildId, expectedGuildId);
-    }
-
-    [TestMethod]
-    public void JumpLinkResolveChannelTest()
-    {
-        var result = JumpLinkTestString.ResolveDiscordMessageJumpLink();
-
+        
         ulong actualChannelId = 923884254298005525;
         var expectedChannelId = result.Item2;
 
-        Assert.AreEqual(actualChannelId, expectedChannelId);
-    }
-
-    [TestMethod]
-    public void JumpLinkResolveMessageTest()
-    {
-        var result = JumpLinkTestString.ResolveDiscordMessageJumpLink();
-
         ulong actualMsgId = 940474669759365160;
         var expectedMsgId = result.Item3;
-
+        
+        Assert.AreEqual(actualGuildId, expectedGuildId);
+        Assert.AreEqual(actualChannelId, expectedChannelId);
         Assert.AreEqual(actualMsgId, expectedMsgId);
     }
 
@@ -55,25 +41,16 @@ public class LiliaUtilitiesTests
     }
 
     [TestMethod]
-    public void IsValidDiscordBotInviteFailEmptyTest()
+    public void IsValidDiscordBotInviteFailTest()
     {
-        var res = string.Empty.IsDiscordValidBotInvite();
-        Assert.AreEqual(res, false);
-    }
-
-    [TestMethod]
-    public void IsValidDiscordBotInviteFailNullTest()
-    {
+        var res1 = string.Empty.IsDiscordValidBotInvite();
         string test = null;
-        var res = test.IsDiscordValidBotInvite();
-        Assert.AreEqual(res, false);
-    }
-
-    [TestMethod]
-    public void IsValidDiscordBotInviteFailInvalidTest()
-    {
-        var res = "https://rickroll.discord.com/".IsDiscordValidBotInvite();
-        Assert.AreEqual(res, false);
+        var res2 = test.IsDiscordValidBotInvite();
+        var res3 = "https://rickroll.discord.com/".IsDiscordValidBotInvite();
+        
+        Assert.AreEqual(res1, false);
+        Assert.AreEqual(res2, false);
+        Assert.AreEqual(res3, false);
     }
 
     [TestMethod]
@@ -84,24 +61,15 @@ public class LiliaUtilitiesTests
     }
 
     [TestMethod]
-    public void IsValidDiscordGuildInviteFailEmptyTest()
+    public void IsValidDiscordGuildInviteFailTest()
     {
-        var res = string.Empty.IsDiscordValidGuildInvite();
-        Assert.AreEqual(res, false);
-    }
-
-    [TestMethod]
-    public void IsValidDiscordGuildInviteFailNullTest()
-    {
+        var res1 = string.Empty.IsDiscordValidGuildInvite();
         string test = null;
-        var res = test.IsDiscordValidGuildInvite();
-        Assert.AreEqual(res, false);
-    }
-
-    [TestMethod]
-    public void IsValidDiscordGuildInviteFailInvalidTest()
-    {
-        var res = "https://rolled.gg/discord".IsDiscordValidGuildInvite();
-        Assert.AreEqual(res, false);
+        var res2 = test.IsDiscordValidGuildInvite();
+        var res3 = "https://rolled.gg/discord".IsDiscordValidGuildInvite();
+        
+        Assert.AreEqual(res1, false);
+        Assert.AreEqual(res2, false);
+        Assert.AreEqual(res3, false);
     }
 }
