@@ -28,15 +28,19 @@ public class LiliaClient
     public BotConfiguration BotConfiguration;
     public CancellationTokenSource Cts;
     public LiliaDatabase Database;
-    public List<DiscordGuild> JoinedGuilds;
+    public List<DiscordGuild> JoinedGuilds = new();
     public DateTime StartTime;
-    public const Permissions RequiredPermissions = Permissions.AccessChannels | Permissions.SendMessages |
-                                                   Permissions.SendMessagesInThreads | Permissions.ManageRoles |
-                                                   Permissions.KickMembers | Permissions.BanMembers |
-                                                   Permissions.ReadMessageHistory | Permissions.EmbedLinks |
-                                                   Permissions.AttachFiles | Permissions.MentionEveryone |
+
+    public const Permissions RequiredPermissions = Permissions.ViewAuditLog | Permissions.ManageRoles |
+                                                   Permissions.ManageChannels | Permissions.KickMembers |
+                                                   Permissions.BanMembers | Permissions.AccessChannels |
+                                                   Permissions.ModerateMembers | Permissions.SendMessages |
+                                                   Permissions.SendMessagesInThreads | Permissions.EmbedLinks |
+                                                   Permissions.AttachFiles | Permissions.ReadMessageHistory |
                                                    Permissions.UseExternalEmojis | Permissions.UseExternalStickers |
-                                                   Permissions.AddReactions;
+                                                   Permissions.AddReactions | Permissions.UseApplicationCommands |
+                                                   Permissions.UseVoice | Permissions.Speak |
+                                                   Permissions.UseVoiceDetection | Permissions.StartEmbeddedActivities;
 
     public async Task Run()
     {
@@ -72,8 +76,6 @@ public class LiliaClient
         {
             Services = services
         });
-
-        JoinedGuilds = new List<DiscordGuild>();
 
         client.UseInteractivity(new InteractivityConfiguration
         {
@@ -144,7 +146,7 @@ public class LiliaClient
 
     private Task OnReady(DiscordClient sender, ReadyEventArgs e)
     {
-        Log.Logger.Information("Client is ready");
+        Log.Logger.Information($"Client is ready (as Discord User: {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator})");
         StartTime = DateTime.Now;
         return Task.CompletedTask;
     }
