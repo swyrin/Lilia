@@ -86,7 +86,7 @@ public class OsuModule : ApplicationCommandModule
         await ctx.DeferAsync(true);
         var dbUser = _dbCtx.GetOrCreateUserRecord(ctx.Member);
 
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
+        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
             .AddField("Username",
                 !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
             .AddField("Default mode", !string.IsNullOrWhiteSpace(dbUser.OsuMode) ? dbUser.OsuMode : "Not linked yet",
@@ -272,7 +272,7 @@ public class OsuModule : ApplicationCommandModule
 
             if (profileSearchType == UserProfileSearchType.Profile)
             {
-                var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
+                var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
                     .WithAuthor(
                         $"{osuUser.Username}'s osu! profile in {omode.ToString()} ({(osuUser.IsSupporter ? $"{DiscordEmoji.FromName(ctx.Client, ":heart:")})" : $"{DiscordEmoji.FromName(ctx.Client, ":black_heart:")})")}",
                         $"https://osu.ppy.sh/users/{osuUser.Id}",
@@ -368,7 +368,7 @@ public class OsuModule : ApplicationCommandModule
                 var scores = await GetOsuScoresAsync(username, omode, profileSearchType, includeFails, r);
                 List<Page> pages = new();
                 
-                var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember();
+                var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser();
 
                 var pos = 0;
                 foreach (var score in scores)

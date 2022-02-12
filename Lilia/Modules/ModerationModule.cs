@@ -400,7 +400,7 @@ public class ModerationModule : ApplicationCommandModule
                 DiscordLinkButtonComponent jumpBtn = new DiscordLinkButtonComponent(msg.JumpLink.ToString(), "Source message");
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .AddEmbed(ctx.Member.GetDefaultEmbedTemplateForMember()
+                    .AddEmbed(ctx.Member.GetDefaultEmbedTemplateForUser()
                         .WithTitle("Notice copied")
                         .WithDescription(msg.Content))
                     .AddComponents(jumpBtn));
@@ -447,7 +447,7 @@ public class ModerationModule : ApplicationCommandModule
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Sent the appeal, now it is time to be patient"));
 
-            await receiver.SendMessageAsync(ctx.User.GetDefaultEmbedTemplateForMember()
+            await receiver.SendMessageAsync(ctx.User.GetDefaultEmbedTemplateForUser()
                 .WithTitle("An appeal has been sent to you, content below")
                 .WithDescription(res.Result.Content)
                 .AddField("Sender", $"{ctx.User.Username}#{ctx.User.Discriminator}")

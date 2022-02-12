@@ -30,7 +30,7 @@ public class GeneralModule : ApplicationCommandModule
         if (timeDiff.Minutes > 0) uptimeStr.Append($"{timeDiff.Minutes} minute{(timeDiff.Minutes >= 2 ? "s" : string.Empty)} ");
         if (timeDiff.Seconds > 0) uptimeStr.Append($"{timeDiff.Seconds} second{(timeDiff.Seconds >= 2 ? "s" : string.Empty)}");
 
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
+        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
             .WithTitle("My uptime")
             .AddField("Uptime", uptimeStr.ToString())
             .AddField("Start since", $"{_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}");
@@ -72,7 +72,7 @@ public class GeneralModule : ApplicationCommandModule
         if (timeDiff.Minutes > 0) uptimeStr.Append($"{timeDiff.Minutes} minute{(timeDiff.Minutes >= 2 ? "s" : string.Empty)} ");
         if (timeDiff.Seconds > 0) uptimeStr.Append($"{timeDiff.Seconds} second{(timeDiff.Seconds >= 2 ? "s" : string.Empty)}");
 
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForMember()
+        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
             .WithTitle("Something about me :D")
             .WithThumbnail(ctx.Client.CurrentUser.AvatarUrl)
             .WithDescription($"Hi, I am {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")}, a bot running on the source code of {Formatter.Bold("Lilia")} written by {Formatter.Bold("Swyrin#7193")}")

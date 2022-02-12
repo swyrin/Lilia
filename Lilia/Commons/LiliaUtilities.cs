@@ -6,7 +6,7 @@ namespace Lilia.Commons;
 
 public static class LiliaUtilities
 {
-    public static DiscordEmbedBuilder GetDefaultEmbedTemplateForMember(this DiscordUser user)
+    public static DiscordEmbedBuilder GetDefaultEmbedTemplateForUser(this DiscordUser user)
     {
         return new DiscordEmbedBuilder()
             .WithTimestamp(DateTime.Now)
