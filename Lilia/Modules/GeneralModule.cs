@@ -80,7 +80,7 @@ public class GeneralModule : ApplicationCommandModule
             .AddField("Member count", memberCount.ToString(), true)
             .AddField("Owner(s)", owners.ToString())
             .AddField("Uptime", $"{Formatter.Bold(uptimeStr.ToString())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
-            .AddField("How to invite me?", "Either click the \"Interested in me?\" button below or click on me, choose \"Add to Server\", if any");
+            .AddField("How to invite me?", "Either click the \"Interested in me?\" button below or click on me, choose \"Add to Server\" if it exists");
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .AddEmbed(embedBuilder.Build())
