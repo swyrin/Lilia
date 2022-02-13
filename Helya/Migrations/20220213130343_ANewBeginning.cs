@@ -2,9 +2,9 @@
 
 #nullable disable
 
-namespace Lilia.Migrations
+namespace Helya.Migrations
 {
-    public partial class InitialModel : Migration
+    public partial class ANewBeginning : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
