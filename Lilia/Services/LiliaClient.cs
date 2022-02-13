@@ -13,7 +13,6 @@ using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
 using Lilia.Commons;
-using Lilia.Database;
 using Lilia.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -44,6 +43,10 @@ public class LiliaClient
 
     public async Task Run()
     {
+#if DEBUG
+        Log.Logger.Fatal("Unless you are testing the code, you should NOT see this on production");
+        Log.Logger.Fatal("Consider using \"-c Release\" when running/building the code");
+#endif
         Log.Logger.Information("Loading configurations");
         BotConfiguration = JsonManager<BotConfiguration>.Read();
 
