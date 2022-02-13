@@ -11,7 +11,7 @@ public static class LiliaUtilities
         return new DiscordEmbedBuilder()
             .WithTimestamp(DateTime.Now)
             .WithColor(DiscordColor.Rose)
-            .WithFooter($"Requested by: {user.Username}#{user.Discriminator} (not guild name)", user.AvatarUrl);
+            .WithFooter($"Requested by: {user.Username}#{user.Discriminator}", user.AvatarUrl);
     }
 
     public static Tuple<ulong, ulong, ulong> ResolveDiscordMessageJumpLink(this string str)
