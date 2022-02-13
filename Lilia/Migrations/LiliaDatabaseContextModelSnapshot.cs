@@ -27,7 +27,7 @@ namespace Lilia.Migrations
 
                     b.HasKey("DbGuildId");
 
-                    b.ToTable("Guilds");
+                    b.ToTable("Guilds", (string)null);
                 });
 
             modelBuilder.Entity("Lilia.Database.Models.DbUser", b =>
@@ -50,7 +50,7 @@ namespace Lilia.Migrations
 
                     b.HasKey("DbUserId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 #pragma warning restore 612, 618
         }
