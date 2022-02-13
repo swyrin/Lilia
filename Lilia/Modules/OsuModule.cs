@@ -300,13 +300,9 @@ public class OsuModule : ApplicationCommandModule
                 if (!testRun.Any())
                 {
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("No scores found"));
-
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent("Possible reasons:\n" +
+                        .WithContent("No scores found. Possible reasons:\n" +
                                      $"1. The user {Formatter.Bold(username)} doesn't play the mode {Formatter.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
                                      "2. Internal issue, contact the owner(s) if the issue persists"));
-
                     return;
                 }
 
@@ -413,10 +409,7 @@ public class OsuModule : ApplicationCommandModule
         catch (OsuDeserializationException)
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when parsing the response"));
-            
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent("Possible reasons:\n" +
+                .WithContent("Something went wrong when parsing the response. Possible reasons:\n" +
                              $"1. The user {Formatter.Bold(username)} doesn't play the mode {Formatter.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
                              "2. Internal issue, contact the owner(s) if the issue persists"));
         }
