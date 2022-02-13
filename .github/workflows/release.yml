@@ -20,38 +20,38 @@ jobs:
           dotnet restore --nologo
       - name: Build and Test
         run: |
-          dotnet build Lilia --no-restore --nologo -c Release
+          dotnet build Helya --no-restore --nologo -c Release
           dotnet build --no-restore --nologo -c Release
           dotnet test --no-build --no-restore --nologo --verbosity normal -c Release
 
       - name: Single file (win-x86)
         run: |
-          dotnet build Lilia -r win-x86 --self-contained --no-restore --nologo -c Release
-          dotnet publish Lilia -r win-x86 -c Release --self-contained true --nologo --no-build --no-restore --output app/win-x86
+          dotnet build Helya -r win-x86 --self-contained --no-restore --nologo -c Release
+          dotnet publish Helya -r win-x86 -c Release --self-contained true --nologo --no-build --no-restore --output app/win-x86
 
       - name: Single file (win-arm)
         run: |
-          dotnet build Lilia -r win-arm --self-contained --no-restore --nologo -c Release
-          dotnet publish Lilia -r win-arm -c Release --self-contained true --nologo --no-build --no-restore --output app/win-arm
+          dotnet build Helya -r win-arm --self-contained --no-restore --nologo -c Release
+          dotnet publish Helya -r win-arm -c Release --self-contained true --nologo --no-build --no-restore --output app/win-arm
 
       - name: Single file (linux-x64)
         run: |
-          dotnet build Lilia -r linux-x64 --self-contained --no-restore --nologo -c Release        
-          dotnet publish Lilia -r linux-x64 -c Release --self-contained true --nologo --no-build --no-restore --output app/linux-x64
+          dotnet build Helya -r linux-x64 --self-contained --no-restore --nologo -c Release        
+          dotnet publish Helya -r linux-x64 -c Release --self-contained true --nologo --no-build --no-restore --output app/linux-x64
 
       - name: Single file (linux-arm)
         run: |
-          dotnet build Lilia -r linux-arm --self-contained --no-restore --nologo -c Release
-          dotnet publish Lilia -r linux-arm -c Release --self-contained true --nologo --no-build --no-restore --output app/linux-arm
+          dotnet build Helya -r linux-arm --self-contained --no-restore --nologo -c Release
+          dotnet publish Helya -r linux-arm -c Release --self-contained true --nologo --no-build --no-restore --output app/linux-arm
 
       - name: Single file (osx-x64)
         run: |
-          dotnet build Lilia -r osx-x64 --self-contained --no-restore --nologo -c Release
-          dotnet publish Lilia -r osx-x64 -c Release --self-contained true --nologo --no-build --no-restore --output app/osx-x64
+          dotnet build Helya -r osx-x64 --self-contained --no-restore --nologo -c Release
+          dotnet publish Helya -r osx-x64 -c Release --self-contained true --nologo --no-build --no-restore --output app/osx-x64
 
       - name: Create archive of built files
         run: |
-          pushd /home/runner/work/Lilia/Lilia/
+          pushd /home/runner/work/Helya/Helya/
           zip -r app.zip ./app
           popd
       - name: Get tagged version
@@ -75,6 +75,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /home/runner/work/Lilia/Lilia/app.zip
+          asset_path: /home/runner/work/Helya/Helya/app.zip
           asset_name: app.zip
           asset_content_type: application/zip
