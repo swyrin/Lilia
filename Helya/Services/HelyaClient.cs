@@ -12,21 +12,21 @@ using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
-using Lilia.Commons;
-using Lilia.Json;
+using Helya.Commons;
+using Helya.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
 
-namespace Lilia.Services;
+namespace Helya.Services;
 
-public class LiliaClient
+public class HelyaClient
 {
     public BotConfiguration BotConfiguration;
     public CancellationTokenSource Cts;
-    public LiliaDatabase Database;
+    public HelyaDatabase Database;
     public List<DiscordGuild> JoinedGuilds = new();
     public DateTime StartTime;
 
@@ -60,7 +60,7 @@ public class LiliaClient
         });
 
         Log.Logger.Information("Setting up databases");
-        Database = new LiliaDatabase();
+        Database = new HelyaDatabase();
 
         var services = new ServiceCollection()
             .AddLogging(x => x.AddSerilog())

@@ -9,24 +9,24 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using Lilia.Commons;
-using Lilia.Database;
-using Lilia.Database.Extensions;
-using Lilia.Services;
+using Helya.Database;
+using Helya.Services;
+using Helya.Commons;
+using Helya.Database.Extensions;
 using OsuSharp.Domain;
 using OsuSharp.Exceptions;
 using OsuSharp.Interfaces;
 
-namespace Lilia.Modules;
+namespace Helya.Modules;
 
 [SlashCommandGroup("osu", "osu! related commands")]
 public class OsuModule : ApplicationCommandModule
 {
-    private LiliaClient _client;
-    private readonly LiliaDatabaseContext _dbCtx;
+    private HelyaClient _client;
+    private readonly HelyaDatabaseContext _dbCtx;
     private readonly IOsuClient _osuClient;
 
-    public OsuModule(LiliaClient client, IOsuClient osuClient)
+    public OsuModule(HelyaClient client, IOsuClient osuClient)
     {
         _client = client;
         _dbCtx = client.Database.GetContext();

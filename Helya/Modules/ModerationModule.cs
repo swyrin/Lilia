@@ -8,12 +8,12 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using Lilia.Commons;
-using Lilia.Database;
-using Lilia.Database.Extensions;
-using Lilia.Services;
+using Helya.Database;
+using Helya.Services;
+using Helya.Commons;
+using Helya.Database.Extensions;
 
-namespace Lilia.Modules;
+namespace Helya.Modules;
 
 public enum ModerationAction
 {
@@ -33,11 +33,11 @@ public class ModerationModule : ApplicationCommandModule
     [SlashCommandGroup("general", "General command for moderating members")]
     public class ModerationGeneralModule : ApplicationCommandModule
     {
-        private LiliaClient _client;
-        private LiliaDatabaseContext _dbCtx;
-        private const string MuteRoleName = "lilia-mute";
+        private HelyaClient _client;
+        private HelyaDatabaseContext _dbCtx;
+        private const string MuteRoleName = "Helya-mute";
 
-        public ModerationGeneralModule(LiliaClient client)
+        public ModerationGeneralModule(HelyaClient client)
         {
             _client = client;
             _dbCtx = client.Database.GetContext();
@@ -159,22 +159,22 @@ public class ModerationModule : ApplicationCommandModule
 
                         #region Mute role get or create
 
-                        var liliaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName).Value;
+                        var HelyaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName).Value;
 
-                        if (liliaMuteRole == default)
+                        if (HelyaMuteRole == default)
                         {
-                            liliaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName, reason: "Mute role creation",
+                            HelyaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName, reason: "Mute role creation",
                                 permissions: Permissions.None);
                             foreach (var (_, channel) in ctx.Guild.Channels)
                             {
-                                await channel.AddOverwriteAsync(liliaMuteRole, deny: Permissions.SendMessages,
+                                await channel.AddOverwriteAsync(HelyaMuteRole, deny: Permissions.SendMessages,
                                     reason: "Mute role channel addition");
                             }
                         }
 
                         #endregion
 
-                        if (dbUser.WarnCount == 3) await mentionedMember.GrantRoleAsync(liliaMuteRole);
+                        if (dbUser.WarnCount == 3) await mentionedMember.GrantRoleAsync(HelyaMuteRole);
                         stringBuilder.AppendLine($"Added a warn of {Formatter.Mention(mentionedMember)}. Now they have {dbUser.WarnCount} warn(s)");
                         
                         break;
@@ -191,23 +191,23 @@ public class ModerationModule : ApplicationCommandModule
                             {
                                 #region Mute role get or create
 
-                                var liliaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName)
+                                var HelyaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName)
                                     .Value;
 
-                                if (liliaMuteRole == default)
+                                if (HelyaMuteRole == default)
                                 {
-                                    liliaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName,
+                                    HelyaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName,
                                         reason: "Mute role creation", permissions: Permissions.None);
                                     foreach (var (_, channel) in ctx.Guild.Channels)
                                     {
-                                        await channel.AddOverwriteAsync(liliaMuteRole, deny: Permissions.SendMessages,
+                                        await channel.AddOverwriteAsync(HelyaMuteRole, deny: Permissions.SendMessages,
                                             reason: "Mute role channel addition");
                                     }
                                 }
 
                                 #endregion
 
-                                await mentionedMember.RevokeRoleAsync(liliaMuteRole, "Warn removal");
+                                await mentionedMember.RevokeRoleAsync(HelyaMuteRole, "Warn removal");
                                 break;
                             }
                             default:

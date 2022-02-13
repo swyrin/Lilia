@@ -2,9 +2,9 @@
 using System.Text.RegularExpressions;
 using DSharpPlus.Entities;
 
-namespace Lilia.Commons;
+namespace Helya.Commons;
 
-public static class LiliaUtilities
+public static class HelyaUtilities
 {
     public static DiscordEmbedBuilder GetDefaultEmbedTemplateForUser(this DiscordUser user)
     {

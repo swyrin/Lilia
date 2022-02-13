@@ -1,10 +1,10 @@
-using Lilia.Commons;
+using Helya.Commons;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Lilia.Tests;
+namespace Helya.Tests;
 
 [TestClass]
-public class LiliaUtilitiesTests
+public class HelyaUtilitiesTests
 {
     private const string JumpLinkTestString =
         "https://discord.com/channels/708668574201544745/923884254298005525/940474669759365160";

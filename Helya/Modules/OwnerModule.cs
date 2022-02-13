@@ -3,16 +3,16 @@ using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using Lilia.Services;
+using Helya.Services;
 using Serilog;
 
-namespace Lilia.Modules;
+namespace Helya.Modules;
 
 public class OwnerModule : ApplicationCommandModule
 {
-    private readonly LiliaClient _client;
+    private readonly HelyaClient _client;
 
-    public OwnerModule(LiliaClient client)
+    public OwnerModule(HelyaClient client)
     {
         _client = client;
     }

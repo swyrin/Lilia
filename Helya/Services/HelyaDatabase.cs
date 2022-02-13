@@ -1,21 +1,21 @@
 ﻿using System.Linq;
-using Lilia.Commons;
-using Lilia.Database;
-using Lilia.Json;
+using Helya.Commons;
+using Helya.Database;
+using Helya.Json;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Extensions.Logging;
 
-namespace Lilia.Services;
+namespace Helya.Services;
 
-public class LiliaDatabase
+public class HelyaDatabase
 {
-    private readonly DbContextOptions<LiliaDatabaseContext> _options;
+    private readonly DbContextOptions<HelyaDatabaseContext> _options;
 
-    public LiliaDatabase()
+    public HelyaDatabase()
     {
-        var optionsBuilder = new DbContextOptionsBuilder<LiliaDatabaseContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<HelyaDatabaseContext>();
         var connStringBuilder = new SqliteConnectionStringBuilder
         {
             DataSource = "database.db",
@@ -36,10 +36,10 @@ public class LiliaDatabase
 
     private void Setup()
     {
-        using var context = new LiliaDatabaseContext(_options);
+        using var context = new HelyaDatabaseContext(_options);
         while (context.Database.GetPendingMigrations().Any())
         {
-            var migrationContext = new LiliaDatabaseContext(_options);
+            var migrationContext = new HelyaDatabaseContext(_options);
             migrationContext.Database.Migrate();
             migrationContext.SaveChanges();
             migrationContext.Dispose();
@@ -49,9 +49,9 @@ public class LiliaDatabase
         context.SaveChanges();
     }
 
-    public LiliaDatabaseContext GetContext()
+    public HelyaDatabaseContext GetContext()
     {
-        var context = new LiliaDatabaseContext(_options);
+        var context = new HelyaDatabaseContext(_options);
         context.Database.SetCommandTimeout(30);
         var conn = context.Database.GetDbConnection();
         conn.Open();

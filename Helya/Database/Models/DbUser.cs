@@ -1,4 +1,4 @@
-﻿namespace Lilia.Database.Models;
+﻿namespace Helya.Database.Models;
 
 public class DbUser
 {

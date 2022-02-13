@@ -4,16 +4,16 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
-using Lilia.Commons;
-using Lilia.Services;
+using Helya.Services;
+using Helya.Commons;
 
-namespace Lilia.Modules;
+namespace Helya.Modules;
 
 public class GeneralModule : ApplicationCommandModule
 {
-    private readonly LiliaClient _client;
+    private readonly HelyaClient _client;
 
-    public GeneralModule(LiliaClient client)
+    public GeneralModule(HelyaClient client)
     {
         _client = client;
     }
@@ -54,7 +54,7 @@ public class GeneralModule : ApplicationCommandModule
             owners.AppendLine($"{owner.Username}#{owner.Discriminator}");
 
         // a delicious slash command please :D
-        var botInv = ctx.Client.CurrentApplication.GenerateBotOAuth(LiliaClient.RequiredPermissions).Replace("scope=bot", "scope=bot%20applications.commands");
+        var botInv = ctx.Client.CurrentApplication.GenerateBotOAuth(HelyaClient.RequiredPermissions).Replace("scope=bot", "scope=bot%20applications.commands");
         var guildInv =  _client.BotConfiguration.Client.SupportGuildInviteLink;
 
         // dodge 400
@@ -63,7 +63,7 @@ public class GeneralModule : ApplicationCommandModule
 
         var inviteBtn = new DiscordLinkButtonComponent(botInv, "Interested in me?");
         var supportGuildBtn = new DiscordLinkButtonComponent(guildInv, "Need supports?", !isValidGuildInviteLink);
-        var selfHostBtn = new DiscordLinkButtonComponent("https://github.com/Swyreee/Lilia", "Want to host your own bot?");
+        var selfHostBtn = new DiscordLinkButtonComponent("https://github.com/Swyreee/Helya", "Want to host your own bot?");
 
         var timeDiff = DateTime.Now.Subtract(_client.StartTime);
         StringBuilder uptimeStr = new();
@@ -75,7 +75,7 @@ public class GeneralModule : ApplicationCommandModule
         var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
             .WithTitle("Something about me :D")
             .WithThumbnail(ctx.Client.CurrentUser.AvatarUrl)
-            .WithDescription($"Hi, I am {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")}, a bot running on the source code of {Formatter.Bold("Lilia")} written by {Formatter.Bold("Swyrin#7193")}")
+            .WithDescription($"Hi, I am {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")}, a bot running on the source code of {Formatter.Bold("Helya")} written by {Formatter.Bold("Swyrin#7193")}")
             .AddField("Server count", _client.JoinedGuilds.Count.ToString(), true)
             .AddField("Member count", memberCount.ToString(), true)
             .AddField("Owner(s)", owners.ToString())

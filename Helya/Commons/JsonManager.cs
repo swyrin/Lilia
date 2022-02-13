@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using Lilia.Json;
+using Helya.Json;
 using Newtonsoft.Json;
 using Serilog;
 
-namespace Lilia.Commons;
+namespace Helya.Commons;
 
 public static class JsonManager<T> where T : BaseJson
 {

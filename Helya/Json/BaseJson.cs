@@ -1,4 +1,4 @@
-﻿namespace Lilia.Json;
+﻿namespace Helya.Json;
 
 public class BaseJson
 {

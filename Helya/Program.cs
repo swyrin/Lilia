@@ -1,7 +1,7 @@
-﻿using Lilia.Services;
+﻿using Helya.Services;
 using Serilog;
 
-namespace Lilia;
+namespace Helya;
 
 internal static class Program
 {
@@ -13,6 +13,6 @@ internal static class Program
             .CreateLogger();
 
         Log.Logger.Debug("Starting");
-        new LiliaClient().Run().ConfigureAwait(false).GetAwaiter().GetResult();
+        new HelyaClient().Run().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 }

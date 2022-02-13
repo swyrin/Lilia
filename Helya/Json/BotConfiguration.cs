@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Lilia.Json;
+namespace Helya.Json;
 
 public class BotConfiguration : BaseJson
 {
     [JsonProperty("client")]
-    public ClientData Client = new();
+    public ClientConfigurations Client = new();
 
     [JsonProperty("credentials")]
-    public CredentialsData Credentials = new();
+    public CredentialConfigurations Credentials = new();
 
     public BotConfiguration()
     {
@@ -17,10 +17,10 @@ public class BotConfiguration : BaseJson
     }
 }
 
-public class ClientData
+public class ClientConfigurations
 {
     [JsonProperty("activity")]
-    public ClientActivityData Activity = new();
+    public ClientActivityConfigurations Activity = new();
 
     [JsonProperty("private_guilds")]
     public List<ulong> PrivateGuildIds = new();
@@ -32,7 +32,7 @@ public class ClientData
     public string SupportGuildInviteLink = "";
 }
 
-public class ClientActivityData
+public class ClientActivityConfigurations
 {
     [JsonProperty("name")]
     public string Name = "you";
@@ -44,7 +44,7 @@ public class ClientActivityData
     public string Type = "Watching";
 }
 
-public class CredentialsData
+public class CredentialConfigurations
 {
     [JsonProperty("db_password")]
     public string DbPassword = "thisisliterallynotapassword";
@@ -53,10 +53,10 @@ public class CredentialsData
     public string DiscordToken;
 
     [JsonProperty("osu")]
-    public OsuData Osu = new();
+    public OsuConfigurations Osu = new();
 }
 
-public class OsuData
+public class OsuConfigurations
 {
     [JsonProperty("client_id")]
     public long ClientId;
