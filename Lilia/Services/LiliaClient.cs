@@ -63,6 +63,7 @@ public class LiliaClient
             .AddLogging(x => x.AddSerilog())
             .AddDefaultSerializer()
             .AddDefaultRequestHandler()
+            .AddSingleton(Database)
             .AddOsuSharp(x => x.Configuration = new OsuClientConfiguration
             {
                 ModFormatSeparator = string.Empty,

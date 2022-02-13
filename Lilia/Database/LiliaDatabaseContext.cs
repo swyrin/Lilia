@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Lilia.Commons;
 using Lilia.Database.Models;
+using Lilia.Json;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Serilog;
+using Serilog.Extensions.Logging;
 
 namespace Lilia.Database;
 
@@ -11,9 +14,16 @@ public class LiliaDatabaseContextFactory : IDesignTimeDbContextFactory<LiliaData
     public LiliaDatabaseContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<LiliaDatabaseContext>();
-        var connStringBuilder = new SqliteConnectionStringBuilder($"Data Source=database.db;Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}");
+        var connStringBuilder = new SqliteConnectionStringBuilder
+        {
+            DataSource = "database.db",
+            Password = JsonManager<BotConfiguration>.Read().Credentials.DbPassword
+        };
 
-        optionsBuilder.UseSqlite(connStringBuilder.ToString());
+        optionsBuilder
+            .UseLoggerFactory(new SerilogLoggerFactory(Log.Logger))
+            .UseSqlite(connStringBuilder.ToString());
+        
         var ctx = new LiliaDatabaseContext(optionsBuilder.Options);
         ctx.Database.SetCommandTimeout(30);
         return ctx;
