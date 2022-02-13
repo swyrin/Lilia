@@ -21,6 +21,10 @@ public class LiliaDatabaseContextFactory : IDesignTimeDbContextFactory<LiliaData
         };
 
         optionsBuilder
+#if DEBUG
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors()
+#endif
             .UseLoggerFactory(new SerilogLoggerFactory(Log.Logger))
             .UseSqlite(connStringBuilder.ToString());
         

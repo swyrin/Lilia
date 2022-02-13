@@ -23,6 +23,10 @@ public class LiliaDatabase
         };
 
         optionsBuilder
+#if DEBUG
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors()
+#endif
             .UseLoggerFactory(new SerilogLoggerFactory(Log.Logger))
             .UseSqlite(connStringBuilder.ToString());
         
