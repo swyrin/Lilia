@@ -19,7 +19,7 @@ using OsuSharp.Interfaces;
 
 namespace Lilia.Modules;
 
-[SlashCommandGroup("osu", "osu! relatecommands")]
+[SlashCommandGroup("osu", "osu! related commands")]
 public class OsuModule : ApplicationCommandModule
 {
     private LiliaClient _client;
@@ -44,7 +44,7 @@ public class OsuModule : ApplicationCommandModule
 
         if (searchMode == UserProfileSearchMode.Default) searchMode = UserProfileSearchMode.Osu;
 
-        var dbUser = _dbCtx.GetOrCreateUserRecord(ctx.Member);
+        var dbUser = _dbCtx.GetUserRecord(ctx.Member);
         dbUser.OsuUsername = username;
         dbUser.OsuMode = ToGameMode(searchMode).ToString();
 
@@ -52,7 +52,7 @@ public class OsuModule : ApplicationCommandModule
         await _dbCtx.SaveChangesAsync();
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Successfully the user's osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchMode.GetName())}"));
+            .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchMode.GetName())}"));
     }
 
     [SlashCommand("forceupdate", "Update an user's osu! profile information in my database")]
@@ -69,7 +69,7 @@ public class OsuModule : ApplicationCommandModule
 
         if (searchMode == UserProfileSearchMode.Default) searchMode = UserProfileSearchMode.Osu;
 
-        var dbUser = _dbCtx.GetOrCreateUserRecord(user);
+        var dbUser = _dbCtx.GetUserRecord(user);
         dbUser.OsuUsername = username;
         dbUser.OsuMode = ToGameMode(searchMode).ToString();
 
@@ -84,7 +84,7 @@ public class OsuModule : ApplicationCommandModule
     public async Task CheckMyProfileCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
-        var dbUser = _dbCtx.GetOrCreateUserRecord(ctx.Member);
+        var dbUser = _dbCtx.GetUserRecord(ctx.Member);
 
         var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
             .AddField("Username",
@@ -97,7 +97,7 @@ public class OsuModule : ApplicationCommandModule
             .AddEmbed(embedBuilder.Build()));
     }
 
-    [SlashCommand("lookup", "Get a member's osu! profile information")]
+    [SlashCommand("lookup", "Get a member's osu! profile")]
     public async Task GetOsuProfileMentionCommand(InteractionContext ctx,
         [Option("user", "Someone in this Discord server")]
         DiscordUser user,
@@ -108,12 +108,12 @@ public class OsuModule : ApplicationCommandModule
     {
         await ctx.DeferAsync();
 
-        var dbUser = _dbCtx.GetOrCreateUserRecord(user);
+        var dbUser = _dbCtx.GetUserRecord(user);
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("That user doesn't exist in my database"));
+                .WithContent("The requested user doesn't exist in my database"));
 
             return;
         }
@@ -127,7 +127,7 @@ public class OsuModule : ApplicationCommandModule
 
     [SlashCommand("profile", "Get osu! profile from provided username")]
     public async Task GetOsuProfileStringCommand(InteractionContext ctx,
-        [Option("username", "Someone's osu! username")]
+        [Option("username", "osu! username")]
         string username,
         [Option("type", "Search type")]
         UserProfileSearchType profileSearchType = UserProfileSearchType.Profile,
@@ -144,12 +144,12 @@ public class OsuModule : ApplicationCommandModule
         await ctx.DeferAsync(true);
 
         DiscordUser member = ctx.TargetMember;
-        var dbUser = _dbCtx.GetOrCreateUserRecord(member);
+        var dbUser = _dbCtx.GetUserRecord(member);
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("That user doesn't exist in my database"));
+                .WithContent("The requested user doesn't exist in my database"));
 
             return;
         }
@@ -165,12 +165,12 @@ public class OsuModule : ApplicationCommandModule
         await ctx.DeferAsync(true);
 
         DiscordUser member = ctx.TargetMember;
-        var dbUser = _dbCtx.GetOrCreateUserRecord(member);
+        var dbUser = _dbCtx.GetUserRecord(member);
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("That user doesn't exist in my database"));
+                .WithContent("The requested user doesn't exist in my database"));
 
             return;
         }
@@ -186,12 +186,12 @@ public class OsuModule : ApplicationCommandModule
         await ctx.DeferAsync(true);
 
         DiscordUser member = ctx.TargetMember;
-        var dbUser = _dbCtx.GetOrCreateUserRecord(member);
+        var dbUser = _dbCtx.GetUserRecord(member);
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("That user doesn't exist in my database"));
+                .WithContent("The requested user doesn't exist in my database"));
 
             return;
         }

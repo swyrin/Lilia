@@ -5,7 +5,7 @@
 
 Lilia is a Discord bot created as my hobby and a project for learning tech stacks, aiming to be a good bot among others.
 
-> :warning: This project is going through a continuous development phase so please don't expect this to work perfectly.
+> :warning: This project is going through a continuous development phase so **please don't** expect this to work perfectly.
 
 Go to [the wiki](https://github.com/Swyreee/Lilia/wiki) for self hosting guide, or if you are lazy:
 
