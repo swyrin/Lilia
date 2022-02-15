@@ -32,6 +32,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Nekos.Net" Version="3.1.2" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="OsuSharp" Version="6.0.0-ci-20220129.2" />
         <PackageReference Include="Serilog" Version="2.11.0-dev-01380" />
