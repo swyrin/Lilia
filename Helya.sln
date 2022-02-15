@@ -5,20 +5,6 @@ VisualStudioVersion = 17.0.31710.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Helya", "Helya\Helya.csproj", "{07E5A517-188B-4F8B-9E7A-9F3BD75EFDBC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0306FDCC-DE6B-42DC-9D79-EAB668E7F312}"
-	ProjectSection(SolutionItems) = preProject
-		.gitignore = .gitignore
-		.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
-		CHANGELOG.md = CHANGELOG.md
-		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
-		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
-		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
-		LICENSE = LICENSE
-		.github\pull_request_template.md = .github\pull_request_template.md
-		README.md = README.md
-		.github\workflows\release.yml = .github\workflows\release.yml
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Helya.Tests", "Helya.Tests\Helya.Tests.csproj", "{66BC1789-196B-49AC-98C8-DAF166AD688F}"
 EndProject
 Global
