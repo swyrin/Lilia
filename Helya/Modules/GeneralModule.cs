@@ -61,7 +61,7 @@ public class GeneralModule : ApplicationCommandModule
         if (string.IsNullOrWhiteSpace(guildInv)) guildInv = "https://placehold.er";
         var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 
-        var inviteBtn = new DiscordLinkButtonComponent(botInv, "Interested in me?");
+        var inviteBtn = new DiscordLinkButtonComponent(botInv, "Interested in me?", !ctx.Client.CurrentApplication.IsPublic.GetValueOrDefault());
         var supportGuildBtn = new DiscordLinkButtonComponent(guildInv, "Need supports?", !isValidGuildInviteLink);
         var selfHostBtn = new DiscordLinkButtonComponent("https://github.com/Swyreee/Helya", "Want to host your own bot?");
 
@@ -75,12 +75,15 @@ public class GeneralModule : ApplicationCommandModule
         var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
             .WithTitle("Something about me :D")
             .WithThumbnail(ctx.Client.CurrentUser.AvatarUrl)
-            .WithDescription($"Hi, I am {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")}, a bot running on the source code of {Formatter.Bold("Helya")} written by {Formatter.Bold("Swyrin#7193")}")
+            .WithDescription(
+                $"Hi, I am {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")}, a bot running on the source code of {Formatter.Bold("Helya")} written by {Formatter.Bold("Swyrin#7193")}")
             .AddField("Server count", _client.JoinedGuilds.Count.ToString(), true)
             .AddField("Member count", memberCount.ToString(), true)
             .AddField("Owner(s)", owners.ToString())
-            .AddField("Uptime", $"{Formatter.Bold(uptimeStr.ToString())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
-            .AddField("How to invite me?", "Either click the \"Interested in me?\" button below or click on me, choose \"Add to Server\" if it exists");
+            .AddField("Uptime",
+                $"{Formatter.Bold(uptimeStr.ToString())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
+            .AddField("How to invite me?",
+                "Either click the \"Interested in me?\" button below or click on me, choose \"Add to Server\" if it exists");
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .AddEmbed(embedBuilder.Build())
