@@ -20,9 +20,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01067" />
-        <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01067" />
-        <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01067" />
+        <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01071" />
+        <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01071" />
+        <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01071" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
