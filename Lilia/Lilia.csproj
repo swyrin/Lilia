@@ -20,25 +20,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01071" />
-        <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01071" />
-        <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01071" />
+        <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01072" />
+        <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01072" />
+        <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01072" />
+        <PackageReference Include="EFCore.NamingConventions" Version="6.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Nekos.Net" Version="3.1.2" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.3" />
         <PackageReference Include="OsuSharp" Version="6.0.0-ci-20220129.2" />
         <PackageReference Include="Serilog" Version="2.11.0-dev-01380" />
         <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.0.2-dev-00890" />
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.0-pre20220207221914" />
     </ItemGroup>
 
     <ItemGroup>
