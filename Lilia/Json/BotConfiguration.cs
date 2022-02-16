@@ -46,14 +46,32 @@ public class ClientActivityConfigurations
 
 public class CredentialConfigurations
 {
-    [JsonProperty("db_password")]
-    public string DbPassword = "thisisliterallynotapassword";
+    [JsonProperty("postgresql")]
+    public PostgreSqlConfigurations PostgreSql = new();
 
     [JsonProperty("discord_token")]
     public string DiscordToken;
 
     [JsonProperty("osu")]
     public OsuConfigurations Osu = new();
+}
+
+public class PostgreSqlConfigurations
+{
+    [JsonProperty("host")]
+    public string Host = "localhost";
+
+    [JsonProperty("port")]
+    public int Port = 5432;
+
+    [JsonProperty("username")]
+    public string Username = "Lilia";
+
+    [JsonProperty("password")]
+    public string Password = "thisisnottheend";
+    
+    [JsonProperty("database_name")]
+    public string DatabaseName = "lilia";
 }
 
 public class OsuConfigurations

@@ -18,16 +18,21 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Lilia.Database;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using Serilog.Extensions.Logging;
 
 namespace Lilia.Services;
 
 public class LiliaClient
 {
-    public BotConfiguration BotConfiguration;
-    public CancellationTokenSource Cts;
+    public static readonly BotConfiguration BotConfiguration;
+    public static readonly CancellationTokenSource Cts;
     public LiliaDatabase Database;
     public readonly List<DiscordGuild> JoinedGuilds = new();
     public DateTime StartTime;
+    public static readonly DbContextOptionsBuilder<LiliaDatabaseContext> OptionsBuilder = new();
 
     public const Permissions RequiredPermissions = Permissions.ViewAuditLog | Permissions.ManageRoles |
                                                    Permissions.ManageChannels | Permissions.KickMembers |
@@ -40,6 +45,31 @@ public class LiliaClient
                                                    Permissions.UseVoice | Permissions.Speak |
                                                    Permissions.UseVoiceDetection | Permissions.StartEmbeddedActivities;
 
+    static LiliaClient()
+    {
+        BotConfiguration = JsonManager<BotConfiguration>.Read();
+        Cts = new CancellationTokenSource();
+        var sqlConfig = BotConfiguration.Credentials.PostgreSql; 
+        
+        var connStrBuilder = new NpgsqlConnectionStringBuilder
+        {
+            Password = sqlConfig.Password,
+            Username = sqlConfig.Username,
+            Database = sqlConfig.DatabaseName,
+            Host = sqlConfig.Host,
+            Port = sqlConfig.Port,
+            IncludeErrorDetail = true
+        };
+
+        OptionsBuilder
+#if DEBUG
+            .EnableSensitiveDataLogging()
+#endif
+            .EnableDetailedErrors()
+            .UseLoggerFactory(new SerilogLoggerFactory(Log.Logger))
+            .UseNpgsql(connStrBuilder.ToString());
+    }
+    
     public async Task Run()
     {
 #if DEBUG
@@ -47,9 +77,6 @@ public class LiliaClient
         Log.Logger.Warning("Consider using \"-c Release\" when running/building the code");
 #endif
         Log.Logger.Information("Loading configurations");
-        BotConfiguration = JsonManager<BotConfiguration>.Read();
-
-        Cts = new CancellationTokenSource();
 
         var client = new DiscordClient(new DiscordConfiguration
         {
@@ -151,7 +178,7 @@ public class LiliaClient
 
     private Task OnReady(DiscordClient sender, ReadyEventArgs e)
     {
-        Log.Logger.Information($"Client is ready (as Discord User: {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator})");
+        Log.Logger.Information($"Client is ready to serve as {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator}");
         StartTime = DateTime.Now;
         return Task.CompletedTask;
     }

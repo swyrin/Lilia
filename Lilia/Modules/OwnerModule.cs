@@ -9,13 +9,6 @@ namespace Lilia.Modules;
 
 public class OwnerModule : ApplicationCommandModule
 {
-    private LiliaClient _client;
-
-    public OwnerModule(LiliaClient client)
-    {
-        _client = client;
-    }
-
     [SlashCommand("shutdown", "Shutdown the bot")]
     [SlashRequireOwner]
     public async Task ShutdownCommand(InteractionContext ctx)
@@ -27,7 +20,7 @@ public class OwnerModule : ApplicationCommandModule
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent("Goodbye"));
 
-        _client.Cts.Cancel();
+        LiliaClient.Cts.Cancel();
     }
 
     [SlashCommand("refresh", "Refreshes slash commands")]

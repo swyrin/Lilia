@@ -55,7 +55,7 @@ public class GeneralModule : ApplicationCommandModule
 
         // a delicious slash command please :D
         var botInv = ctx.Client.CurrentApplication.GenerateBotOAuth(LiliaClient.RequiredPermissions).Replace("scope=bot", "scope=bot%20applications.commands");
-        var guildInv = _client.BotConfiguration.Client.SupportGuildInviteLink;
+        var guildInv = LiliaClient.BotConfiguration.Client.SupportGuildInviteLink;
 
         // dodge 400
         if (string.IsNullOrWhiteSpace(guildInv)) guildInv = "https://placehold.er";
