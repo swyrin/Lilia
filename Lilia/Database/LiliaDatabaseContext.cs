@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Lilia.Database;
 
-public class HelyaDatabaseContext : DbContext
+public class LiliaDatabaseContext : DbContext
 {
-    public HelyaDatabaseContext(DbContextOptions<HelyaDatabaseContext> options) : base(options)
+    public LiliaDatabaseContext(DbContextOptions<LiliaDatabaseContext> options) : base(options)
     {
     }
 

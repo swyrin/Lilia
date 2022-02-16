@@ -21,11 +21,11 @@ namespace Lilia.Modules;
 [SlashCommandGroup("osu", "osu! related commands")]
 public class OsuModule : ApplicationCommandModule
 {
-    private HelyaClient _client;
-    private readonly HelyaDatabaseContext _dbCtx;
+    private LiliaClient _client;
+    private readonly LiliaDatabaseContext _dbCtx;
     private readonly IOsuClient _osuClient;
 
-    public OsuModule(HelyaClient client, IOsuClient osuClient)
+    public OsuModule(LiliaClient client, IOsuClient osuClient)
     {
         _client = client;
         _dbCtx = client.Database.GetContext();

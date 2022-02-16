@@ -9,34 +9,12 @@ using System.Linq;
 
 namespace Lilia.Services;
 
-public class HelyaDatabase
+public class LiliaDatabase
 {
-    private readonly DbContextOptions<HelyaDatabaseContext> _options;
-
-    public HelyaDatabase()
+    public LiliaDatabase()
     {
-        var optionsBuilder = new DbContextOptionsBuilder<HelyaDatabaseContext>();
-        var connStringBuilder = new SqliteConnectionStringBuilder
-        {
-            DataSource = "database.db",
-            Password = JsonManager<BotConfiguration>.Read().Credentials.DbPassword
-        };
-
-        optionsBuilder
-#if DEBUG
-            .EnableSensitiveDataLogging()
-            .EnableDetailedErrors()
-            .UseLoggerFactory(new SerilogLoggerFactory(Log.Logger))
-#endif
-            .UseSqlite(connStringBuilder.ToString());
-
-        _options = optionsBuilder.Options;
-        Setup();
-    }
-
-    private void Setup()
-    {
-        using var context = new HelyaDatabaseContext(_options);
+        using var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
+        
         while (context.Database.GetPendingMigrations().Any())
         {
             var migrationContext = new HelyaDatabaseContext(_options);
@@ -49,7 +27,7 @@ public class HelyaDatabase
         context.SaveChanges();
     }
 
-    public HelyaDatabaseContext GetContext()
+    public LiliaDatabaseContext GetContext()
     {
         var context = new HelyaDatabaseContext(_options);
         context.Database.SetCommandTimeout(30);

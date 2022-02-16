@@ -9,9 +9,9 @@ namespace Lilia.Modules;
 
 public class OwnerModule : ApplicationCommandModule
 {
-    private HelyaClient _client;
+    private LiliaClient _client;
 
-    public OwnerModule(HelyaClient client)
+    public OwnerModule(LiliaClient client)
     {
         _client = client;
     }

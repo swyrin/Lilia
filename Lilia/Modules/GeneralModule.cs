@@ -11,9 +11,9 @@ namespace Lilia.Modules;
 
 public class GeneralModule : ApplicationCommandModule
 {
-    private readonly HelyaClient _client;
+    private readonly LiliaClient _client;
 
-    public GeneralModule(HelyaClient client)
+    public GeneralModule(LiliaClient client)
     {
         _client = client;
     }
@@ -54,7 +54,7 @@ public class GeneralModule : ApplicationCommandModule
             owners.Append(owner.Username).Append('#').AppendLine(owner.Discriminator);
 
         // a delicious slash command please :D
-        var botInv = ctx.Client.CurrentApplication.GenerateBotOAuth(HelyaClient.RequiredPermissions).Replace("scope=bot", "scope=bot%20applications.commands");
+        var botInv = ctx.Client.CurrentApplication.GenerateBotOAuth(LiliaClient.RequiredPermissions).Replace("scope=bot", "scope=bot%20applications.commands");
         var guildInv = _client.BotConfiguration.Client.SupportGuildInviteLink;
 
         // dodge 400

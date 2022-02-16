@@ -1,6 +1,4 @@
-﻿using Lilia.Commons;
-using Lilia.Json;
-using Microsoft.Data.Sqlite;
+﻿using Lilia.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Serilog;
@@ -8,9 +6,9 @@ using Serilog.Extensions.Logging;
 
 namespace Lilia.Database;
 
-public class HelyaDatabaseContextFactory : IDesignTimeDbContextFactory<HelyaDatabaseContext>
+public class HelyaDatabaseContextFactory : IDesignTimeDbContextFactory<LiliaDatabaseContext>
 {
-    public HelyaDatabaseContext CreateDbContext(string[] args)
+    public LiliaDatabaseContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<HelyaDatabaseContext>();
         var connStringBuilder = new SqliteConnectionStringBuilder

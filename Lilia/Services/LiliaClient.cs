@@ -21,12 +21,12 @@ using System.Threading.Tasks;
 
 namespace Lilia.Services;
 
-public class HelyaClient
+public class LiliaClient
 {
     public BotConfiguration BotConfiguration;
     public CancellationTokenSource Cts;
-    public HelyaDatabase Database;
-    public List<DiscordGuild> JoinedGuilds = new();
+    public LiliaDatabase Database;
+    public readonly List<DiscordGuild> JoinedGuilds = new();
     public DateTime StartTime;
 
     public const Permissions RequiredPermissions = Permissions.ViewAuditLog | Permissions.ManageRoles |
@@ -59,7 +59,7 @@ public class HelyaClient
         });
 
         Log.Logger.Information("Setting up databases");
-        Database = new HelyaDatabase();
+        Database = new LiliaDatabase();
 
         var services = new ServiceCollection()
             .AddLogging(x => x.AddSerilog())

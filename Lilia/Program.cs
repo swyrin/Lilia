@@ -13,6 +13,6 @@ internal static class Program
             .CreateLogger();
 
         Log.Logger.Debug("Starting");
-        new HelyaClient().Run().ConfigureAwait(false).GetAwaiter().GetResult();
+        new LiliaClient().Run().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 }
