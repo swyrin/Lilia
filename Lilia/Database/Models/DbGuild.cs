@@ -2,6 +2,5 @@
 
 public class DbGuild
 {
-    public ulong DbGuildId { get; set; }
-    public ulong DiscordGuildId { get; set; }
+    public ulong Id { get; set; }
 }
