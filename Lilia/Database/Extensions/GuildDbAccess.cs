@@ -6,14 +6,22 @@ namespace Lilia.Database.Extensions;
 
 public static class GuildDbAccess
 {
-    public static DbGuild GetGuildRecord(this HelyaDatabaseContext ctx, DiscordGuild discordGuild)
+    public static DbGuild GetGuildRecord(this LiliaDatabaseContext ctx, DiscordGuild discordGuild)
     {
         var guilds = ctx.Guilds;
-        var guild = guilds.FirstOrDefault(entity => entity.DiscordGuildId == discordGuild.Id) ?? new DbGuild
+        var guild = guilds.FirstOrDefault(entity => entity.Id == discordGuild.Id);
+        
+        if (guild == default)
         {
-            DiscordGuildId = discordGuild.Id
-        };
+            guild = new DbGuild
+            {
+                Id = discordGuild.Id
+            };
 
+            guilds.Add(guild);
+            ctx.SaveChanges();
+        }
+        
         return guild;
     }
 }
