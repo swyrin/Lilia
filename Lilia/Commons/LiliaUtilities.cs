@@ -1,4 +1,6 @@
-﻿using DSharpPlus.Entities;
+﻿#nullable enable
+
+using DSharpPlus.Entities;
 using System;
 using System.Text.RegularExpressions;
 
@@ -13,7 +15,7 @@ public static class LiliaUtilities
             .WithColor(DiscordColor.Rose)
             .WithFooter($"Requested by: {user.Username}#{user.Discriminator}", user.AvatarUrl);
     }
-
+    
     public static Tuple<ulong, ulong, ulong> ResolveDiscordMessageJumpLink(this string str)
     {
         // https://discord.com/channels/guild_id/channel_id/message_id
@@ -25,9 +27,9 @@ public static class LiliaUtilities
         return new Tuple<ulong, ulong, ulong>(guildId, channelId, messageId);
     }
 
-    public static bool IsDiscordValidBotInvite(this string str)
+    public static bool IsDiscordValidBotInvite(this string? str)
         => !string.IsNullOrWhiteSpace(str) && new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(app)?\.com\/(api\/)?oauth2\/authorize\?([^ ]+)\/?").IsMatch(str);
 
-    public static bool IsDiscordValidGuildInvite(this string str)
+    public static bool IsDiscordValidGuildInvite(this string? str)
        => !string.IsNullOrWhiteSpace(str) && new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(\.gg|(app)?\.com\/invite|\.me)\/([^ ]+)\/?").IsMatch(str);
 }

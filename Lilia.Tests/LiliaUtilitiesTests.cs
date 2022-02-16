@@ -1,3 +1,5 @@
+#nullable enable
+
 using Lilia.Commons;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -44,8 +46,10 @@ public class LiliaUtilitiesTests
     public void IsValidDiscordBotInviteFailTest()
     {
         var res1 = string.Empty.IsDiscordValidBotInvite();
-        string test = null;
+        
+        string? test = null;
         var res2 = test.IsDiscordValidBotInvite();
+
         var res3 = "https://rickroll.discord.com/".IsDiscordValidBotInvite();
 
         Assert.AreEqual(res1, false);
@@ -64,7 +68,7 @@ public class LiliaUtilitiesTests
     public void IsValidDiscordGuildInviteFailTest()
     {
         var res1 = string.Empty.IsDiscordValidGuildInvite();
-        string test = null;
+        string? test = null;
         var res2 = test.IsDiscordValidGuildInvite();
         var res3 = "https://rolled.gg/discord".IsDiscordValidGuildInvite();
 
