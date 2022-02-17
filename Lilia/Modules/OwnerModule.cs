@@ -13,7 +13,7 @@ public class OwnerModule : ApplicationCommandModule
     [SlashRequireOwner]
     public async Task ShutdownCommand(InteractionContext ctx)
     {
-        await ctx.DeferAsync();
+        await ctx.DeferAsync(true);
 
         Log.Logger.Warning("Shutting down");
 
@@ -27,7 +27,8 @@ public class OwnerModule : ApplicationCommandModule
     [SlashRequireOwner]
     public async Task CommandRefreshCommand(InteractionContext ctx)
     {
-        await ctx.DeferAsync();
+        await ctx.DeferAsync(true);
+        
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .WithContent("Processing"));
 
