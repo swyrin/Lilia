@@ -1,0 +1,37 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- task: UseDotNet@2
+  displayName: "Install .NET SDK"
+  inputs:
+    packageType: 'sdk'
+    version: '6.x'
+    includePreviewVersions: true
+- task: NuGetCommand@2
+  displayName: "Add non-NuGet sources"
+  inputs:
+    command: 'custom'
+    arguments: 'add source https://nuget.emzi0767.com/api/v3/index.json'
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    projects: '**/*.csproj'
+    arguments: '-c $(buildConfiguration)' # Update this to match your need
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: '**/Lilia.Tests/Lilia.Tests.csproj'
+    arguments: '-c $(buildConfiguration)'
+- script: dotnet test <test-project> --logger trx
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testRunner: VSTest
