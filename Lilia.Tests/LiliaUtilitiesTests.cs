@@ -1,5 +1,3 @@
-#nullable enable
-
 using Lilia.Commons;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
