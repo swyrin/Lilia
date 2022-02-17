@@ -30,7 +30,7 @@ public class LiliaClient
     public static readonly BotConfiguration BotConfiguration;
     public static readonly CancellationTokenSource Cts;
     public LiliaDatabase Database;
-    public readonly List<DiscordGuild> JoinedGuilds = new();
+    public static readonly List<DiscordGuild> JoinedGuilds = new();
     public DateTime StartTime;
     public static readonly DbContextOptionsBuilder<LiliaDatabaseContext> OptionsBuilder = new();
 
@@ -45,10 +45,17 @@ public class LiliaClient
                                                    Permissions.UseVoice | Permissions.Speak |
                                                    Permissions.UseVoiceDetection | Permissions.StartEmbeddedActivities;
 
+    public LiliaClient()
+    {
+        Log.Logger.Information("Setting up databases");
+        Database = new LiliaDatabase();
+    }
+    
     static LiliaClient()
     {
         BotConfiguration = JsonManager<BotConfiguration>.Read();
         Cts = new CancellationTokenSource();
+        
         var sqlConfig = BotConfiguration.Credentials.PostgreSql; 
         
         var connStrBuilder = new NpgsqlConnectionStringBuilder
@@ -72,21 +79,15 @@ public class LiliaClient
     
     public async Task Run()
     {
-#if DEBUG
-        Log.Logger.Warning("Unless you are testing the code, you should NOT see this on production");
-        Log.Logger.Warning("Consider using \"-c Release\" when running/building the code");
-#endif
-        Log.Logger.Information("Loading configurations");
+        Log.Logger.Information("Setting up client");
 
         var client = new DiscordClient(new DiscordConfiguration
         {
             Token = BotConfiguration.Credentials.DiscordToken,
             TokenType = TokenType.Bot,
-            LoggerFactory = new LoggerFactory().AddSerilog()
+            LoggerFactory = new LoggerFactory().AddSerilog(),
+            Intents = DiscordIntents.AllUnprivileged | DiscordIntents.GuildMembers
         });
-
-        Log.Logger.Information("Setting up databases");
-        Database = new LiliaDatabase();
 
         var services = new ServiceCollection()
             .AddLogging(x => x.AddSerilog())
@@ -102,7 +103,7 @@ public class LiliaClient
             .AddSingleton(this)
             .BuildServiceProvider();
 
-        SlashCommandsExtension slash = client.UseSlashCommands(new SlashCommandsConfiguration
+        var slash = client.UseSlashCommands(new SlashCommandsConfiguration
         {
             Services = services
         });
@@ -137,9 +138,7 @@ public class LiliaClient
         client.ClientErrored += OnClientErrored;
 
         slash.SlashCommandErrored += OnSlashCommandErrored;
-
-        Console.CancelKeyPress += (_, _) => Cts.Cancel();
-
+        
         Log.Logger.Information("Setting client activity");
 
         #region Activity Setup
