@@ -1,0 +1,26 @@
+﻿{
+  "client": {
+    "private_guilds": [],
+    "support_guild_invite_link": "",
+    "slash_commands_for_global": true,
+    "activity": {
+      "type": "Watching",
+      "name": "you",
+      "status": "DoNotDisturb"
+    }
+  },
+  "credentials": {
+    "discord_token": "",
+    "postgresql": {
+      "username": "",
+      "password": "",
+      "host": "localhost",
+      "port": 5432,
+      "database_name": ""
+    },
+    "osu": {
+      "client_id": null,
+      "client_secret": ""
+    }
+  }
+}

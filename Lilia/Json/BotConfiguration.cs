@@ -13,7 +13,11 @@ public class BotConfiguration : BaseJson
 
     public BotConfiguration()
     {
+#if DEBUG
+        FilePath = "test-config.json";
+#else
         FilePath = "config.json";
+#endif
     }
 }
 
