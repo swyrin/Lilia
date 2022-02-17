@@ -1,6 +1,6 @@
 # 🎉 Welcome to `Lilia` repository
 
-[![CodeFactor](https://www.codefactor.io/repository/github/swyreee/lilia/badge)](https://www.codefactor.io/repository/github/swyreee/lilia)
+[![CodeFactor](https://www.codefactor.io/repository/github/lilia-workshop/lilia/badge)](https://www.codefactor.io/repository/github/lilia-workshop/lilia)
 
 Lilia is a Discord bot created as my pet project for learning, aiming to be a good bot like most popular bots.
 
