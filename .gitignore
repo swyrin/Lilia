@@ -1,6 +1,5 @@
 # project related files
-config.json
-database.*
+test-config.json
 
 # Created by https://www.toptal.com/developers/gitignore/api/jetbrains+iml,visualstudio,csharp,dotnetcore
 # Edit at https://www.toptal.com/developers/gitignore?templates=jetbrains+iml,visualstudio,csharp,dotnetcore
