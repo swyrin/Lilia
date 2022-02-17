@@ -121,10 +121,10 @@ public class OsuModule : ApplicationCommandModule
         if (searchUserProfileSearchMode == UserProfileSearchMode.Default) Enum.TryParse(dbUser.OsuMode, out omode);
         else omode = ToGameMode(searchUserProfileSearchMode);
 
-        await GenericOsuProfileProcessing(ctx, dbUser.OsuUsername, profileSearchType, FromGameMode(omode));
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, profileSearchType, FromGameMode(omode));
     }
 
-    [SlashCommand("profile", "Get osu! profile from provided username")]
+    [SlashCommand("profile", "Get osu! profile from username")]
     public async Task GetOsuProfileStringCommand(InteractionContext ctx,
         [Option("username", "osu! username")]
         string username,
@@ -134,7 +134,7 @@ public class OsuModule : ApplicationCommandModule
         UserProfileSearchMode searchUserProfileSearchMode = UserProfileSearchMode.Default)
     {
         await ctx.DeferAsync();
-        await GenericOsuProfileProcessing(ctx, username, profileSearchType, searchUserProfileSearchMode);
+        await GenericOsuProcessing(ctx, username, profileSearchType, searchUserProfileSearchMode);
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get profile")]
@@ -155,7 +155,7 @@ public class OsuModule : ApplicationCommandModule
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
 
-        await GenericOsuProfileProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Profile, FromGameMode(omode));
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Profile, FromGameMode(omode));
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get latest score")]
@@ -176,7 +176,7 @@ public class OsuModule : ApplicationCommandModule
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
 
-        await GenericOsuProfileProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Recent, FromGameMode(omode));
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Recent, FromGameMode(omode));
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get best play")]
@@ -196,7 +196,7 @@ public class OsuModule : ApplicationCommandModule
         }
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
-        await GenericOsuProfileProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Best, FromGameMode(omode));
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Best, FromGameMode(omode));
     }
 
     private static GameMode ToGameMode(UserProfileSearchMode choice)
@@ -224,7 +224,8 @@ public class OsuModule : ApplicationCommandModule
         };
     }
 
-    private async Task<IReadOnlyList<IScore>> GetOsuScoresAsync(string username, GameMode omode, UserProfileSearchType profileSearchType, bool includeFails = false, int count = 1)
+    private async Task<IReadOnlyList<IScore>> GetOsuScoresAsync(string username, GameMode omode,
+        UserProfileSearchType profileSearchType, bool includeFails = false, int count = 1)
     {
         var osuUser = await _osuClient.GetUserAsync(username, omode);
         IReadOnlyList<IScore> scores = new List<IScore>();
@@ -254,7 +255,150 @@ public class OsuModule : ApplicationCommandModule
         return scores;
     }
 
-    private async Task GenericOsuProfileProcessing(BaseContext ctx, string username, UserProfileSearchType profileSearchType, UserProfileSearchMode profileSearchMode)
+    private async Task OsuProfileProcessAsync(BaseContext ctx, IUser osuUser, GameMode omode)
+    {
+        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
+            .WithAuthor(
+                $"{osuUser.Username}'s osu! profile in {omode.ToString()} ({(osuUser.IsSupporter ? $"{DiscordEmoji.FromName(ctx.Client, ":heart:")})" : $"{DiscordEmoji.FromName(ctx.Client, ":black_heart:")})")}",
+                $"https://osu.ppy.sh/users/{osuUser.Id}",
+                $"https://flagcdn.com/h20/{osuUser.Country.Code.ToLower()}.jpg")
+            .WithThumbnail(osuUser.AvatarUrl.ToString())
+            .WithDescription($"This user is currently {(osuUser.IsOnline ? "online" : "offline/invisible")}")
+            .AddField("Join date", osuUser.JoinDate.ToString("d"), true)
+            .AddField("Play count - play time as (dd.hh\\:mm\\:ss)",
+                $"{osuUser.Statistics.PlayCount} with {TimeSpan.FromSeconds(osuUser.Statistics.PlayTime).ToString()} of playtime",
+                true)
+            .AddField("Total PP",
+                $"{osuUser.Statistics.Pp} ({osuUser.Country.Name}: #{osuUser.Statistics.CountryRank} - GLB: #{osuUser.Statistics.GlobalRank})")
+            .AddField("Accuracy", $"{osuUser.Statistics.HitAccuracy}%", true)
+            .AddField("Level",
+                $"{osuUser.Statistics.UserLevel.Current} (at {osuUser.Statistics.UserLevel.Progress}%)", true)
+            .AddField("Max combo", $"{osuUser.Statistics.MaximumCombo}", true);
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .AddEmbed(embedBuilder.Build()));
+    }
+
+    private async Task OsuScoresProcessAsync(BaseContext ctx, string username, GameMode omode,
+        UserProfileSearchType profileSearchType, UserProfileSearchMode profileSearchMode, bool isContextMenu)
+    {
+        // do a test run before actual stuffs
+        var testRun = await GetOsuScoresAsync(username, omode, profileSearchType, true, 2);
+        if (!testRun.Any())
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("No scores found. Possible reasons:\n" +
+                             $"1. The user {Formatter.Bold(username)} doesn't play the mode {Formatter.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
+                             "2. Internal issue, contact the owner(s) if the issue persists"));
+            return;
+        }
+
+        var r = 1;
+        var includeFails = false;
+
+        #region Fail inclusion prompt
+        
+        // sneaky
+        var interactivity = ctx.Client.GetInteractivity();
+
+        if (profileSearchType == UserProfileSearchType.Recent && !isContextMenu)
+        {
+            var yesBtn = new DiscordButtonComponent(ButtonStyle.Success, "yesBtn", "Yes please!");
+            var noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not!");
+
+            var failAsk = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Do you want to include fail scores?")
+                .AddComponents(yesBtn, noBtn));
+
+            var btnRes = await failAsk.WaitForButtonAsync(ctx.Member);
+
+            if (btnRes.TimedOut)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Timed out"));
+
+                return;
+            }
+
+            includeFails = btnRes.Result.Id == "yesBtn";
+        }
+
+        #endregion
+        
+        #region Score count prompt (command only)
+        
+        if (!isContextMenu)
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("How many scores do you want to get? (1 to 100)"));
+
+            InteractivityResult<DiscordMessage> res = await interactivity.WaitForMessageAsync(m =>
+            {
+                bool isNumber = int.TryParse(m.Content, out r);
+                return isNumber && r is >= 1 and <= 100;
+            });
+
+            if (res.TimedOut)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Timed out"));
+
+                return;
+            }
+
+            // delete the input for the sake of beauty
+            await res.Result.DeleteAsync();
+        }
+        
+        #endregion
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("Processing, please wait (this might take a while)"));
+
+        var scores = await GetOsuScoresAsync(username, omode, profileSearchType, includeFails, r);
+        List<Page> pages = new();
+
+        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser();
+
+        var pos = 0;
+        foreach (var score in scores)
+        {
+            ++pos;
+            var map = await _osuClient.GetBeatmapAsync(score.Beatmap.Id);
+            var isPpExists = score.PerformancePoints != null && score.Weight != null;
+
+            embedBuilder
+                .WithThumbnail(score.Beatmapset.Covers.Card2x)
+                .WithAuthor(
+                    $"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{map.Version}]{(score.Mods.Any() ? $" +{string.Join(string.Empty, score.Mods)}" : string.Empty)}",
+                    $"{map.Url}", $"{score.User.AvatarUrl}")
+                .WithDescription($"Score position: {pos}\n")
+                .AddField("Known issue", "If you see 2 0's at the score part, it's fine")
+                .AddField("Total score",
+                    $"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank.GetValueOrDefault()} - GLB: #{score.GlobalRank.GetValueOrDefault()})")
+                .AddField("Ranking", $"{score.Rank}", true)
+                .AddField("Accuracy", $"{Math.Round(score.Accuracy * 100, 2)}%", true)
+                .AddField("Max combo", $"{score.MaxCombo}x/{map.MaxCombo}x", true)
+                .AddField("Hit count",
+                    $"{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}",
+                    true)
+                .AddField("PP",
+                    isPpExists
+                        ? $"{score.PerformancePoints} * {Math.Round(score.Weight.Percentage, 2)}% -> {Math.Round(score.Weight.PerformancePoints, 2)}"
+                        : "0",
+                    true)
+                .AddField("Submission time", $"{score.CreatedAt:g}", true);
+
+            pages.Add(new Page(
+                "If you see a \"This interaction failed\" at the first page, don't worry, it's a known issue",
+                embedBuilder));
+            embedBuilder.ClearFields();
+        }
+
+        await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
+    }
+
+    private async Task GenericOsuProcessing(BaseContext ctx, string username, UserProfileSearchType profileSearchType, UserProfileSearchMode profileSearchMode)
     {
         try
         {
@@ -276,133 +420,11 @@ public class OsuModule : ApplicationCommandModule
 
             if (profileSearchType == UserProfileSearchType.Profile)
             {
-                var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
-                    .WithAuthor(
-                        $"{osuUser.Username}'s osu! profile in {omode.ToString()} ({(osuUser.IsSupporter ? $"{DiscordEmoji.FromName(ctx.Client, ":heart:")})" : $"{DiscordEmoji.FromName(ctx.Client, ":black_heart:")})")}",
-                        $"https://osu.ppy.sh/users/{osuUser.Id}",
-                        $"https://flagcdn.com/h20/{osuUser.Country.Code.ToLower()}.jpg")
-                    .WithThumbnail(osuUser.AvatarUrl.ToString())
-                    .WithDescription($"This user is currently {(osuUser.IsOnline ? "online" : "offline/invisible")}")
-                    .AddField("Join date", osuUser.JoinDate.ToString("d"), true)
-                    .AddField("Play count - play time as (dd.hh\\:mm\\:ss)",
-                        $"{osuUser.Statistics.PlayCount} with {TimeSpan.FromSeconds(osuUser.Statistics.PlayTime).ToString()} of playtime",
-                        true)
-                    .AddField("Total PP",
-                        $"{osuUser.Statistics.Pp} ({osuUser.Country.Name}: #{osuUser.Statistics.CountryRank} - GLB: #{osuUser.Statistics.GlobalRank})")
-                    .AddField("Accuracy", $"{osuUser.Statistics.HitAccuracy}%", true)
-                    .AddField("Level",
-                        $"{osuUser.Statistics.UserLevel.Current} (at {osuUser.Statistics.UserLevel.Progress}%)", true)
-                    .AddField("Max combo", $"{osuUser.Statistics.MaximumCombo}", true);
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .AddEmbed(embedBuilder.Build()));
+                await OsuProfileProcessAsync(ctx, osuUser, omode);
             }
             else
             {
-                // do a test run before actual stuffs
-                var testRun = await GetOsuScoresAsync(username, omode, profileSearchType, true, 2);
-                if (!testRun.Any())
-                {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("No scores found. Possible reasons:\n" +
-                                     $"1. The user {Formatter.Bold(username)} doesn't play the mode {Formatter.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
-                                     "2. Internal issue, contact the owner(s) if the issue persists"));
-                    return;
-                }
-
-                var r = 1;
-                var includeFails = false;
-
-                var interactivity = ctx.Client.GetInteractivity();
-
-                // ask for fail inclusion
-                if (profileSearchType == UserProfileSearchType.Recent && !isContextMenu)
-                {
-                    var yesBtn = new DiscordButtonComponent(ButtonStyle.Success, "yesBtn", "Yes please!");
-                    var noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not!");
-
-                    var failAsk = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("Do you want to include fail scores?")
-                        .AddComponents(yesBtn, noBtn));
-
-                    var btnRes = await failAsk.WaitForButtonAsync(ctx.Member);
-
-                    if (btnRes.TimedOut)
-                    {
-                        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                            .WithContent("Timed out"));
-
-                        return;
-                    }
-
-                    includeFails = btnRes.Result.Id == "yesBtn";
-                }
-
-                // ask for score count
-                if (!isContextMenu)
-                {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                        .WithContent("How many scores do you want to get? (1 to 100)"));
-
-                    InteractivityResult<DiscordMessage> res = await interactivity.WaitForMessageAsync(m =>
-                    {
-                        bool isNumber = int.TryParse(m.Content, out r);
-                        return isNumber && r is >= 1 and <= 100;
-                    });
-
-                    if (res.TimedOut)
-                    {
-                        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                            .WithContent("Timed out"));
-
-                        return;
-                    }
-
-                    // delete the input for the sake of beauty
-                    await res.Result.DeleteAsync();
-                }
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Processing, please wait (this might take a while)"));
-
-                var scores = await GetOsuScoresAsync(username, omode, profileSearchType, includeFails, r);
-                List<Page> pages = new();
-
-                var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser();
-
-                var pos = 0;
-                foreach (var score in scores)
-                {
-                    ++pos;
-                    var map = await _osuClient.GetBeatmapAsync(score.Beatmap.Id);
-                    var isPpExists = score.PerformancePoints != null && score.Weight != null;
-
-                    embedBuilder
-                        .WithThumbnail(score.Beatmapset.Covers.Card2x)
-                        .WithAuthor(
-                            $"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{map.Version}]{(score.Mods.Any() ? $" +{string.Join(string.Empty, score.Mods)}" : string.Empty)}",
-                            $"{map.Url}", $"{osuUser.AvatarUrl}")
-                        .WithDescription($"Score position: {pos}\n" +
-                                         "If you see 2 0's at the score part, it's also a known issue")
-                        .AddField("Total score", $"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank.GetValueOrDefault()} - GLB: #{score.GlobalRank.GetValueOrDefault()})")
-                        .AddField("Ranking", $"{score.Rank}", true)
-                        .AddField("Accuracy", $"{Math.Round(score.Accuracy * 100, 2)}%", true)
-                        .AddField("Max combo", $"{score.MaxCombo}x/{map.MaxCombo}x", true)
-                        .AddField("Hit count",
-                            $"{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}",
-                            true)
-                        .AddField("PP",
-                            isPpExists
-                                ? $"{score.PerformancePoints} * {Math.Round(score.Weight.Percentage, 2)}% -> {Math.Round(score.Weight.PerformancePoints, 2)}"
-                                : "0",
-                            true)
-                        .AddField("Submission time", $"{score.CreatedAt:g}", true);
-
-                    pages.Add(new Page("If you see a \"This interaction failed\" at the first page, don't worry, it's a known issue", embedBuilder));
-                    embedBuilder.ClearFields();
-                }
-
-                await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
+                await OsuScoresProcessAsync(ctx, username, omode, profileSearchType, profileSearchMode, isContextMenu);
             }
         }
         catch (ApiException)
