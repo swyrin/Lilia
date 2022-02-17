@@ -1,6 +1,5 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
@@ -164,22 +163,23 @@ public class ModerationModule : ApplicationCommandModule
 
                             #region Mute role get or create
 
-                            var HelyaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName).Value;
+                            var liliaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName).Value;
 
-                            if (HelyaMuteRole == default)
+                            if (liliaMuteRole == default)
                             {
-                                HelyaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName, reason: "Mute role creation",
+                                liliaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName, reason: "Mute role creation",
                                     permissions: Permissions.None);
+                                
                                 foreach (var (_, channel) in ctx.Guild.Channels)
                                 {
-                                    await channel.AddOverwriteAsync(HelyaMuteRole, deny: Permissions.SendMessages,
+                                    await channel.AddOverwriteAsync(liliaMuteRole, deny: Permissions.SendMessages,
                                         reason: "Mute role channel addition");
                                 }
                             }
 
                             #endregion Mute role get or create
 
-                            if (dbUser.WarnCount == 3) await mentionedMember.GrantRoleAsync(HelyaMuteRole);
+                            if (dbUser.WarnCount == 3) await mentionedMember.GrantRoleAsync(liliaMuteRole);
                             stringBuilder.AppendLine($"Added a warn of {Formatter.Mention(mentionedMember)}. Now they have {dbUser.WarnCount} warn(s)");
 
                             break;
@@ -197,23 +197,23 @@ public class ModerationModule : ApplicationCommandModule
                                     {
                                         #region Mute role get or create
 
-                                        var HelyaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName)
+                                        var liliaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName)
                                             .Value;
 
-                                        if (HelyaMuteRole == default)
+                                        if (liliaMuteRole == default)
                                         {
-                                            HelyaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName,
+                                            liliaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName,
                                                 reason: "Mute role creation", permissions: Permissions.None);
                                             foreach (var (_, channel) in ctx.Guild.Channels)
                                             {
-                                                await channel.AddOverwriteAsync(HelyaMuteRole, deny: Permissions.SendMessages,
+                                                await channel.AddOverwriteAsync(liliaMuteRole, deny: Permissions.SendMessages,
                                                     reason: "Mute role channel addition");
                                             }
                                         }
 
                                         #endregion Mute role get or create
 
-                                        await mentionedMember.RevokeRoleAsync(HelyaMuteRole, "Warn removal");
+                                        await mentionedMember.RevokeRoleAsync(liliaMuteRole, "Warn removal");
                                         break;
                                     }
                                 default:
@@ -416,32 +416,40 @@ public class ModerationModule : ApplicationCommandModule
             var guildIdLong = Convert.ToUInt64(guildId);
             var receiverIdLong = Convert.ToUInt64(receiverId);
 
-            var guild = await ctx.Client.GetGuildAsync(guildIdLong);
-            var receiver = await guild.GetMemberAsync(receiverIdLong);
+            try
+            {
+                var guild = await ctx.Client.GetGuildAsync(guildIdLong);
+                var receiver = await guild.GetMemberAsync(receiverIdLong);
 
-            var interactivity = ctx.Client.GetInteractivity();
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent(
+                        "Please send your appeal in the following message (do not include attachments, save to your device if you want to)\n" +
+                        "You have 5 minutes to send an appeal"));
 
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Please send your appeal in the following message (do not include attachments, save to your device if you want to)\n" +
-                             "You have 5 minutes to send an appeal"));
+                var res = await ctx.Client.GetInteractivity().WaitForMessageAsync(_ => true, TimeSpan.FromMinutes(5));
 
-            InteractivityResult<DiscordMessage> res = await interactivity.WaitForMessageAsync(_ => true, TimeSpan.FromMinutes(5));
+                if (res.TimedOut)
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("Timed out"));
+                    
+                    return;
+                }
 
-            if (res.TimedOut)
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Sent the appeal, now it is time to be patient"));
+
+                await receiver.SendMessageAsync(ctx.User.GetDefaultEmbedTemplateForUser()
+                    .WithTitle("An appeal has been sent to you, content below")
+                    .WithDescription(res.Result.Content)
+                    .AddField("Sender", $"{ctx.User.Username}#{ctx.User.Discriminator} (ID: {ctx.User.Id})")
+                    .AddField("Guild to appeal", $"{guild.Name} (ID: {guild.Id}"));
+            }
+            catch
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Timed out"));
+                    .WithContent("Something wrong happened, either double check your input or wait for a while"));
             }
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Sent the appeal, now it is time to be patient"));
-
-            await receiver.SendMessageAsync(ctx.User.GetDefaultEmbedTemplateForUser()
-                .WithTitle("An appeal has been sent to you, content below")
-                .WithDescription(res.Result.Content)
-                .AddField("Sender", $"{ctx.User.Username}#{ctx.User.Discriminator}")
-                .AddField("Guild to appeal", guild.Name)
-                .WithFooter("Remember to respond when necessary"));
         }
     }
 }
