@@ -59,7 +59,7 @@ public class GeneralModule : ApplicationCommandModule
 
         var inviteBtn = new DiscordLinkButtonComponent(botInv, "Interested in me?", !ctx.Client.CurrentApplication.IsPublic.GetValueOrDefault());
         var supportGuildBtn = new DiscordLinkButtonComponent(guildInv, "Need supports?", !isValidGuildInviteLink);
-        var selfHostBtn = new DiscordLinkButtonComponent("https://github.com/Swyreee/Lilia", "Want to host your own bot?");
+        var selfHostBtn = new DiscordLinkButtonComponent("https://github.com/Lilia-Workshop/Lilia", "Want to host your own bot?");
 
         var timeDiff = DateTime.Now.Subtract(_client.StartTime);
 
