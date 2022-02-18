@@ -244,13 +244,13 @@ public class LiliaClient
 
     private Task OnClientErrored(DiscordClient _, ClientErrorEventArgs e)
     {
-        Log.Logger.Fatal(e.Exception, "An exception occured when running the bot");
+        Log.Logger.Fatal(e.Exception, "An error occured when running the bot");
         throw e.Exception;
     }
 
     private Task OnSlashCommandErrored(SlashCommandsExtension _, SlashCommandErrorEventArgs e)
     {
-        Log.Logger.Fatal(e.Exception, "An exception occured when executing a slash command");
+        Log.Logger.Fatal(e.Exception, "An error occured when executing a slash command");
         throw e.Exception;
     }
 }
