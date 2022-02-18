@@ -7,7 +7,6 @@ using DSharpPlus.SlashCommands.Attributes;
 using Lilia.Commons;
 using Lilia.Database;
 using Lilia.Database.Extensions;
-using Lilia.Services;
 using OsuSharp.Domain;
 using OsuSharp.Exceptions;
 using OsuSharp.Interfaces;
@@ -21,14 +20,12 @@ namespace Lilia.Modules;
 [SlashCommandGroup("osu", "osu! related commands")]
 public class OsuModule : ApplicationCommandModule
 {
-    private LiliaClient _client;
     private readonly LiliaDatabaseContext _dbCtx;
     private readonly IOsuClient _osuClient;
 
-    public OsuModule(LiliaClient client, IOsuClient osuClient)
+    public OsuModule(LiliaDatabaseContext dbCtx, IOsuClient osuClient)
     {
-        _client = client;
-        _dbCtx = client.Database.GetContext();
+        _dbCtx = dbCtx;
         _osuClient = osuClient;
     }
 

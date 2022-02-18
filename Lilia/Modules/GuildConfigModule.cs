@@ -7,26 +7,23 @@ using Lilia.Commons;
 using Lilia.Database;
 using Lilia.Database.Extensions;
 using Lilia.Database.Models;
-using Lilia.Services;
 
 namespace Lilia.Modules;
 
 [SlashCommandGroup("config", "Server configuration")]
 public class GuildConfigModule : ApplicationCommandModule
 {
-    private LiliaClient _client;
     private LiliaDatabaseContext _dbCtx;
 
-    public GuildConfigModule(LiliaClient client)
+    public GuildConfigModule(LiliaDatabaseContext dbCtx)
     {
-        _client = client;
-        _dbCtx = client.Database.GetContext();
+        _dbCtx = dbCtx;
     }
     
     [SlashCommand("welcome_channel", "Set the welcome channel")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
     public async Task SetWelcomeChannelCommand(InteractionContext ctx,
-        [Option("channel", "Channel to dump all member greetings")]
+        [Option("channel", "Channel to dump all welcome messages")]
         [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
         DiscordChannel channel)
     {
@@ -43,7 +40,7 @@ public class GuildConfigModule : ApplicationCommandModule
     [SlashCommand("goodbye_channel", "Set the goodbye channel")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
     public async Task SetGoodbyeChannelCommand(InteractionContext ctx,
-        [Option("channel", "Channel to dump all member farewells")]
+        [Option("channel", "Channel to dump all goodbye messages")]
         [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
         DiscordChannel channel)
     {
@@ -60,7 +57,7 @@ public class GuildConfigModule : ApplicationCommandModule
     [SlashCommand("goodbye_message", "Set the goodbye message")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
     public async Task SetGoodbyeMessageCommand(InteractionContext ctx,
-        [Option("message", "Farewell message, see \"/config placeholders\" for placeholders")]
+        [Option("message", "Goodbye message, see \"/config placeholders\" for placeholders")]
         string message)
     {
         await ctx.DeferAsync(true);
