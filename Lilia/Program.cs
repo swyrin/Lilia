@@ -18,6 +18,6 @@ internal static class Program
 #endif
         
         Log.Logger.Debug("Starting");
-        new LiliaClient().Run().ConfigureAwait(false).GetAwaiter().GetResult();
+        new LiliaClient().RunAsync().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 }

@@ -15,6 +15,7 @@ using OsuSharp.Extensions;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,9 +78,36 @@ public class LiliaClient
             .UseLoggerFactory(new SerilogLoggerFactory(Log.Logger))
             .UseNpgsql(connStrBuilder.ToString());
     }
-    
-    public async Task Run()
+
+    private static async Task CheckForUpdateAsync()
     {
+        using HttpClient client = new();
+        
+        var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+        Log.Logger.Debug($"Current version: {currentVersion}");
+            
+        var sourceVersionStr = await client.GetStringAsync("https://raw.githubusercontent.com/Lilia-Workshop/Lilia/master/version.txt");
+        var sourceVersion = Version.Parse(sourceVersionStr);
+        Log.Logger.Debug($"Latest version: {sourceVersion}");
+        
+        if (currentVersion < sourceVersion)
+        {
+            Log.Logger.Warning("You need to update your bot because there are breaking changes");
+            Log.Logger.Warning("Source code can be seen here: https://github.com/Lilia-Workshop/Lilia");
+            Log.Logger.Warning("Changelogs in case you miss: https://github.com/Lilia-Workshop/Lilia/releases");
+        }
+        else
+        {
+            Log.Logger.Information("You are using latest version, hooray");
+        }
+    }
+    
+    public async Task RunAsync()
+    {
+        Log.Logger.Information("Checking for update");
+        
+        await CheckForUpdateAsync();
+        
         Log.Logger.Information("Setting up client");
 
         var client = new DiscordClient(new DiscordConfiguration
@@ -94,7 +122,7 @@ public class LiliaClient
             .AddLogging(x => x.AddSerilog())
             .AddDefaultSerializer()
             .AddDefaultRequestHandler()
-            .AddSingleton(Database)
+            .AddSingleton(Database.GetContext())
             .AddOsuSharp(x => x.Configuration = new OsuClientConfiguration
             {
                 ModFormatSeparator = string.Empty,
@@ -120,7 +148,7 @@ public class LiliaClient
         {
             BotConfiguration.Client.PrivateGuildIds.ForEach(guildId =>
             {
-                Log.Logger.Warning($"Registering slash commands for private guild with ID \"{guildId}\"");
+                Log.Logger.Warning($"Registering slash commands for guild with ID \"{guildId}\"");
                 slash.RegisterCommands(Assembly.GetExecutingAssembly(), guildId);
             });
         }
@@ -131,6 +159,8 @@ public class LiliaClient
             slash.RegisterCommands(Assembly.GetExecutingAssembly());
         }
 
+        Log.Logger.Information("Registering event handlers");
+        
         client.Ready += OnReady;
         client.GuildAvailable += OnGuildAvailable;
         client.GuildUnavailable += OnGuildUnavailable;
@@ -171,6 +201,7 @@ public class LiliaClient
 
         #endregion Activity Setup
 
+        Log.Logger.Information("Connecting and waiting for shutdown");
         await client.ConnectAsync(activity, userStatus);
 
         while (!Cts.IsCancellationRequested) await Task.Delay(200);
