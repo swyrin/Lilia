@@ -19,6 +19,9 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Lavalink4NET;
+using Lavalink4NET.DSharpPlus;
+using Lavalink4NET.Tracking;
 using Lilia.Database;
 using Lilia.Database.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +32,9 @@ namespace Lilia.Services;
 
 public class LiliaClient
 {
+    public LavalinkNode Lavalink;
+    public InactivityTrackingService _InactivityTracker;
+    
     public static readonly BotConfiguration BotConfiguration;
     public static readonly CancellationTokenSource Cts;
     public LiliaDatabase Database;
@@ -82,7 +88,7 @@ public class LiliaClient
     private static async Task CheckForUpdateAsync()
     {
         using HttpClient client = new();
-        
+
         var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
         Log.Logger.Debug($"Current version: {currentVersion}");
             
@@ -112,7 +118,7 @@ public class LiliaClient
 
         var client = new DiscordClient(new DiscordConfiguration
         {
-            Token = BotConfiguration.Credentials.DiscordToken,
+            Token = BotConfiguration.Client.Token,
             TokenType = TokenType.Bot,
             LoggerFactory = new LoggerFactory().AddSerilog(),
             Intents = DiscordIntents.AllUnprivileged | DiscordIntents.GuildMembers
@@ -122,7 +128,7 @@ public class LiliaClient
             .AddLogging(x => x.AddSerilog())
             .AddDefaultSerializer()
             .AddDefaultRequestHandler()
-            .AddSingleton(Database.GetContext())
+            .AddSingleton(Database)
             .AddOsuSharp(x => x.Configuration = new OsuClientConfiguration
             {
                 ModFormatSeparator = string.Empty,
@@ -144,6 +150,19 @@ public class LiliaClient
             Timeout = TimeSpan.FromSeconds(30)
         });
 
+        var lavalinkConfig = BotConfiguration.Credentials.Lavalink;
+        Lavalink = new LavalinkNode(new LavalinkNodeOptions
+            {
+                RestUri = $"http://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
+                WebSocketUri = $"ws://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
+                Password = lavalinkConfig.Password,
+#if DEBUG
+                DebugPayloads = true,
+#endif
+                DisconnectOnStop = false
+            }, new DiscordClientWrapper(client),
+            new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("Lavalink")));
+
         if (BotConfiguration.Client.PrivateGuildIds.Count > 0)
         {
             BotConfiguration.Client.PrivateGuildIds.ForEach(guildId =>
@@ -152,7 +171,7 @@ public class LiliaClient
                 slash.RegisterCommands(Assembly.GetExecutingAssembly(), guildId);
             });
         }
-
+        
         if (BotConfiguration.Client.SlashCommandsForGlobal)
         {
             Log.Logger.Warning("Registering slash commands in global scope");
@@ -172,6 +191,8 @@ public class LiliaClient
         client.ClientErrored += OnClientErrored;
 
         slash.SlashCommandErrored += OnSlashCommandErrored;
+
+        AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
         
         Log.Logger.Information("Setting client activity");
 
@@ -206,15 +227,34 @@ public class LiliaClient
 
         while (!Cts.IsCancellationRequested) await Task.Delay(200);
 
+        await Lavalink.CloseAsync();
         await client.DisconnectAsync();
         await Database.GetContext().DisposeAsync();
     }
 
+    private void CurrentDomain_ProcessExit(object sender, EventArgs e)
+    {
+        Cts.Cancel();
+    }
+
     private Task OnReady(DiscordClient sender, ReadyEventArgs e)
     {
-        Log.Logger.Information($"Client is ready to serve as {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator}");
-        StartTime = DateTime.Now;
-        return Task.CompletedTask;
+        return Task.Run(() =>
+        {
+            Log.Logger.Information("Connecting to lavalink");
+            Lavalink.InitializeAsync();
+            _InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(sender),
+                new InactivityTrackingOptions
+                {
+                    DisconnectDelay = TimeSpan.FromSeconds(15),
+                    PollInterval = TimeSpan.FromMinutes(1),
+                    TrackInactivity = true
+                }, new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("LavalinkInactivityTracker")));
+            
+            Log.Logger.Information($"Client is ready to serve as {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator}");
+            StartTime = DateTime.Now;
+            return Task.CompletedTask;
+        });
     }
 
     private Task OnGuildAvailable(DiscordClient _, GuildCreateEventArgs e)
@@ -282,6 +322,10 @@ public class LiliaClient
 
     private Task OnSlashCommandErrored(SlashCommandsExtension _, SlashCommandErrorEventArgs e)
     {
+        e.Context.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(new DiscordEmbedBuilder()
+            .WithAuthor("An error occured", null, e.Context.Client.CurrentUser.AvatarUrl)
+            .WithDescription("Consider asking developers if this issue persists")));
+        
         Log.Logger.Fatal(e.Exception, "An error occured when executing a slash command");
         throw e.Exception;
     }

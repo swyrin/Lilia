@@ -23,6 +23,9 @@ public class BotConfiguration : BaseJson
 
 public class ClientConfigurations
 {
+    [JsonProperty("token")]
+    public string Token = "";
+    
     [JsonProperty("activity")]
     public ClientActivityConfigurations Activity = new();
 
@@ -53,11 +56,23 @@ public class CredentialConfigurations
     [JsonProperty("postgresql")]
     public PostgreSqlConfigurations PostgreSql = new();
 
-    [JsonProperty("discord_token")]
-    public string DiscordToken;
-
     [JsonProperty("osu")]
     public OsuConfigurations Osu = new();
+    
+    [JsonProperty("lavalink")]
+    public LavalinkConfigurations Lavalink = new();
+}
+
+public class LavalinkConfigurations
+{
+    [JsonProperty("host")]
+    public string Host = "swyrin.me";
+
+    [JsonProperty("port")]
+    public int Port = 2333;
+    
+    [JsonProperty("password")]
+    public string Password = "youshallnotpass";
 }
 
 public class PostgreSqlConfigurations

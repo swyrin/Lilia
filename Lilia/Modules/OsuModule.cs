@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lilia.Services;
 
 namespace Lilia.Modules;
 
@@ -23,9 +24,9 @@ public class OsuModule : ApplicationCommandModule
     private readonly LiliaDatabaseContext _dbCtx;
     private readonly IOsuClient _osuClient;
 
-    public OsuModule(LiliaDatabaseContext dbCtx, IOsuClient osuClient)
+    public OsuModule(LiliaDatabase database, IOsuClient osuClient)
     {
-        _dbCtx = dbCtx;
+        _dbCtx = database.GetContext();
         _osuClient = osuClient;
     }
 

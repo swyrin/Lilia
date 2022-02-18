@@ -7,6 +7,7 @@ using Lilia.Commons;
 using Lilia.Database;
 using Lilia.Database.Extensions;
 using Lilia.Database.Models;
+using Lilia.Services;
 
 namespace Lilia.Modules;
 
@@ -15,9 +16,9 @@ public class GuildConfigModule : ApplicationCommandModule
 {
     private LiliaDatabaseContext _dbCtx;
 
-    public GuildConfigModule(LiliaDatabaseContext dbCtx)
+    public GuildConfigModule(LiliaDatabase database)
     {
-        _dbCtx = dbCtx;
+        _dbCtx = database.GetContext();
     }
     
     [SlashCommand("welcome_channel", "Set the welcome channel")]

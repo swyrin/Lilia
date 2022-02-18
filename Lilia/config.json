@@ -10,7 +10,6 @@
     }
   },
   "credentials": {
-    "discord_token": "",
     "postgresql": {
       "username": "",
       "password": "",
@@ -19,8 +18,13 @@
       "database_name": ""
     },
     "osu": {
-      "client_id": null,
+      "client_id": 0,
       "client_secret": ""
+    },
+    "lavalink": {
+      "host": "localhost",
+      "port": 2333,
+      "password": "youshallnotpass"
     }
   }
 }
