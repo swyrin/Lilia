@@ -2,6 +2,7 @@
 using Lilia.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lilia.Migrations
 {
     [DbContext(typeof(LiliaDatabaseContext))]
-    partial class LiliaDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20220218015522_AddGuildConfig")]
+    partial class AddGuildConfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
