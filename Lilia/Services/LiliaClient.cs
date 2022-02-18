@@ -19,6 +19,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Lilia.Database;
+using Lilia.Database.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Serilog.Extensions.Logging;
@@ -135,6 +136,9 @@ public class LiliaClient
         client.GuildUnavailable += OnGuildUnavailable;
         client.GuildCreated += OnGuildAvailable;
         client.GuildDeleted += OnGuildUnavailable;
+        client.GuildMemberAdded += OnGuildMemberAdd;
+        client.GuildMemberRemoved += OnGuildMemberRemoved;
+        
         client.ClientErrored += OnClientErrored;
 
         slash.SlashCommandErrored += OnSlashCommandErrored;
@@ -194,6 +198,48 @@ public class LiliaClient
         Log.Logger.Debug($"Guild cache removed: {e.Guild.Name} (ID: {e.Guild.Id})");
         JoinedGuilds.Remove(e.Guild);
         return Task.CompletedTask;
+    }
+
+    private Task OnGuildMemberAdd(DiscordClient _, GuildMemberAddEventArgs e)
+    {
+        return Task.Run(() =>
+        {
+            var dbGuild = Database.GetContext().GetGuildRecord(e.Guild);
+            
+            if (!dbGuild.IsWelcomeEnabled) return;
+            if (dbGuild.WelcomeChannelId == 0) return;
+            if (string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage)) return;
+
+            var chn = e.Guild.GetChannel(dbGuild.WelcomeChannelId);
+
+            var postProcessedMessage = dbGuild.WelcomeMessage
+                .Replace("{name}", e.Member.Username)
+                .Replace("{tag}", e.Member.Discriminator)
+                .Replace("{@user}", Formatter.Mention(e.Member))
+                .Replace("{guild}", e.Guild.Name);
+            
+            chn.SendMessageAsync(postProcessedMessage).ConfigureAwait(false).GetAwaiter().GetResult();
+        });
+    }
+
+    private Task OnGuildMemberRemoved(DiscordClient _, GuildMemberRemoveEventArgs e)
+    {
+        return Task.Run(() =>
+        {
+            var dbGuild = Database.GetContext().GetGuildRecord(e.Guild);
+            
+            if (!dbGuild.IsGoodbyeEnabled) return;
+            if (dbGuild.GoodbyeChannelId == 0) return;
+            if (string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage)) return;
+
+            var chn = e.Guild.GetChannel(dbGuild.GoodbyeChannelId);
+
+            var postProcessedMessage = dbGuild.GoodbyeMessage
+                .Replace("{name}", e.Member.Username)
+                .Replace("{tag}", e.Member.Discriminator);
+            
+            chn.SendMessageAsync(postProcessedMessage).ConfigureAwait(false).GetAwaiter().GetResult();
+        });
     }
 
     private Task OnClientErrored(DiscordClient _, ClientErrorEventArgs e)
