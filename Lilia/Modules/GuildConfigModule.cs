@@ -170,6 +170,7 @@ public class GuildConfigModule : ApplicationCommandModule
     }
 
     [SlashCommand("placeholders", "Get all available configuration placeholders")]
+    [SlashRequireUserPermissions(Permissions.ManageGuild)]
     public async Task GetPlaceholdersCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
