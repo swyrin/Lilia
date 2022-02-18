@@ -10,20 +10,19 @@ public static class UserDbAccess
     {
         var users = ctx.Users;
         var user = users.FirstOrDefault(entity => entity.Id == discordUser.Id);
-        
-        if (user == default)
-        {
-            user = new DbUser
-            {
-                Id = discordUser.Id,
-                OsuMode = string.Empty,
-                OsuUsername = string.Empty,
-                WarnCount = 0
-            };
 
-            users.Add(user);
-            ctx.SaveChanges();
-        }
+        if (user != default) return user;
+        
+        user = new DbUser
+        {
+            Id = discordUser.Id,
+            OsuMode = string.Empty,
+            OsuUsername = string.Empty,
+            WarnCount = 0
+        };
+
+        users.Add(user);
+        ctx.SaveChanges();
 
         return user;
     }
