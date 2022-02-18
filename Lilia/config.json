@@ -1,5 +1,6 @@
 ﻿{
   "client": {
+    "token": "",
     "private_guilds": [],
     "support_guild_invite_link": "",
     "slash_commands_for_global": true,
