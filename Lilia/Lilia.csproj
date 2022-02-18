@@ -5,10 +5,7 @@
         <StartupObject>Lilia.Program</StartupObject>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>disable</Nullable>
-        <RuntimeIdentifiers>win-x86;win-arm;osx-x64;linux-x64;linux-arm</RuntimeIdentifiers>
-        <PublishReadyToRun>true</PublishReadyToRun>
-        <PublishSingleFile>true</PublishSingleFile>
-        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+        <Version>1.2.0</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
