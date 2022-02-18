@@ -175,11 +175,11 @@ public class GuildConfigModule : ApplicationCommandModule
         await ctx.DeferAsync(true);
 
         var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
-            .WithDescription("Available placeholders")
+            .WithAuthor("Available placeholders", null, ctx.Client.CurrentUser.AvatarUrl)
             .AddField("{name} - The user's username", "Example: Swyrin#7193 -> {name} = Swyrin\nRestrictions: None")
             .AddField("{tag} - The user's username", "Example: Swyrin#7193 -> {tag} = 7193\nRestrictions: None")
-            .AddField("{guild} - The guild's name", "Example: Self-explanatory\nRestrictions: None")
-            .AddField("{@user} - User mention", $"Example: {Formatter.Mention(ctx.Member)}\nRestrictions: Welcome message only");
+            .AddField("{guild} - The guild's name", $"Example: {{guild}} = {ctx.Guild.Name}\nRestrictions: None")
+            .AddField("{@user} - User mention", $"Example: Swyrin#7193 -> {{@user}} = {Formatter.Mention(ctx.Member)}\nRestrictions: Welcome message only");
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
             .AddEmbed(embedBuilder));

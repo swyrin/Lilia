@@ -236,7 +236,8 @@ public class LiliaClient
 
             var postProcessedMessage = dbGuild.GoodbyeMessage
                 .Replace("{name}", e.Member.Username)
-                .Replace("{tag}", e.Member.Discriminator);
+                .Replace("{tag}", e.Member.Discriminator)
+                .Replace("{guild}", e.Guild.Name);
             
             chn.SendMessageAsync(postProcessedMessage).ConfigureAwait(false).GetAwaiter().GetResult();
         });
