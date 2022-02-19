@@ -298,6 +298,13 @@ public class GuildConfigModule : ApplicationCommandModule
     [SlashCommandGroup("util", "Some utilities")]
     public class GuildConfigUtilModule : ApplicationCommandModule
     {
+        private LiliaDatabaseContext _dbCtx;
+
+        public GuildConfigUtilModule(LiliaDatabase database)
+        {
+            _dbCtx = database.GetContext();
+        }
+        
         [SlashCommand("placeholders", "Get all available configuration placeholders")]
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task GetPlaceholdersCommand(InteractionContext ctx)
@@ -316,6 +323,31 @@ public class GuildConfigModule : ApplicationCommandModule
                     $"Example: Swyrin#7193 -> {{@user}} = {Formatter.Mention(ctx.Member)}\n" +
                     "Restrictions: Welcome message only");
 
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .AddEmbed(embedBuilder));
+        }
+
+        [SlashCommand("check", "Check the configurations you have made")]
+        public async Task GetConfiguraionsCommand(InteractionContext ctx)
+        {
+            await ctx.DeferAsync(true);
+            
+            var dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+
+            var welcomeChn = ctx.Guild.GetChannel(dbGuild.WelcomeChannelId);
+            var goodbyeChn = ctx.Guild.GetChannel(dbGuild.GoodbyeChannelId);
+
+            var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
+                .WithAuthor("All configurations", null, ctx.Client.CurrentUser.AvatarUrl)
+                .AddField("Welcome message",
+                    string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage) ? "None" : dbGuild.WelcomeMessage, true)
+                .AddField("Welcome channel", Formatter.Mention(welcomeChn), true)
+                .AddField("Welcome message allowed", $"{dbGuild.IsWelcomeEnabled}", true)
+                .AddField("Goodbye message",
+                    string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage) ? "None" : dbGuild.GoodbyeMessage, true)
+                .AddField("Goodbye channel", Formatter.Mention(goodbyeChn), true)
+                .AddField("Goodbye message allowed", $"{dbGuild.IsGoodbyeEnabled}", true);
+            
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .AddEmbed(embedBuilder));
         }
