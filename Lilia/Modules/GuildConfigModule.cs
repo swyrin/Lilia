@@ -14,173 +14,310 @@ namespace Lilia.Modules;
 [SlashCommandGroup("config", "Server configuration")]
 public class GuildConfigModule : ApplicationCommandModule
 {
-    private LiliaDatabaseContext _dbCtx;
-
-    public GuildConfigModule(LiliaDatabase database)
+    [SlashCommandGroup("get", "Get a configuration property")]
+    public class GuildConfigGetModule
     {
-        _dbCtx = database.GetContext();
+        private LiliaDatabaseContext _dbCtx;
+
+        public GuildConfigGetModule(LiliaDatabase database)
+        {
+            _dbCtx = database.GetContext();
+        }
+        
+        [SlashCommand("welcome_channel", "Get the configured welcome channel")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task GetWelcomeChannelCommand(InteractionContext ctx)
+        {
+            await ctx.DeferAsync(true);
+
+            var dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+            
+            if (dbGuild.WelcomeChannelId == 0)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a welcome channel in this guild"));
+
+                return;
+            }
+            
+            var channel = ctx.Guild.GetChannel(dbGuild.WelcomeChannelId);
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"The welcome channel of this guild is {Formatter.Mention(channel)}"));
+        }
+
+        [SlashCommand("goodbye_channel", "Get the goodbye channel")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task GetGoodbyeChannelCommand(InteractionContext ctx)
+        {
+            await ctx.DeferAsync(true);
+
+            var dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+            
+            if (dbGuild.GoodbyeChannelId == 0)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a welcome channel in this guild"));
+
+                return;
+            }
+            
+            var channel = ctx.Guild.GetChannel(dbGuild.GoodbyeChannelId);
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"The goodbye channel of this guild is {Formatter.Mention(channel)}"));
+        }
+
+        [SlashCommand("goodbye_message", "Get the goodbye message")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task GetGoodbyeMessageCommand(InteractionContext ctx)
+        {
+            await ctx.DeferAsync(true);
+
+            DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+
+            if (dbGuild.GoodbyeChannelId == 0)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a goodbye channel in this guild"));
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage))
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a goodbye message in this guild"));
+
+                return;
+            }
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"The goodbye message of this guild: {Formatter.InlineCode(dbGuild.GoodbyeMessage)}"));
+        }
+
+        [SlashCommand("welcome_message", "Set the welcome message")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task GetWelcomeMessageCommand(InteractionContext ctx)
+        {
+            await ctx.DeferAsync(true);
+
+            DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+
+            if (dbGuild.WelcomeChannelId == 0)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a welcome channel in this guild"));
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage))
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a welcome message in this guild"));
+
+                return;
+            }
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"The welcome message of this guild: {Formatter.InlineCode(dbGuild.WelcomeMessage)}"));;
+        }
     }
     
-    [SlashCommand("welcome_channel", "Set the welcome channel")]
-    [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task SetWelcomeChannelCommand(InteractionContext ctx,
-        [Option("channel", "Channel to dump all welcome messages")]
-        [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
-        DiscordChannel channel)
+    [SlashCommandGroup("set", "Set a configuration property")]
+    public class GuildConfigSetModule : ApplicationCommandModule
     {
-        await ctx.DeferAsync(true);
-        
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
-        dbGuild.WelcomeChannelId = channel.Id;
-        await _dbCtx.SaveChangesAsync();
+        private LiliaDatabaseContext _dbCtx;
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Set the welcome channel of this guild to {Formatter.Mention(channel)}"));
-    }
-    
-    [SlashCommand("goodbye_channel", "Set the goodbye channel")]
-    [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task SetGoodbyeChannelCommand(InteractionContext ctx,
-        [Option("channel", "Channel to dump all goodbye messages")]
-        [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
-        DiscordChannel channel)
-    {
-        await ctx.DeferAsync(true);
-        
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
-        dbGuild.GoodbyeChannelId = channel.Id;
-        await _dbCtx.SaveChangesAsync();
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Set the goodbye channel of this guild to {Formatter.Mention(channel)}"));
-    }
-    
-    [SlashCommand("goodbye_message", "Set the goodbye message")]
-    [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task SetGoodbyeMessageCommand(InteractionContext ctx,
-        [Option("message", "Goodbye message, see \"/config placeholders\" for placeholders")]
-        string message)
-    {
-        await ctx.DeferAsync(true);
-        
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
-
-        if (dbGuild.GoodbyeChannelId == 0)
+        public GuildConfigSetModule(LiliaDatabase database)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("You did not set a goodbye channel in this guild"));
-            
-            return;
-        }
-        
-        dbGuild.GoodbyeMessage = message;
-        await _dbCtx.SaveChangesAsync();
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Set the goodbye message of this guild: {Formatter.InlineCode(message)}"));
-    }
-    
-    [SlashCommand("welcome_message", "Set the welcome message")]
-    [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task SetWelcomeMessageCommand(InteractionContext ctx,
-        [Option("message", "Welcome message, see \"/config placeholders\" for placeholders")]
-        string message)
-    {
-        await ctx.DeferAsync(true);
-
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
-        
-        if (dbGuild.WelcomeChannelId == 0)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("You did not set a welcome channel in this guild"));
-            
-            return;
+            _dbCtx = database.GetContext();
         }
 
-        dbGuild.WelcomeMessage = message;
-        await _dbCtx.SaveChangesAsync();
+        [SlashCommand("welcome_channel", "Set the welcome channel")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task SetWelcomeChannelCommand(InteractionContext ctx,
+            [Option("channel", "Channel to dump all welcome messages")]
+            [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
+            DiscordChannel channel)
+        {
+            await ctx.DeferAsync(true);
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Set the goodbye message of this guild: {Formatter.InlineCode(message)}"));
+            DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+            dbGuild.WelcomeChannelId = channel.Id;
+            await _dbCtx.SaveChangesAsync();
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Set the welcome channel of this guild to {Formatter.Mention(channel)}"));
+        }
+
+        [SlashCommand("goodbye_channel", "Set the goodbye channel")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task SetGoodbyeChannelCommand(InteractionContext ctx,
+            [Option("channel", "Channel to dump all goodbye messages")]
+            [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
+            DiscordChannel channel)
+        {
+            await ctx.DeferAsync(true);
+
+            DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+            dbGuild.GoodbyeChannelId = channel.Id;
+            await _dbCtx.SaveChangesAsync();
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Set the goodbye channel of this guild to {Formatter.Mention(channel)}"));
+        }
+
+        [SlashCommand("goodbye_message", "Set the goodbye message")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task SetGoodbyeMessageCommand(InteractionContext ctx,
+            [Option("message", "Goodbye message, see \"/config placeholders\" for placeholders")]
+            string message)
+        {
+            await ctx.DeferAsync(true);
+
+            DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+
+            if (dbGuild.GoodbyeChannelId == 0)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a goodbye channel in this guild"));
+
+                return;
+            }
+
+            dbGuild.GoodbyeMessage = message;
+            await _dbCtx.SaveChangesAsync();
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Set the goodbye message of this guild: {Formatter.InlineCode(message)}"));
+        }
+
+        [SlashCommand("welcome_message", "Set the welcome message")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task SetWelcomeMessageCommand(InteractionContext ctx,
+            [Option("message", "Welcome message, see \"/config placeholders\" for placeholders")]
+            string message)
+        {
+            await ctx.DeferAsync(true);
+
+            DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+
+            if (dbGuild.WelcomeChannelId == 0)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a welcome channel in this guild"));
+
+                return;
+            }
+
+            dbGuild.WelcomeMessage = message;
+            await _dbCtx.SaveChangesAsync();
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Set the goodbye message of this guild: {Formatter.InlineCode(message)}"));
+        }
     }
 
-    [SlashCommand("toggle_welcome", "Toggle my welcome message allowance in this guild")]
-    [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task ToggleWelcomeCommand(InteractionContext ctx)
+    [SlashCommandGroup("toggle", "Toggle a configuration property")]
+    public class GuildConfigToggleModule : ApplicationCommandModule
     {
-        await ctx.DeferAsync(true);
+        private LiliaDatabaseContext _dbCtx;
 
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+        public GuildConfigToggleModule(LiliaDatabase database)
+        {
+            _dbCtx = database.GetContext();
+        }
         
-        if (dbGuild.WelcomeChannelId == 0)
+        [SlashCommand("toggle_welcome", "Toggle my welcome message allowance in this guild")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task ToggleWelcomeCommand(InteractionContext ctx)
         {
+            await ctx.DeferAsync(true);
+
+            DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+
+            if (dbGuild.WelcomeChannelId == 0)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a welcome channel in this guild"));
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage))
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a welcome message in this guild"));
+
+                return;
+            }
+
+            dbGuild.IsWelcomeEnabled = !dbGuild.IsWelcomeEnabled;
+            await _dbCtx.SaveChangesAsync();
+
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("You did not set a welcome channel in this guild"));
-            
-            return;
+                .WithContent(
+                    $"{(dbGuild.IsWelcomeEnabled ? "Enabled" : "Disabled")} the delivery of welcome message in this guild"));
         }
 
-        if (string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage))
+        [SlashCommand("toggle_goodbye", "Toggle my goodbye message allowance in this guild")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task ToggleGoodbyeCommand(InteractionContext ctx)
         {
+            await ctx.DeferAsync(true);
+
+            DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+
+            if (dbGuild.GoodbyeChannelId == 0)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a goodbye channel in this guild"));
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage))
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You did not set a goodbye message in this guild"));
+
+                return;
+            }
+
+            dbGuild.IsGoodbyeEnabled = !dbGuild.IsGoodbyeEnabled;
+            await _dbCtx.SaveChangesAsync();
+
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("You did not set a welcome message in this guild"));
-            
-            return;
+                .WithContent(
+                    $"{(dbGuild.IsGoodbyeEnabled ? "Enabled" : "Disabled")} the delivery of goodbye message in this guild"));
         }
-
-        dbGuild.IsWelcomeEnabled = !dbGuild.IsWelcomeEnabled;
-        await _dbCtx.SaveChangesAsync();
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"{(dbGuild.IsWelcomeEnabled ? "Enabled": "Disabled")} the delivery of welcome message in this guild"));
     }
-    
-    [SlashCommand("toggle_goodbye", "Toggle my goodbye message allowance in this guild")]
-    [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task ToggleGoodbyeCommand(InteractionContext ctx)
+
+    [SlashCommandGroup("util", "Some utilities")]
+    public class GuildConfigUtilModule : ApplicationCommandModule
     {
-        await ctx.DeferAsync(true);
-        
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
-        
-        if (dbGuild.GoodbyeChannelId == 0)
+        [SlashCommand("placeholders", "Get all available configuration placeholders")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task GetPlaceholdersCommand(InteractionContext ctx)
         {
+            await ctx.DeferAsync(true);
+
+            var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
+                .WithAuthor("Available placeholders", null, ctx.Client.CurrentUser.AvatarUrl)
+                .AddField("{name} - The user's username", "Example: Swyrin#7193 -> {name} = Swyrin\n" +
+                                                          "Restrictions: None")
+                .AddField("{tag} - The user's username", "Example: Swyrin#7193 -> {tag} = 7193\n" +
+                                                         "Restrictions: None")
+                .AddField("{guild} - The guild's name", $"Example: {{guild}} = {ctx.Guild.Name}\n" +
+                                                        "Restrictions: None")
+                .AddField("{@user} - User mention",
+                    $"Example: Swyrin#7193 -> {{@user}} = {Formatter.Mention(ctx.Member)}\n" +
+                    "Restrictions: Welcome message only");
+
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("You did not set a goodbye channel in this guild"));
-            
-            return;
+                .AddEmbed(embedBuilder));
         }
-
-        if (string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage))
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("You did not set a goodbye message in this guild"));
-            
-            return;
-        }
-
-        dbGuild.IsGoodbyeEnabled = !dbGuild.IsGoodbyeEnabled;
-        await _dbCtx.SaveChangesAsync();
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"{(dbGuild.IsGoodbyeEnabled ? "Enabled": "Disabled")} the delivery of goodbye message in this guild"));
-    }
-
-    [SlashCommand("placeholders", "Get all available configuration placeholders")]
-    [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task GetPlaceholdersCommand(InteractionContext ctx)
-    {
-        await ctx.DeferAsync(true);
-
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
-            .WithAuthor("Available placeholders", null, ctx.Client.CurrentUser.AvatarUrl)
-            .AddField("{name} - The user's username", "Example: Swyrin#7193 -> {name} = Swyrin\nRestrictions: None")
-            .AddField("{tag} - The user's username", "Example: Swyrin#7193 -> {tag} = 7193\nRestrictions: None")
-            .AddField("{guild} - The guild's name", $"Example: {{guild}} = {ctx.Guild.Name}\nRestrictions: None")
-            .AddField("{@user} - User mention", $"Example: Swyrin#7193 -> {{@user}} = {Formatter.Mention(ctx.Member)}\nRestrictions: Welcome message only");
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .AddEmbed(embedBuilder));
     }
 }
