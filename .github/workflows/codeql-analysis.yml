@@ -31,8 +31,6 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.x
-      - name: Add NuGet sources
-        run: dotnet nuget add source https://nuget.emzi0767.com/api/v3/index.json
       - name: Autobuild
         uses: github/codeql-action/autobuild@v1
       - name: Perform CodeQL Analysis
