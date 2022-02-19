@@ -246,10 +246,11 @@ public class LiliaClient
             _InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(sender),
                 new InactivityTrackingOptions
                 {
-                    DisconnectDelay = TimeSpan.FromSeconds(15),
-                    PollInterval = TimeSpan.FromMinutes(1),
+                    PollInterval = TimeSpan.FromSeconds(120),
+                    DisconnectDelay = TimeSpan.FromSeconds(5),
                     TrackInactivity = true
-                }, new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("LavalinkInactivityTracker")));
+                },
+                new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("LavalinkInactivityTracker")));
             
             Log.Logger.Information($"Client is ready to serve as {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator}");
             StartTime = DateTime.Now;
