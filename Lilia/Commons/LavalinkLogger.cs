@@ -13,8 +13,9 @@ public class LavalinkLogger : ILogger
     {
         _logger = logger;
     }
-    
+#nullable enable
     public void Log(object source, string message, LogLevel level = LogLevel.Information, Exception? exception = null)
+#nullable disable
     {
         switch (level)
         {

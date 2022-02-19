@@ -63,10 +63,23 @@ public static class LiliaUtilities
     {
         return $"{dateTime.ToString("g", EnglishCulture)}";
     }
-
+    
+#nullable enable
     public static bool IsDiscordValidBotInvite(this string? str)
-        => !string.IsNullOrWhiteSpace(str) && new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(app)?\.com\/(api\/)?oauth2\/authorize\?([^ ]+)\/?").IsMatch(str);
+#nullable disable
+    {
+        return !string.IsNullOrWhiteSpace(str) &&
+               new Regex(
+                       @"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(app)?\.com\/(api\/)?oauth2\/authorize\?([^ ]+)\/?")
+                   .IsMatch(str);
+    }
 
+#nullable enable
     public static bool IsDiscordValidGuildInvite(this string? str)
-       => !string.IsNullOrWhiteSpace(str) && new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(\.gg|(app)?\.com\/invite|\.me)\/([^ ]+)\/?").IsMatch(str);
+#nullable disable
+    {
+        return !string.IsNullOrWhiteSpace(str) &&
+               new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(\.gg|(app)?\.com\/invite|\.me)\/([^ ]+)\/?")
+                   .IsMatch(str);
+    }
 }
