@@ -8,10 +8,11 @@ internal static class Program
     private static void Main()
     {
         Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
+            .Enrich.WithProperty("SourceContext", "Lilia")
+            .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
             .MinimumLevel.Debug()
             .CreateLogger();
-        
+
 #if DEBUG
         Log.Logger.Warning("Unless you are testing the code, you should NOT see this on production");
         Log.Logger.Warning("Consider using \"-c Release\" when running/building the code");
