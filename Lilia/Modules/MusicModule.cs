@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -44,7 +46,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel.Id == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -86,7 +88,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel.Id == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -104,26 +106,34 @@ public class MusicModule : ApplicationCommandModule
                 return;
             }
 
-            player.Queue.TryDequeue(out var track);
-
-            if (track == null)
+            if (player.Queue.IsEmpty)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Unable to get the track, maybe because the queue is empty"));
+                    .WithContent("The queue is empty"));
 
                 return;
             }
+
+            var track = player.Queue.Dequeue();
 
             await player.PlayAsync(track);
 
             _client.Lavalink.TrackStarted += async (_, e) =>
             {
-                var currentTrack = e.Player.CurrentTrack;
+                var ttrack = e.Player.CurrentTrack;
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent(
-                        $"Now playing {Formatter.Bold(currentTrack?.Title ?? "Unknown")} by {Formatter.Bold(currentTrack?.Author ?? "Unknown")}\n" +
+                        $"Now playing: {Formatter.Bold(ttrack?.Title ?? "Unknown")} by {Formatter.Bold(ttrack?.Author ?? "Unknown")}\n" +
                         "You should pin this message for playing status"));
+            };
+
+            _client.Lavalink.TrackStuck += async (_, e) =>
+            {
+                var currentTrack = e.Player.CurrentTrack;
+
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent($"Track stuck: {Formatter.Bold(currentTrack?.Title ?? "Unknown")} by {Formatter.Bold(currentTrack?.Author ?? "Unknown")}"));
             };
         }
 
@@ -132,7 +142,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel.Id == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -160,9 +170,12 @@ public class MusicModule : ApplicationCommandModule
                 return;
             }
 
+            var art = await _client.ArtworkService.ResolveAsync(track);
+
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .AddEmbed(ctx.Member.GetDefaultEmbedTemplateForUser()
                     .WithAuthor("Currently playing track", null, ctx.Client.CurrentUser.AvatarUrl)
+                    .WithThumbnail(art?.OriginalString ?? "")
                     .AddField("Title", track.Title, true)
                     .AddField("Author", track.Author, true)
                     .AddField("Source", track.Source ?? "Unknown")
@@ -175,7 +188,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -214,7 +227,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -243,7 +256,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -280,7 +293,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -317,7 +330,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -370,7 +383,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel.Id == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -420,7 +433,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel.Id == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -461,7 +474,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
@@ -494,14 +507,15 @@ public class MusicModule : ApplicationCommandModule
 
             foreach (var track in queue)
             {
-                text.AppendLine(
-                    $"{pos} - {Formatter.MaskedUrl($"{Formatter.Bold(track.Title)} by {Formatter.Bold(track.Author)}", new Uri(track.Source ?? "https://example.com"))}");
+                text.AppendLine($"{pos} - {Formatter.MaskedUrl($"{Formatter.Bold(track.Title)} by {Formatter.Bold(track.Author)}", new Uri(track.Source ?? "https://example.com"))}");
                 ++pos;
             }
 
-            await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.Member,
-                ctx.Client.GetInteractivity().GeneratePagesInEmbed(text.ToString(), SplitType.Line,
-                    ctx.Member.GetDefaultEmbedTemplateForUser()), asEditResponse: true);
+            var pages = ctx.Client.GetInteractivity().GeneratePagesInEmbed(text.ToString(), SplitType.Line,
+                ctx.Member.GetDefaultEmbedTemplateForUser()
+                    .WithAuthor("Queued tracks", null, ctx.Client.CurrentUser.AvatarUrl));
+
+            await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.Member, pages, asEditResponse: true);
         }
         
         [SlashCommand("shuffle", "Shuffle the queue")]
@@ -510,7 +524,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel.Id == null)
+            if (ctx.Member.VoiceState?.Channel == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                     .WithContent("Join a voice channel please"));
