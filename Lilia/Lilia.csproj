@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <StartupObject>Lilia.Program</StartupObject>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>disable</Nullable>
         <Version>1.2.1</Version>
