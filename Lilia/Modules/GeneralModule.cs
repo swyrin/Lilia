@@ -5,6 +5,7 @@ using Lilia.Commons;
 using Lilia.Services;
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -73,6 +74,7 @@ public class GeneralModule : ApplicationCommandModule
             .AddField("Owner(s)", owners.ToString())
             .AddField("Uptime",
                 $"{Formatter.Bold(timeDiff.ToLongReadableTimeSpan())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
+            .AddField("Version", $"{Assembly.GetExecutingAssembly().GetName().Version}")
             .AddField("How to invite me?",
                 $"Either click the {Formatter.Bold("Interested in me?")} button below or click on me, choose {Formatter.Bold("Add to Server")} if it exists");
 
