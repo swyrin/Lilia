@@ -328,7 +328,7 @@ public class GuildConfigModule : ApplicationCommandModule
         }
 
         [SlashCommand("check", "Check the configurations you have made")]
-        public async Task GetConfiguraionsCommand(InteractionContext ctx)
+        public async Task GetConfigurationsCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync(true);
             
@@ -337,15 +337,18 @@ public class GuildConfigModule : ApplicationCommandModule
             var welcomeChn = ctx.Guild.GetChannel(dbGuild.WelcomeChannelId);
             var goodbyeChn = ctx.Guild.GetChannel(dbGuild.GoodbyeChannelId);
 
+            var welcomeChnMention = welcomeChn == null ? "Channel not exist or not set" : Formatter.Mention(welcomeChn);
+            var goodbyeChnMention = goodbyeChn == null ? "Channel not exist or not set" : Formatter.Mention(goodbyeChn);
+
             var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
                 .WithAuthor("All configurations", null, ctx.Client.CurrentUser.AvatarUrl)
                 .AddField("Welcome message",
                     string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage) ? "None" : dbGuild.WelcomeMessage, true)
-                .AddField("Welcome channel", Formatter.Mention(welcomeChn), true)
+                .AddField("Welcome channel", welcomeChnMention, true)
                 .AddField("Welcome message allowed", $"{dbGuild.IsWelcomeEnabled}", true)
                 .AddField("Goodbye message",
                     string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage) ? "None" : dbGuild.GoodbyeMessage, true)
-                .AddField("Goodbye channel", Formatter.Mention(goodbyeChn), true)
+                .AddField("Goodbye channel", goodbyeChnMention, true)
                 .AddField("Goodbye message allowed", $"{dbGuild.IsGoodbyeEnabled}", true);
             
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
