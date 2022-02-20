@@ -33,7 +33,7 @@ namespace Lilia.Services;
 public class LiliaClient
 {
     public LavalinkNode Lavalink;
-    public InactivityTrackingService _InactivityTracker;
+    public InactivityTrackingService InactivityTracker;
     
     public static readonly BotConfiguration BotConfiguration;
     public static readonly CancellationTokenSource Cts;
@@ -90,15 +90,14 @@ public class LiliaClient
         using HttpClient client = new();
 
         var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-        Log.Logger.Debug($"Current version: {currentVersion}");
-            
         var sourceVersionStr = await client.GetStringAsync("https://raw.githubusercontent.com/Lilia-Workshop/Lilia/master/version.txt");
         var sourceVersion = Version.Parse(sourceVersionStr);
-        Log.Logger.Debug($"Latest version: {sourceVersion}");
         
+        Log.Logger.Debug($"Current version: {currentVersion}  - Latest version: {sourceVersion}");
+
         if (currentVersion < sourceVersion)
         {
-            Log.Logger.Warning("You need to update your bot because there are breaking changes");
+            Log.Logger.Warning("You need to update your bot because there are changes in the code");
             Log.Logger.Warning("Source code can be seen here: https://github.com/Lilia-Workshop/Lilia");
             Log.Logger.Warning("Changelogs in case you miss: https://github.com/Lilia-Workshop/Lilia/releases");
         }
@@ -110,7 +109,7 @@ public class LiliaClient
     
     public async Task RunAsync()
     {
-        Log.Logger.Information("Checking for update");
+        Log.Logger.Information("Checking for updates");
         
         await CheckForUpdateAsync();
         
@@ -241,9 +240,9 @@ public class LiliaClient
     {
         return Task.Run(() =>
         {
-            Log.Logger.Information("Connecting to lavalink");
+            Log.Logger.Information("Connecting to Lavalink");
             Lavalink.InitializeAsync();
-            _InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(sender),
+            InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(sender),
                 new InactivityTrackingOptions
                 {
                     PollInterval = TimeSpan.FromSeconds(120),
