@@ -1,14 +1,15 @@
-## New commands
+## Additions
 
 - Added `neko` command for getting neko images
 - Added `guild` command to view guild information
 - Added `user` command to view mentioned user's information
 - Added `config` commands to configure the guild
+- Added `music` commands (again)
 
-## Old commands reworks/removals
+## Removals
 
 - Renamed `info` to `bot`
 
-## Codebase changes (don't care if you don't plan to contribute to the source)
+## Changes
 
-- Changed database provider to `PostgreSQL` instead of `SQLite` (sad, another database squash)
+- Changed database provider to `PostgreSQL` from `SQLite` (another database squash)
