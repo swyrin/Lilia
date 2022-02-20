@@ -13,7 +13,7 @@ jobs:
           dotnet-version: 6.x
       - name: Get tagged version
         id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/heads\//}
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
