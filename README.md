@@ -8,7 +8,7 @@ Lilia is a Discord bot created as my pet project for learning, aiming to be a go
 
 Go to [the wiki](https://github.com/Swyreee/Helya/wiki) for self hosting guide.
 
-> Should I create a Discord support server?
+> Community Discord: https://discord.gg/yZ3VVUkZ82
 > 
 > ![The Badge](https://img.shields.io/badge/%E2%9D%A4%EF%B8%8FMade%20with%20love%20by-Swyrin%237193-red?style=for-the-badge&logo=discord)
 
