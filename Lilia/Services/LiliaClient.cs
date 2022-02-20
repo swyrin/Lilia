@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Lavalink4NET;
+using Lavalink4NET.Artwork;
 using Lavalink4NET.DSharpPlus;
 using Lavalink4NET.Tracking;
 using Lilia.Database;
@@ -34,6 +35,7 @@ public class LiliaClient
 {
     public LavalinkNode Lavalink;
     public InactivityTrackingService InactivityTracker;
+    public ArtworkService ArtworkService;
     
     public static readonly BotConfiguration BotConfiguration;
     public static readonly CancellationTokenSource Cts;
@@ -240,16 +242,19 @@ public class LiliaClient
     {
         return Task.Run(() =>
         {
-            Log.Logger.Information("Connecting to Lavalink");
-            Lavalink.InitializeAsync();
+            Log.Logger.Information("Initializing Lavalink connection");
+
+            ArtworkService = new ArtworkService();
             InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(sender),
                 new InactivityTrackingOptions
                 {
-                    PollInterval = TimeSpan.FromSeconds(120),
+                    PollInterval = TimeSpan.FromSeconds(180),
                     DisconnectDelay = TimeSpan.FromSeconds(5),
                     TrackInactivity = true
                 },
                 new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("LavalinkInactivityTracker")));
+            
+            Lavalink.InitializeAsync();
             
             Log.Logger.Information($"Client is ready to serve as {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator}");
             StartTime = DateTime.Now;
