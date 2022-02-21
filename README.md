@@ -4,8 +4,6 @@
 
 Lilia is a Discord bot created as my pet project for learning, aiming to be a good bot like most popular bots.
 
-
-
 ✅ Features:
   - [x] osu! commands (user profile related)
   - [x] Music commands
