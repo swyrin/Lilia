@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace Lilia.Database;
 
-public class HelyaDatabaseContextFactory : IDesignTimeDbContextFactory<LiliaDatabaseContext>
+public class LiliaDatabaseContextFactory : IDesignTimeDbContextFactory<LiliaDatabaseContext>
 {
     public LiliaDatabaseContext CreateDbContext(string[] args)
     {
