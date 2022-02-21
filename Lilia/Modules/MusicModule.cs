@@ -133,7 +133,8 @@ public class MusicModule : ApplicationCommandModule
                 var currentTrack = e.Player.CurrentTrack;
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent($"Track stuck: {Formatter.Bold(currentTrack?.Title ?? "Unknown")} by {Formatter.Bold(currentTrack?.Author ?? "Unknown")}"));
+                    .WithContent(
+                        $"Track stuck: {Formatter.Bold(currentTrack?.Title ?? "Unknown")} by {Formatter.Bold(currentTrack?.Author ?? "Unknown")}"));
             };
         }
 
@@ -180,7 +181,7 @@ public class MusicModule : ApplicationCommandModule
                     .AddField("Author", track.Author, true)
                     .AddField("Source", track.Source ?? "Unknown")
                     .AddField("Playback position", $"{track.Position:g}/{track.Duration:g}")
-                    .AddField("Is looping", $"{player.IsLooping}")));
+                    .AddField("Is looping", $"{player.IsLooping}", true)));
         }
 
         [SlashCommand("skip", "Skip playing track")]
@@ -221,7 +222,7 @@ public class MusicModule : ApplicationCommandModule
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent($"Skipped track: {Formatter.Bold(track.Title)} by {Formatter.Bold(track.Author)}"));
         }
-        
+
         [SlashCommand("stop", "Stop this session")]
         public async Task MusicPlaybackStopCommand(InteractionContext ctx)
         {
@@ -250,7 +251,7 @@ public class MusicModule : ApplicationCommandModule
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Stopped this session, the queue will be cleaned"));
         }
-        
+
         [SlashCommand("pause", "Pause this session")]
         public async Task MusicPlaybackPauseCommand(InteractionContext ctx)
         {
@@ -281,13 +282,13 @@ public class MusicModule : ApplicationCommandModule
 
                 return;
             }
-            
+
             await player.PauseAsync();
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Pausing"));
         }
-        
+
         [SlashCommand("resume", "Resume this session")]
         public async Task MusicPlaybackResumeCommand(InteractionContext ctx)
         {
@@ -318,13 +319,13 @@ public class MusicModule : ApplicationCommandModule
 
                 return;
             }
-            
-            await player.PauseAsync();
+
+            await player.ResumeAsync();
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Resuming"));
         }
-        
+
         [SlashCommand("loop", "Loop playing track")]
         public async Task MusicPlaybackLoopCommand(InteractionContext ctx)
         {
@@ -507,7 +508,8 @@ public class MusicModule : ApplicationCommandModule
 
             foreach (var track in queue)
             {
-                text.AppendLine($"{pos} - {Formatter.MaskedUrl($"{Formatter.Bold(track.Title)} by {Formatter.Bold(track.Author)}", new Uri(track.Source ?? "https://example.com"))}");
+                text.AppendLine(
+                    $"{pos} - {Formatter.MaskedUrl($"{Formatter.Bold(track.Title)} by {Formatter.Bold(track.Author)}", new Uri(track.Source ?? "https://example.com"))}");
                 ++pos;
             }
 
@@ -517,7 +519,7 @@ public class MusicModule : ApplicationCommandModule
 
             await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.Member, pages, asEditResponse: true);
         }
-        
+
         [SlashCommand("shuffle", "Shuffle the queue")]
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task MusicQueueShuffleCommand(InteractionContext ctx)
