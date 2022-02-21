@@ -16,6 +16,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -228,7 +229,8 @@ public class LiliaClient
 
         while (!Cts.IsCancellationRequested) await Task.Delay(200);
 
-        await Lavalink.CloseAsync();
+        await Lavalink.CloseAsync(WebSocketCloseStatus.Empty, "Client shutdown");
+        await Lavalink.DisposeAsync();
         await client.DisconnectAsync();
         await Database.GetContext().DisposeAsync();
     }
