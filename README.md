@@ -10,7 +10,7 @@ Lilia is a Discord bot created as my pet project for learning, aiming to be a go
   - [x] Guild-specific configuration commands (welcome/goodbye message delivery)
   - [x] General purposes commands (bot/user/guild info)
   - [x] Command for bot owner(s)
-  - [x] Moderation commands (batch ban/kick, send notice)
+  - [x] Moderation commands (batch ban/kick)
 
 > 📖 Most of the things you need are on [the wiki](https://github.com/Swyreee/Helya/wiki), especially for self hosting guide.
 > 
