@@ -7,11 +7,11 @@ using Lavalink4NET.Player;
 using Lilia.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lilia.Commons;
+namespace Lilia.Modules.Utils;
 
 public class MusicModuleUtil
 {
-    private InteractionContext _ctx;
+    private readonly InteractionContext _ctx;
 
     public MusicModuleUtil(InteractionContext ctx)
     {
