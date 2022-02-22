@@ -9,11 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Lilia.Modules.Utils;
 
-public class MusicModuleUtil
+public class MusicModuleUtils
 {
     private readonly InteractionContext _ctx;
 
-    public MusicModuleUtil(InteractionContext ctx)
+    public MusicModuleUtils(InteractionContext ctx)
     {
         _ctx = ctx;
     }

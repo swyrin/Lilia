@@ -40,7 +40,7 @@ public class ModerationModule : ApplicationCommandModule
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent($"{Formatter.Bold("Mention")} all the users you want to ban with reason {Formatter.Bold(reason)}"));
 
-            var mentionedUsers = await ModerationModuleUtil.GetMentionedUsersAsync(ctx);
+            var mentionedUsers = await ModerationModuleUtils.GetMentionedUsersAsync(ctx);
 
             StringBuilder stringBuilder = new();
 
@@ -88,7 +88,7 @@ public class ModerationModule : ApplicationCommandModule
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent($"{Formatter.Bold("Mention")} all the users you want to kick with reason {Formatter.Bold(reason)}"));
 
-            var mentionedUsers = await ModerationModuleUtil.GetMentionedUsersAsync(ctx);
+            var mentionedUsers = await ModerationModuleUtils.GetMentionedUsersAsync(ctx);
 
             StringBuilder stringBuilder = new();
 
@@ -156,7 +156,7 @@ public class ModerationModule : ApplicationCommandModule
 
             dbUser.WarnCount += 1;
 
-            var (isExistedInPast, discordRole) = await ModerationModuleUtil.GetOrCreateRoleAsync(ctx, MuteRoleName, "Mute role creation", Permissions.None);
+            var (isExistedInPast, discordRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(ctx, MuteRoleName, "Mute role creation", Permissions.None);
 
             if (!isExistedInPast)
             {
@@ -215,7 +215,7 @@ public class ModerationModule : ApplicationCommandModule
             {
                 case 3:
                 {
-                    var (isExistedInPast, liliaMuteRole) = await ModerationModuleUtil.GetOrCreateRoleAsync(ctx, MuteRoleName, "Mute role creation", Permissions.None);
+                    var (isExistedInPast, liliaMuteRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(ctx, MuteRoleName, "Mute role creation", Permissions.None);
 
                     if (!isExistedInPast)
                     {

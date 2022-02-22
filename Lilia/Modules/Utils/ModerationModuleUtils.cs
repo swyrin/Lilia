@@ -9,7 +9,7 @@ using DSharpPlus.SlashCommands;
 
 namespace Lilia.Modules.Utils;
 
-public static class ModerationModuleUtil
+public static class ModerationModuleUtils
 {
     public static async Task<IEnumerable<DiscordUser>> GetMentionedUsersAsync(InteractionContext ctx,
         bool deleteResponse = true)
