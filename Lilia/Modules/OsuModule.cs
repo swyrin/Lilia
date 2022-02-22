@@ -32,7 +32,7 @@ public class OsuModule : ApplicationCommandModule
     }
 
     [SlashCommand("self_update", "Update your osu! profile information in my database")]
-    public async Task SetSelfOsuUsernameCommand(InteractionContext ctx,
+    public async Task OsuSelfUpdateCommand(InteractionContext ctx,
         [Option("username", "Your osu! username")]
         string username,
         [Option("mode", "Mode")]
@@ -55,7 +55,7 @@ public class OsuModule : ApplicationCommandModule
 
     [SlashCommand("force_update", "Update an user's osu! profile information in my database")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task SetMemberOsuUsernameCommand(InteractionContext ctx,
+    public async Task OsuForceUpdateCommand(InteractionContext ctx,
         [Option("user", "User to update, should be an user from your guild")]
         DiscordUser user,
         [Option("username", "osu! username")]
@@ -79,7 +79,7 @@ public class OsuModule : ApplicationCommandModule
     }
 
     [SlashCommand("info", "Get your linked data with me")]
-    public async Task CheckMyProfileCommand(InteractionContext ctx)
+    public async Task OsuInfoCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
         var dbUser = _dbCtx.GetUserRecord(ctx.Member);
@@ -96,7 +96,7 @@ public class OsuModule : ApplicationCommandModule
     }
 
     [SlashCommand("lookup", "Get a member's osu! profile")]
-    public async Task GetOsuProfileMentionCommand(InteractionContext ctx,
+    public async Task OsuLookupCommand(InteractionContext ctx,
         [Option("user", "Someone in this Discord server")]
         DiscordUser user,
         [Option("type", "Search type")]
@@ -124,7 +124,7 @@ public class OsuModule : ApplicationCommandModule
     }
 
     [SlashCommand("profile", "Get osu! profile from username")]
-    public async Task GetOsuProfileStringCommand(InteractionContext ctx,
+    public async Task OsuProfileCommand(InteractionContext ctx,
         [Option("username", "osu! username")]
         string username,
         [Option("type", "Search type")]
@@ -137,7 +137,7 @@ public class OsuModule : ApplicationCommandModule
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get profile")]
-    public async Task GetOsuProfileContextMenu(ContextMenuContext ctx)
+    public async Task OsuProfileContextMenu(ContextMenuContext ctx)
     {
         await ctx.DeferAsync(true);
 
@@ -158,7 +158,7 @@ public class OsuModule : ApplicationCommandModule
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get latest score")]
-    public async Task GetOsuRecentContextMenu(ContextMenuContext ctx)
+    public async Task OsuLatestContextMenu(ContextMenuContext ctx)
     {
         await ctx.DeferAsync(true);
 
@@ -179,7 +179,7 @@ public class OsuModule : ApplicationCommandModule
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get best play")]
-    public async Task GetOsuBestContextMenu(ContextMenuContext ctx)
+    public async Task OsuBestContextMenu(ContextMenuContext ctx)
     {
         await ctx.DeferAsync(true);
 

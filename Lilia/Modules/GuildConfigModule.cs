@@ -23,7 +23,7 @@ public class GuildConfigModule : ApplicationCommandModule
 
     [SlashCommand("welcome_channel", "Set the welcome channel")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task SetWelcomeChannelCommand(InteractionContext ctx,
+    public async Task ConfigWelcomeChannelCommand(InteractionContext ctx,
         [Option("channel", "Channel to dump all welcome messages")]
         [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
         DiscordChannel channel)
@@ -40,7 +40,7 @@ public class GuildConfigModule : ApplicationCommandModule
 
     [SlashCommand("goodbye_channel", "Set the goodbye channel")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task SetGoodbyeChannelCommand(InteractionContext ctx,
+    public async Task ConfigGoodbyeChannelCommand(InteractionContext ctx,
         [Option("channel", "Channel to dump all goodbye messages")]
         [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
         DiscordChannel channel)
@@ -57,7 +57,7 @@ public class GuildConfigModule : ApplicationCommandModule
 
     [SlashCommand("goodbye_message", "Set the goodbye message")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task SetGoodbyeMessageCommand(InteractionContext ctx,
+    public async Task ConfigGoodbyeMessageCommand(InteractionContext ctx,
         [Option("message", "Goodbye message, see \"/config placeholders\" for placeholders")]
         string message)
     {
@@ -82,7 +82,7 @@ public class GuildConfigModule : ApplicationCommandModule
 
     [SlashCommand("welcome_message", "Set the welcome message")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task SetWelcomeMessageCommand(InteractionContext ctx,
+    public async Task ConfigWelcomeMessageCommand(InteractionContext ctx,
         [Option("message", "Welcome message, see \"/config placeholders\" for placeholders")]
         string message)
     {
@@ -105,9 +105,9 @@ public class GuildConfigModule : ApplicationCommandModule
             .WithContent($"Set the goodbye message of this guild: {Formatter.InlineCode(message)}"));
     }
 
-    [SlashCommand("welcome", "Toggle welcome message allowance in this guild")]
+    [SlashCommand("toggle_welcome", "Toggle welcome message allowance in this guild")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task ToggleWelcomeCommand(InteractionContext ctx,
+    public async Task ConfigToggleWelcomeCommand(InteractionContext ctx,
         [Option("toggle", "Whether to allow it or not")]
         bool toggle = true)
     {
@@ -139,9 +139,9 @@ public class GuildConfigModule : ApplicationCommandModule
                 $"{(dbGuild.IsWelcomeEnabled ? "Allowed" : "Blocked")} the delivery of welcome message in this guild"));
     }
 
-    [SlashCommand("goodbye", "Toggle goodbye message allowance in this guild")]
+    [SlashCommand("toggle_goodbye", "Toggle goodbye message allowance in this guild")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task ToggleGoodbyeCommand(InteractionContext ctx,
+    public async Task ConfigToggleGoodbyeCommand(InteractionContext ctx,
         [Option("toggle", "Whether to allow it or not")]
         bool toggle = true)
     {
@@ -175,7 +175,7 @@ public class GuildConfigModule : ApplicationCommandModule
     
     [SlashCommand("placeholders", "Get all available configuration placeholders")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task GetPlaceholdersCommand(InteractionContext ctx)
+    public async Task ConfigPlaceholdersCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
 
@@ -196,7 +196,7 @@ public class GuildConfigModule : ApplicationCommandModule
     }
 
     [SlashCommand("check", "Check the configurations you have made")]
-    public async Task GetConfigurationsCommand(InteractionContext ctx)
+    public async Task ConfigCheckCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
 

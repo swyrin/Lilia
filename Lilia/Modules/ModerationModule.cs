@@ -263,13 +263,14 @@ public class ModerationModule : ApplicationCommandModule
     {
         [SlashCommand("appeal", "Send an appeal")]
         [SlashRequireDirectMessage]
-        public async Task SendAppealAsync(InteractionContext ctx,
+        public async Task ModerationModuleMessageAppealCommand(InteractionContext ctx,
             [Option("guild_id", "The guild you want to appeal")] string guildId,
             [Option("receiver_id", "The receiver")] string receiverId)
         {
             await ctx.DeferAsync();
 
             var guildIdLong = Convert.ToUInt64(guildId);
+            
             var receiverIdLong = Convert.ToUInt64(receiverId);
 
             try
