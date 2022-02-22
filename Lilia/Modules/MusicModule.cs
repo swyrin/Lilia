@@ -328,6 +328,8 @@ public class MusicModule : ApplicationCommandModule
             
             var selectComponentOptions = new List<DiscordSelectComponentOption>();
             var options = new List<string>();
+
+            selectComponentOptions.Add(new DiscordSelectComponentOption("The thing I need is not here", "-1", "If you choose this, other choices are ignored"));
             
             var idx = 0;
             foreach (var track in lavalinkTracks)
@@ -343,42 +345,49 @@ public class MusicModule : ApplicationCommandModule
             }
             
             DiscordSelectComponent selectComponent = new("trackSelectDrop", "Choose the track", selectComponentOptions, maxOptions: 10);
-            DiscordButtonComponent nopeBtn = new(ButtonStyle.Danger, "nopeBtn", "The thing I want is not here");
+
+            var message = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Choose your tracks (max 10)")
+                .AddComponents(selectComponent));
+
+            var res = await message.WaitForSelectAsync(x => x.User == ctx.Member, TimeSpan.FromMinutes(5));
+
+            if (res.TimedOut)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Timed out"));
+                
+                return;
+            }
+
+            StringBuilder text = new();
+            List<LavalinkTrack> tracksList = new();
+
+            foreach (var value in res.Result.Values)
+            {
+                int _idx = Convert.ToInt32(value);
+
+                if (_idx == -1)
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("No tracks added"));
+
+                    text.Clear();
+                    
+                    break;
+                }
+
+                var track = await _client.Lavalink.GetTrackAsync(options[_idx]);
+                tracksList.Add(track);
+                text.AppendLine($"{Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(track.Author)})");
+            }
+            
+            player.Queue.AddRange(tracksList);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Choose your tracks (max 10)")
-                .AddComponents(selectComponent)
-                .AddComponents(nopeBtn));
-
-            ctx.Client.ComponentInteractionCreated += async (_, e) =>
-            {
-                switch (e.Id)
-                {
-                    case "nopeBtn":
-                        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                            .WithContent("See you again"));
-
-                        return;
-                    case "trackSelectDrop":
-                    {
-                        StringBuilder text = new();
-            
-                        foreach (var val in e.Values)
-                        {
-                            var id = Convert.ToInt32(val);
-                            var trackSelect = await _client.Lavalink.GetTrackAsync(options[id]);
-                            player.Queue.Add(trackSelect);
-                            text.AppendLine($"{Formatter.Bold(Formatter.Sanitize(trackSelect.Title))} by {Formatter.Bold(Formatter.Sanitize(trackSelect.Author))}");
-                        }
-
-                        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                            .AddEmbed(ctx.Member.GetDefaultEmbedTemplateForUser()
-                                .WithAuthor("Enqueued tracks", null, ctx.Client.CurrentUser.AvatarUrl)
-                                .WithDescription($"{text}")));
-                        break;
-                    }
-                }
-            };
+                .AddEmbed(ctx.Member.GetDefaultEmbedTemplateForUser()
+                    .WithAuthor("Added tracks to queue", null, ctx.Client.CurrentUser.AvatarUrl)
+                    .WithDescription(string.IsNullOrWhiteSpace($"{text}") ? "Nothing" : $"{text}")));
         }
 
         [SlashCommand("view", "Check the queue of current playing session")]
