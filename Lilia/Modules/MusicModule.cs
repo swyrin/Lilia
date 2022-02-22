@@ -23,7 +23,7 @@ public class MusicModule : ApplicationCommandModule
     [SlashCommandGroup("playback", "Music playback commands")]
     public class MusicPlaybackModule : ApplicationCommandModule
     {
-        private LiliaClient _client;
+        private readonly LiliaClient _client;
 
         public MusicPlaybackModule(LiliaClient client)
         {
@@ -242,7 +242,7 @@ public class MusicModule : ApplicationCommandModule
     [SlashCommandGroup("queue", "Queue commands")]
     public class MusicQueueModule : ApplicationCommandModule
     {
-        private LiliaClient _client;
+        private readonly LiliaClient _client;
 
         public MusicQueueModule(LiliaClient client)
         {

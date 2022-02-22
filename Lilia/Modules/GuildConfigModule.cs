@@ -14,7 +14,7 @@ namespace Lilia.Modules;
 [SlashCommandGroup("config", "Server configuration")]
 public class GuildConfigModule : ApplicationCommandModule
 {
-    private LiliaDatabaseContext _dbCtx;
+    private readonly LiliaDatabaseContext _dbCtx;
 
     public GuildConfigModule(LiliaDatabase database)
     {

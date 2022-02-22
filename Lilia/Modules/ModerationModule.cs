@@ -35,8 +35,7 @@ public class ModerationModule : ApplicationCommandModule
     [SlashCommandGroup("general", "General command for moderating members")]
     public class ModerationGeneralModule : ApplicationCommandModule
     {
-        private LiliaClient _client;
-        private LiliaDatabaseContext _dbCtx;
+        private readonly LiliaDatabaseContext _dbCtx;
         private const string MuteRoleName = "Lilia-mute";
 
         public ModerationGeneralModule(LiliaClient client)

@@ -7,7 +7,7 @@ namespace Lilia.Commons;
 
 public class LavalinkLogger : ILogger
 {
-    private Microsoft.Extensions.Logging.ILogger _logger;
+    private readonly Microsoft.Extensions.Logging.ILogger _logger;
 
     public LavalinkLogger(Microsoft.Extensions.Logging.ILogger logger)
     {
