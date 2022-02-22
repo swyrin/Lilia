@@ -90,6 +90,8 @@ public class LiliaClient
 
     private static async Task CheckForUpdateAsync()
     {
+        Log.Logger.Information("Checking for updates");
+        
         using HttpClient client = new();
 
         var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
@@ -112,8 +114,6 @@ public class LiliaClient
     
     public async Task RunAsync()
     {
-        Log.Logger.Information("Checking for updates");
-        
         await CheckForUpdateAsync();
         
         Log.Logger.Information("Setting up client");
@@ -151,7 +151,7 @@ public class LiliaClient
             ResponseBehavior = InteractionResponseBehavior.Ack,
             Timeout = TimeSpan.FromSeconds(30)
         });
-
+        
         var lavalinkConfig = BotConfiguration.Credentials.Lavalink;
         Lavalink = new LavalinkNode(new LavalinkNodeOptions
             {
@@ -164,7 +164,18 @@ public class LiliaClient
                 DisconnectOnStop = false
             }, new DiscordClientWrapper(client),
             new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("Lavalink")));
-
+        
+        ArtworkService = new ArtworkService();
+        
+        InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(client),
+            new InactivityTrackingOptions
+            {
+                PollInterval = TimeSpan.FromSeconds(180),
+                DisconnectDelay = TimeSpan.FromSeconds(5),
+                TrackInactivity = true
+            },
+            new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("LavalinkInactivityTracker")));
+        
         if (BotConfiguration.Client.PrivateGuildIds.Count > 0)
         {
             BotConfiguration.Client.PrivateGuildIds.ForEach(guildId =>
@@ -229,8 +240,10 @@ public class LiliaClient
 
         while (!Cts.IsCancellationRequested) await Task.Delay(200);
 
-        await Lavalink.CloseAsync(WebSocketCloseStatus.Empty, "Client shutdown");
+        await Lavalink.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client shutdown");
         await Lavalink.DisposeAsync();
+        InactivityTracker.Dispose();
+        ArtworkService.Dispose();
         await client.DisconnectAsync();
         await Database.GetContext().DisposeAsync();
     }
@@ -245,16 +258,6 @@ public class LiliaClient
         return Task.Run(() =>
         {
             Log.Logger.Information("Initializing Lavalink connection");
-
-            ArtworkService = new ArtworkService();
-            InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(sender),
-                new InactivityTrackingOptions
-                {
-                    PollInterval = TimeSpan.FromSeconds(180),
-                    DisconnectDelay = TimeSpan.FromSeconds(5),
-                    TrackInactivity = true
-                },
-                new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("LavalinkInactivityTracker")));
             
             Lavalink.InitializeAsync();
             
