@@ -8,26 +8,12 @@ using Lilia.Database;
 using Lilia.Database.Extensions;
 using Lilia.Services;
 using System;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DSharpPlus.Interactivity.Enums;
+using Lilia.Modules.Utils;
 
 namespace Lilia.Modules;
-
-public enum ModerationAction
-{
-    [ChoiceName("ban")]
-    Ban,
-
-    [ChoiceName("kick")]
-    Kick,
-
-    [ChoiceName("warn_add")]
-    WarnAdd,
-
-    [ChoiceName("warn_remove")]
-    WarnRemove
-}
 
 [SlashCommandGroup("mod", "Moderation commands")]
 public class ModerationModule : ApplicationCommandModule
@@ -38,220 +24,237 @@ public class ModerationModule : ApplicationCommandModule
         private readonly LiliaDatabaseContext _dbCtx;
         private const string MuteRoleName = "Lilia-mute";
 
-        public ModerationGeneralModule(LiliaClient client)
+        public ModerationGeneralModule(LiliaDatabase database)
         {
-            _client = client;
-            _dbCtx = client.Database.GetContext();
+            _dbCtx = database.GetContext();
         }
 
-        [SlashCommand("execute", "Execute action on a batch of users")]
-        public async Task ExecuteModActionOnUsersCommand(InteractionContext ctx,
-            [Option("action", "The action to execute, defaults to kick")]
-            ModerationAction action = ModerationAction.Kick,
+        [SlashCommand("ban", "Ban members, in batch")]
+        [SlashRequirePermissions(Permissions.BanMembers)]
+        public async Task ModerationGeneralBanCommand(InteractionContext ctx,
             [Option("reason", "Reason to execute")]
             string reason = "Rule violation")
         {
             await ctx.DeferAsync();
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"{Formatter.Bold("Mention")} all the users you want to ban with reason {Formatter.Bold(reason)}"));
 
-            #region Precheck
+            var mentionedUsers = await ModerationModuleUtil.GetMentionedUsersAsync(ctx);
 
-            var requiresPerm = false;
-            var requiredPerm = Permissions.None;
+            StringBuilder stringBuilder = new();
 
-            switch (action)
+            foreach (var discordUser in mentionedUsers)
             {
-                case ModerationAction.Ban when !ctx.Member.Permissions.HasPermission(Permissions.BanMembers):
-                    requiresPerm = true;
-                    requiredPerm = Permissions.BanMembers;
-                    break;
+                var mentionedMember = await ctx.Guild.GetMemberAsync(discordUser.Id);
 
-                case ModerationAction.Kick when !ctx.Member.Permissions.HasPermission(Permissions.KickMembers):
-                    requiresPerm = true;
-                    requiredPerm = Permissions.KickMembers;
-                    break;
+                if (mentionedMember == ctx.Member || mentionedMember == ctx.Client.CurrentUser)
+                {
+                    stringBuilder.AppendLine("Skipped because it is either you or me");
+                    continue;
+                }
+                
+                var execLine = $"Banning {Formatter.Bold($"{mentionedMember.Username}#{mentionedMember.Discriminator}")}";
+                stringBuilder.AppendLine(execLine);
 
-                case ModerationAction.WarnAdd or ModerationAction.WarnRemove
-                    when !ctx.Member.Permissions.HasPermission(Permissions.ManageGuild):
-                    requiresPerm = true;
-                    requiredPerm = Permissions.ManageGuild;
-                    break;
+                await mentionedMember.BanAsync(0, reason);
+                var now = DateTime.Now;
+                
+                var embedBuilder = new DiscordEmbedBuilder()
+                    .WithAuthor(iconUrl: ctx.Client.CurrentUser.AvatarUrl)
+                    .WithTitle($"You have been banned from guild \"{ctx.Guild.Name}\" (ID: {ctx.Guild.Id})")
+                    .WithThumbnail(ctx.Guild.IconUrl)
+                    .AddField("Reason", reason, true)
+                    .AddField("Moderator", $"{ctx.Member.DisplayName}#{ctx.Member.Discriminator} (ID: {ctx.Member.Id})", true)
+                    .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
+                    .AddField("What to do now?",$"If you believe this was a mistake, you can try sending an appeal using {Formatter.InlineCode("mod message appeal")} with provided IDs");
+                
+                if (!mentionedMember.IsBot)
+                    await mentionedMember.SendMessageAsync(embedBuilder);                
             }
 
-            if (requiresPerm)
+            var pages = ctx.Client.GetInteractivity().GeneratePagesInEmbed($"{stringBuilder}", SplitType.Line);
+            await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.Member, pages);
+        }
+        
+        [SlashCommand("kick", "Kick members, in batch")]
+        [SlashRequirePermissions(Permissions.BanMembers)]
+        public async Task ModerationGeneralKickCommand(InteractionContext ctx,
+            [Option("reason", "Reason to execute")]
+            string reason = "Rule violation")
+        {
+            await ctx.DeferAsync();
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"{Formatter.Bold("Mention")} all the users you want to kick with reason {Formatter.Bold(reason)}"));
+
+            var mentionedUsers = await ModerationModuleUtil.GetMentionedUsersAsync(ctx);
+
+            StringBuilder stringBuilder = new();
+
+            foreach (var discordUser in mentionedUsers)
+            {
+                var mentionedMember = await ctx.Guild.GetMemberAsync(discordUser.Id);
+
+                if (mentionedMember == ctx.Member || mentionedMember == ctx.Client.CurrentUser)
+                {
+                    stringBuilder.AppendLine("Skipped because it is either you or me");
+                    continue;
+                }
+                
+                var execLine = $"Kicking {Formatter.Bold($"{mentionedMember.Username}#{mentionedMember.Discriminator}")}";
+                stringBuilder.AppendLine(execLine);
+
+                await mentionedMember.RemoveAsync(reason);
+                var now = DateTime.Now;
+                
+                var embedBuilder = new DiscordEmbedBuilder()
+                    .WithAuthor(iconUrl: ctx.Client.CurrentUser.AvatarUrl)
+                    .WithTitle($"You have been kicked from guild \"{ctx.Guild.Name}\" (ID: {ctx.Guild.Id})")
+                    .WithThumbnail(ctx.Guild.IconUrl)
+                    .AddField("Reason", reason, true)
+                    .AddField("Moderator", $"{ctx.Member.DisplayName}#{ctx.Member.Discriminator} (ID: {ctx.Member.Id})", true)
+                    .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
+                    .AddField("What to do now?",$"If you believe this was a mistake, you can try sending an appeal using {Formatter.InlineCode("mod message appeal")} with provided IDs");
+
+                if (!mentionedMember.IsBot)
+                    await mentionedMember.SendMessageAsync(embedBuilder);                
+            }
+
+            var pages = ctx.Client.GetInteractivity().GeneratePagesInEmbed($"{stringBuilder}", SplitType.Line);
+            await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.Member, pages);
+        }
+
+        [SlashCommand("warn_add", "Add a warn to an user")]
+        public async Task ModerationGeneralWarnAddCommand(InteractionContext ctx,
+            [Option("user", "The target user to add a warn")]
+            DiscordUser user,
+            [Option("reason", "Reason to execute")]
+            string reason = "Rule violation")
+        {
+            await ctx.DeferAsync();
+            
+            var mentionedMember = (DiscordMember) user;
+
+            if (mentionedMember == ctx.Member || mentionedMember == ctx.Client.CurrentUser)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent($"You need {Formatter.Bold(requiredPerm.GetName())} permission in order to do this"));
-            }
-
-            #endregion Precheck
-
-            reason = reason == "Rule violation"
-                ? action == ModerationAction.WarnRemove ? "False warn" : "Rule violation"
-                : reason;
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"{Formatter.Bold("Mention")} all the users you want to execute the action {Formatter.Bold(action.GetName())} with reason {Formatter.Bold(reason)}"));
-
-            #region Get Members
-
-            var interactivity = ctx.Client.GetInteractivity();
-            var res = await interactivity.WaitForMessageAsync(x => x.MentionedUsers.Any(), TimeSpan.FromMinutes(5));
-            if (res.TimedOut)
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("Timed out"));
+                    .WithContent("Skipped because it is either you or me"));
 
                 return;
             }
 
-            await res.Result.DeleteAsync();
+            var dbUser = _dbCtx.GetUserRecord(mentionedMember);
 
-            #endregion Get Members
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Executing..."));
-
-            var stringBuilder = new StringBuilder();
-            var reasonStr = $"Executed by {ctx.Member.DisplayName}#{ctx.Member.Discriminator} - Reason: {reason}";
-
-            foreach (var discordUser in res.Result.MentionedUsers.Distinct())
+            if (dbUser.WarnCount == 3)
             {
-                var mentionedMember = await ctx.Guild.GetMemberAsync(discordUser.Id);
-                var dbUser = _dbCtx.GetUserRecord(mentionedMember);
-
-                var exec = $"Executing action {Formatter.Bold(action.GetName())} on {Formatter.Bold($"{mentionedMember.Username}#{mentionedMember.Discriminator}")}";
-                stringBuilder.AppendLine(exec);
-
-                if (mentionedMember == ctx.Member)
-                {
-                    stringBuilder.AppendLine("Skipped because it is you ---> Aborted");
-                    continue;
-                }
-
-                if (mentionedMember == ctx.Client.CurrentUser)
-                {
-                    stringBuilder.AppendLine("Skipped because it is me ---> Aborted");
-                    continue;
-                }
-
-                var now = DateTime.Now;
-                var shouldDm = true;
-
-                switch (action)
-                {
-                    case ModerationAction.Ban:
-                        {
-                            await mentionedMember.BanAsync(0, reasonStr);
-                            break;
-                        }
-                    case ModerationAction.Kick:
-                        {
-                            await mentionedMember.RemoveAsync(reasonStr);
-                            break;
-                        }
-                    case ModerationAction.WarnAdd:
-                        {
-                            if (dbUser.WarnCount == 3)
-                            {
-                                stringBuilder.AppendLine($"{Formatter.Mention(mentionedMember)} has been muted earlier --> Aborted");
-                                shouldDm = false;
-                                break;
-                            }
-
-                            dbUser.WarnCount += 1;
-
-                            #region Mute role get or create
-
-                            var liliaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName).Value;
-
-                            if (liliaMuteRole == default)
-                            {
-                                liliaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName, reason: "Mute role creation",
-                                    permissions: Permissions.None);
-                                
-                                foreach (var (_, channel) in ctx.Guild.Channels)
-                                {
-                                    await channel.AddOverwriteAsync(liliaMuteRole, deny: Permissions.SendMessages,
-                                        reason: "Mute role channel addition");
-                                }
-                            }
-
-                            #endregion Mute role get or create
-
-                            if (dbUser.WarnCount == 3) await mentionedMember.GrantRoleAsync(liliaMuteRole);
-                            stringBuilder.AppendLine($"Added a warn of {Formatter.Mention(mentionedMember)}. Now they have {dbUser.WarnCount} warn(s)");
-
-                            break;
-                        }
-                    case ModerationAction.WarnRemove:
-                        {
-                            switch (dbUser.WarnCount)
-                            {
-                                case 0:
-                                    stringBuilder.AppendLine("This user does not have any warn --> Aborted");
-                                    shouldDm = false;
-                                    break;
-
-                                case 3:
-                                    {
-                                        #region Mute role get or create
-
-                                        var liliaMuteRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == MuteRoleName)
-                                            .Value;
-
-                                        if (liliaMuteRole == default)
-                                        {
-                                            liliaMuteRole = await ctx.Guild.CreateRoleAsync(MuteRoleName,
-                                                reason: "Mute role creation", permissions: Permissions.None);
-                                            foreach (var (_, channel) in ctx.Guild.Channels)
-                                            {
-                                                await channel.AddOverwriteAsync(liliaMuteRole, deny: Permissions.SendMessages,
-                                                    reason: "Mute role channel addition");
-                                            }
-                                        }
-
-                                        #endregion Mute role get or create
-
-                                        await mentionedMember.RevokeRoleAsync(liliaMuteRole, "Warn removal");
-                                        break;
-                                    }
-                                default:
-                                    {
-                                        dbUser.WarnCount -= 1;
-                                        stringBuilder.AppendLine($"Removed a warn of {Formatter.Mention(mentionedMember)}. Now they have {dbUser.WarnCount} warn(s)");
-                                        break;
-                                    }
-                            }
-
-                            break;
-                        }
-                }
-
-                if (shouldDm)
-                {
-                    var embedBuilder = new DiscordEmbedBuilder()
-                        .WithAuthor(iconUrl: ctx.Client.CurrentUser.AvatarUrl)
-                        .WithTitle($"You were executed in guild \"{ctx.Guild.Name}\" (ID: {ctx.Guild.Id})")
-                        .WithThumbnail(ctx.Guild.IconUrl)
-                        .AddField("Action name", action.GetName(), true)
-                        .AddField("Reason", reason, true)
-                        .AddField("Moderator", $"{ctx.Member.DisplayName}#{ctx.Member.Discriminator} (ID: {ctx.Member.Id})",
-                            true)
-                        .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
-                        .AddField("What to do now?",
-                            action != ModerationAction.WarnRemove
-                                ? $"If you believe this was a mistake, you can try sending an appeal using {Formatter.InlineCode("mod message appeal")} with provided IDs"
-                                : "Nothing");
-
-                    await mentionedMember.SendMessageAsync(embedBuilder);
-                }
-
-                _dbCtx.Update(dbUser);
-                await _dbCtx.SaveChangesAsync();
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent($"{Formatter.Mention(mentionedMember)} has been warned and muted earlier"));
+                
+                return;
             }
 
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent(stringBuilder.ToString()));
+            dbUser.WarnCount += 1;
+
+            var (isExistedInPast, discordRole) = await ModerationModuleUtil.GetOrCreateRoleAsync(ctx, MuteRoleName, "Mute role creation", Permissions.None);
+
+            if (!isExistedInPast)
+            {
+                foreach (var channel in ctx.Guild.Channels)
+                {
+                    await channel.Value.AddOverwriteAsync(discordRole, Permissions.None, Permissions.SendMessages, "Muted");
+                }    
+            }
+            
+            if (dbUser.WarnCount == 3) await mentionedMember.GrantRoleAsync(discordRole);
+            
+            var now = DateTime.Now;
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Added a warn of {Formatter.Mention(mentionedMember)}\nNow they have {dbUser.WarnCount} warn(s)"));
+
+            var embedBuilder = new DiscordEmbedBuilder()
+                .WithAuthor(iconUrl: ctx.Client.CurrentUser.AvatarUrl)
+                .WithTitle($"You were warned in guild \"{ctx.Guild.Name}\" (ID: {ctx.Guild.Id})")
+                .WithThumbnail(ctx.Guild.IconUrl)
+                .AddField("Reason", reason, true)
+                .AddField("Moderator", $"{ctx.Member.DisplayName}#{ctx.Member.Discriminator} (ID: {ctx.Member.Id})",
+                    true)
+                .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
+                .AddField("What to do now?",
+                    $"If you believe this was a mistake, you can try sending an appeal using {Formatter.InlineCode("mod message appeal")} with provided IDs");
+
+            if (!mentionedMember.IsBot)
+                await mentionedMember.SendMessageAsync(embedBuilder);
+            
+            await _dbCtx.SaveChangesAsync();
+        }
+        
+        [SlashCommand("warn_remove", "Remove a warn from an user")]
+        public async Task ModerationGeneralWarnRemoveCommand(InteractionContext ctx,
+            [Option("user", "The target user to remove a warn")]
+            DiscordUser user,
+            [Option("reason", "Reason to execute")]
+            string reason = "False warn")
+        {
+            await ctx.DeferAsync();
+            
+            var mentionedMember = (DiscordMember) user;
+
+            if (mentionedMember == ctx.Member || mentionedMember == ctx.Client.CurrentUser)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Skipped because it is either you or me"));
+
+                return;
+            }
+
+            var dbUser = _dbCtx.GetUserRecord(mentionedMember);
+
+            switch (dbUser.WarnCount)
+            {
+                case 3:
+                {
+                    var (isExistedInPast, liliaMuteRole) = await ModerationModuleUtil.GetOrCreateRoleAsync(ctx, MuteRoleName, "Mute role creation", Permissions.None);
+
+                    if (!isExistedInPast)
+                    {
+                        foreach (var channel in ctx.Guild.Channels)
+                        {
+                            await channel.Value.AddOverwriteAsync(liliaMuteRole, Permissions.None, Permissions.SendMessages, "Muted");
+                        }    
+                    }
+
+                    await mentionedMember.RevokeRoleAsync(liliaMuteRole);
+                    break;
+                }
+                case 0:
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent("No warn to remove"));
+
+                    return;
+            }
+
+            dbUser.WarnCount -= 1;
+
+            var now = DateTime.Now;
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Removed a warn of {Formatter.Mention(mentionedMember)}\nNow they have {dbUser.WarnCount} warn(s)"));
+
+            var embedBuilder = new DiscordEmbedBuilder()
+                .WithAuthor(iconUrl: ctx.Client.CurrentUser.AvatarUrl)
+                .WithTitle($"You have been removed a warn in guild \"{ctx.Guild.Name}\" (ID: {ctx.Guild.Id})")
+                .WithThumbnail(ctx.Guild.IconUrl)
+                .AddField("Reason", reason, true)
+                .AddField("Moderator", $"{ctx.Member.DisplayName}#{ctx.Member.Discriminator} (ID: {ctx.Member.Id})", true)
+                .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
+                .AddField("What to do now?", "Nothing");
+
+            if (!mentionedMember.IsBot)
+                await mentionedMember.SendMessageAsync(embedBuilder);
+            
+            await _dbCtx.SaveChangesAsync();
         }
     }
 
