@@ -7,6 +7,7 @@ using Lilia.Commons;
 using Lilia.Database;
 using Lilia.Database.Extensions;
 using Lilia.Database.Models;
+using Lilia.Modules.Utils;
 using Lilia.Services;
 
 namespace Lilia.Modules;
@@ -30,7 +31,16 @@ public class GuildConfigModule : ApplicationCommandModule
     {
         await ctx.DeferAsync(true);
 
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+        var dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+
+        if (string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage))
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("You did not set a welcome message in this guild"));
+
+            return;
+        }
+
         dbGuild.WelcomeChannelId = channel.Id;
         await _dbCtx.SaveChangesAsync();
 
@@ -47,7 +57,16 @@ public class GuildConfigModule : ApplicationCommandModule
     {
         await ctx.DeferAsync(true);
 
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+        var dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+
+        if (string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage))
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("You did not set a goodbye message in this guild"));
+
+            return;
+        }
+
         dbGuild.GoodbyeChannelId = channel.Id;
         await _dbCtx.SaveChangesAsync();
 
@@ -63,9 +82,9 @@ public class GuildConfigModule : ApplicationCommandModule
     {
         await ctx.DeferAsync(true);
 
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+        var dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
 
-        if (dbGuild.GoodbyeChannelId == 0)
+        if (!GuildConfigModuleUtils.IsChannelExist(ctx, dbGuild.GoodbyeChannelId))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("You did not set a goodbye channel in this guild"));
@@ -90,7 +109,7 @@ public class GuildConfigModule : ApplicationCommandModule
 
         DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
 
-        if (dbGuild.WelcomeChannelId == 0)
+        if (!GuildConfigModuleUtils.IsChannelExist(ctx, dbGuild.WelcomeChannelId))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("You did not set a welcome channel in this guild"));
@@ -113,9 +132,9 @@ public class GuildConfigModule : ApplicationCommandModule
     {
         await ctx.DeferAsync(true);
 
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+        var dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
 
-        if (dbGuild.WelcomeChannelId == 0)
+        if (!GuildConfigModuleUtils.IsChannelExist(ctx, dbGuild.WelcomeChannelId))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("You did not set a welcome channel in this guild"));
@@ -147,9 +166,9 @@ public class GuildConfigModule : ApplicationCommandModule
     {
         await ctx.DeferAsync(true);
 
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
+        var dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
 
-        if (dbGuild.GoodbyeChannelId == 0)
+        if (!GuildConfigModuleUtils.IsChannelExist(ctx, dbGuild.WelcomeChannelId))
         {
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("You did not set a goodbye channel in this guild"));
@@ -202,11 +221,13 @@ public class GuildConfigModule : ApplicationCommandModule
 
         var dbGuild = _dbCtx.GetGuildRecord(ctx.Guild);
 
-        var welcomeChn = ctx.Guild.GetChannel(dbGuild.WelcomeChannelId);
-        var goodbyeChn = ctx.Guild.GetChannel(dbGuild.GoodbyeChannelId);
+        var welcomeChnMention = GuildConfigModuleUtils.IsChannelExist(ctx, dbGuild.WelcomeChannelId)
+            ? Formatter.Mention(ctx.Guild.GetChannel(dbGuild.WelcomeChannelId))
+            : "Channel not exist or not set";
 
-        var welcomeChnMention = welcomeChn == null ? "Channel not exist or not set" : Formatter.Mention(welcomeChn);
-        var goodbyeChnMention = goodbyeChn == null ? "Channel not exist or not set" : Formatter.Mention(goodbyeChn);
+        var goodbyeChnMention = GuildConfigModuleUtils.IsChannelExist(ctx, dbGuild.GoodbyeChannelId)
+            ? Formatter.Mention(ctx.Guild.GetChannel(dbGuild.GoodbyeChannelId))
+            : "Channel not exist or not set";
 
         var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
             .WithAuthor("All configurations", null, ctx.Client.CurrentUser.AvatarUrl)
