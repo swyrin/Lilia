@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lilia.Enums;
 using Lilia.Services;
 
 namespace Lilia.Modules;
@@ -30,16 +31,16 @@ public class OsuModule : ApplicationCommandModule
         _osuClient = osuClient;
     }
 
-    [SlashCommand("update", "Update your osu! profile information in my database")]
+    [SlashCommand("self_update", "Update your osu! profile information in my database")]
     public async Task SetSelfOsuUsernameCommand(InteractionContext ctx,
         [Option("username", "Your osu! username")]
         string username,
         [Option("mode", "Mode")]
-        UserProfileSearchMode searchMode = UserProfileSearchMode.Osu)
+        OsuUserProfileSearchMode searchMode = OsuUserProfileSearchMode.Osu)
     {
         await ctx.DeferAsync(true);
 
-        if (searchMode == UserProfileSearchMode.Default) searchMode = UserProfileSearchMode.Osu;
+        if (searchMode == OsuUserProfileSearchMode.Default) searchMode = OsuUserProfileSearchMode.Osu;
 
         var dbUser = _dbCtx.GetUserRecord(ctx.Member);
         dbUser.OsuUsername = username;
@@ -52,7 +53,7 @@ public class OsuModule : ApplicationCommandModule
             .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchMode.GetName())}"));
     }
 
-    [SlashCommand("forceupdate", "Update an user's osu! profile information in my database")]
+    [SlashCommand("force_update", "Update an user's osu! profile information in my database")]
     [SlashRequireUserPermissions(Permissions.ManageGuild)]
     public async Task SetMemberOsuUsernameCommand(InteractionContext ctx,
         [Option("user", "User to update, should be an user from your guild")]
@@ -60,11 +61,11 @@ public class OsuModule : ApplicationCommandModule
         [Option("username", "osu! username")]
         string username,
         [Option("mode", "Mode")]
-        UserProfileSearchMode searchMode = UserProfileSearchMode.Osu)
+        OsuUserProfileSearchMode searchMode = OsuUserProfileSearchMode.Osu)
     {
         await ctx.DeferAsync(true);
 
-        if (searchMode == UserProfileSearchMode.Default) searchMode = UserProfileSearchMode.Osu;
+        if (searchMode == OsuUserProfileSearchMode.Default) searchMode = OsuUserProfileSearchMode.Osu;
 
         var dbUser = _dbCtx.GetUserRecord(user);
         dbUser.OsuUsername = username;
@@ -99,9 +100,9 @@ public class OsuModule : ApplicationCommandModule
         [Option("user", "Someone in this Discord server")]
         DiscordUser user,
         [Option("type", "Search type")]
-        UserProfileSearchType profileSearchType = UserProfileSearchType.Profile,
+        OsuUserProfileSearchType profileSearchType = OsuUserProfileSearchType.Profile,
         [Option("mode", "Search mode")]
-        UserProfileSearchMode searchUserProfileSearchMode = UserProfileSearchMode.Default)
+        OsuUserProfileSearchMode osuUserProfileSearchMode = OsuUserProfileSearchMode.Default)
     {
         await ctx.DeferAsync();
 
@@ -116,8 +117,8 @@ public class OsuModule : ApplicationCommandModule
         }
 
         GameMode omode;
-        if (searchUserProfileSearchMode == UserProfileSearchMode.Default) Enum.TryParse(dbUser.OsuMode, out omode);
-        else omode = ToGameMode(searchUserProfileSearchMode);
+        if (osuUserProfileSearchMode == OsuUserProfileSearchMode.Default) Enum.TryParse(dbUser.OsuMode, out omode);
+        else omode = ToGameMode(osuUserProfileSearchMode);
 
         await GenericOsuProcessing(ctx, dbUser.OsuUsername, profileSearchType, FromGameMode(omode));
     }
@@ -127,12 +128,12 @@ public class OsuModule : ApplicationCommandModule
         [Option("username", "osu! username")]
         string username,
         [Option("type", "Search type")]
-        UserProfileSearchType profileSearchType = UserProfileSearchType.Profile,
+        OsuUserProfileSearchType profileSearchType = OsuUserProfileSearchType.Profile,
         [Option("mode", "Search mode")]
-        UserProfileSearchMode searchUserProfileSearchMode = UserProfileSearchMode.Default)
+        OsuUserProfileSearchMode osuUserProfileSearchMode = OsuUserProfileSearchMode.Default)
     {
         await ctx.DeferAsync();
-        await GenericOsuProcessing(ctx, username, profileSearchType, searchUserProfileSearchMode);
+        await GenericOsuProcessing(ctx, username, profileSearchType, osuUserProfileSearchMode);
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get profile")]
@@ -153,7 +154,7 @@ public class OsuModule : ApplicationCommandModule
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
 
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Profile, FromGameMode(omode));
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, OsuUserProfileSearchType.Profile, FromGameMode(omode));
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get latest score")]
@@ -174,7 +175,7 @@ public class OsuModule : ApplicationCommandModule
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
 
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Recent, FromGameMode(omode));
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, OsuUserProfileSearchType.Recent, FromGameMode(omode));
     }
 
     [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get best play")]
@@ -194,56 +195,56 @@ public class OsuModule : ApplicationCommandModule
         }
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, UserProfileSearchType.Best, FromGameMode(omode));
+        await GenericOsuProcessing(ctx, dbUser.OsuUsername, OsuUserProfileSearchType.Best, FromGameMode(omode));
     }
 
-    private static GameMode ToGameMode(UserProfileSearchMode choice)
+    private static GameMode ToGameMode(OsuUserProfileSearchMode choice)
     {
         return choice switch
         {
-            UserProfileSearchMode.Fruits => GameMode.Fruits,
-            UserProfileSearchMode.Mania => GameMode.Mania,
-            UserProfileSearchMode.Taiko => GameMode.Taiko,
-            UserProfileSearchMode.Osu => GameMode.Osu,
-            UserProfileSearchMode.Default => GameMode.Osu,
+            OsuUserProfileSearchMode.Fruits => GameMode.Fruits,
+            OsuUserProfileSearchMode.Mania => GameMode.Mania,
+            OsuUserProfileSearchMode.Taiko => GameMode.Taiko,
+            OsuUserProfileSearchMode.Osu => GameMode.Osu,
+            OsuUserProfileSearchMode.Default => GameMode.Osu,
             _ => GameMode.Osu
         };
     }
 
-    private static UserProfileSearchMode FromGameMode(GameMode mode)
+    private static OsuUserProfileSearchMode FromGameMode(GameMode mode)
     {
         return mode switch
         {
-            GameMode.Fruits => UserProfileSearchMode.Fruits,
-            GameMode.Mania => UserProfileSearchMode.Mania,
-            GameMode.Osu => UserProfileSearchMode.Osu,
-            GameMode.Taiko => UserProfileSearchMode.Taiko,
-            _ => UserProfileSearchMode.Default
+            GameMode.Fruits => OsuUserProfileSearchMode.Fruits,
+            GameMode.Mania => OsuUserProfileSearchMode.Mania,
+            GameMode.Osu => OsuUserProfileSearchMode.Osu,
+            GameMode.Taiko => OsuUserProfileSearchMode.Taiko,
+            _ => OsuUserProfileSearchMode.Default
         };
     }
 
     private async Task<IReadOnlyList<IScore>> GetOsuScoresAsync(string username, GameMode omode,
-        UserProfileSearchType profileSearchType, bool includeFails = false, int count = 1)
+        OsuUserProfileSearchType profileSearchType, bool includeFails = false, int count = 1)
     {
         var osuUser = await _osuClient.GetUserAsync(username, omode);
         IReadOnlyList<IScore> scores = new List<IScore>();
 
         switch (profileSearchType)
         {
-            case UserProfileSearchType.Best:
+            case OsuUserProfileSearchType.Best:
                 scores = await _osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Best, false, omode, count);
                 break;
 
-            case UserProfileSearchType.Recent:
+            case OsuUserProfileSearchType.Recent:
                 scores = await _osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Recent, includeFails, omode,
                     count);
                 break;
 
-            case UserProfileSearchType.First:
+            case OsuUserProfileSearchType.First:
                 scores = await _osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Firsts, false, omode, count);
                 break;
 
-            case UserProfileSearchType.Profile:
+            case OsuUserProfileSearchType.Profile:
                 break;
 
             default:
@@ -278,7 +279,7 @@ public class OsuModule : ApplicationCommandModule
     }
 
     private async Task OsuScoresProcessAsync(BaseContext ctx, string username, GameMode omode,
-        UserProfileSearchType profileSearchType, UserProfileSearchMode profileSearchMode, bool isContextMenu)
+        OsuUserProfileSearchType profileSearchType, OsuUserProfileSearchMode profileSearchMode, bool isContextMenu)
     {
         // do a test run before actual stuffs
         var testRun = await GetOsuScoresAsync(username, omode, profileSearchType, true, 2);
@@ -299,7 +300,7 @@ public class OsuModule : ApplicationCommandModule
         // sneaky
         var interactivity = ctx.Client.GetInteractivity();
 
-        if (profileSearchType == UserProfileSearchType.Recent && !isContextMenu)
+        if (profileSearchType == OsuUserProfileSearchType.Recent && !isContextMenu)
         {
             var yesBtn = new DiscordButtonComponent(ButtonStyle.Success, "yesBtn", "Yes please!");
             var noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not!");
@@ -396,7 +397,7 @@ public class OsuModule : ApplicationCommandModule
         await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
     }
 
-    private async Task GenericOsuProcessing(BaseContext ctx, string username, UserProfileSearchType profileSearchType, UserProfileSearchMode profileSearchMode)
+    private async Task GenericOsuProcessing(BaseContext ctx, string username, OsuUserProfileSearchType profileSearchType, OsuUserProfileSearchMode profileSearchMode)
     {
         try
         {
@@ -405,7 +406,7 @@ public class OsuModule : ApplicationCommandModule
             IUser osuUser;
             GameMode omode;
 
-            if (profileSearchMode == UserProfileSearchMode.Default)
+            if (profileSearchMode == OsuUserProfileSearchMode.Default)
             {
                 osuUser = await _osuClient.GetUserAsync(username);
                 omode = osuUser.GameMode;
@@ -416,7 +417,7 @@ public class OsuModule : ApplicationCommandModule
                 omode = ToGameMode(profileSearchMode);
             }
 
-            if (profileSearchType == UserProfileSearchType.Profile)
+            if (profileSearchType == OsuUserProfileSearchType.Profile)
             {
                 await OsuProfileProcessAsync(ctx, osuUser, omode);
             }
@@ -438,37 +439,4 @@ public class OsuModule : ApplicationCommandModule
                              "2. Internal issue, contact the owner(s) if the issue persists"));
         }
     }
-}
-
-public enum UserProfileSearchType
-{
-    [ChoiceName("profile")]
-    Profile,
-
-    [ChoiceName("best_plays")]
-    Best,
-
-    [ChoiceName("first_place_plays")]
-    First,
-
-    [ChoiceName("recent_plays")]
-    Recent
-}
-
-public enum UserProfileSearchMode
-{
-    [ChoiceName("default")]
-    Default,
-
-    [ChoiceName("standard")]
-    Osu,
-
-    [ChoiceName("mania")]
-    Mania,
-
-    [ChoiceName("catch_the_beat")]
-    Fruits,
-
-    [ChoiceName("taiko")]
-    Taiko
 }
