@@ -15,7 +15,7 @@ namespace Lilia.Modules;
 
 public class ImageModule : ApplicationCommandModule
 {
-    [SlashCommand("neko", "Traverse through catgirl images")]
+    [SlashCommand("neko", "Watch majestic neko images")]
     public async Task GetNekoImageCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
