@@ -31,7 +31,7 @@ public class MusicModule : ApplicationCommandModule
             _client = client;
         }
 
-        [SlashCommand("join", "Join voice channel")]
+        [SlashCommand("connect", "Connect to your current voice channel")]
         public async Task MusicPlaybackJoinCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
@@ -46,7 +46,7 @@ public class MusicModule : ApplicationCommandModule
                 .WithContent("Done establishing the connection"));
         }
 
-        [SlashCommand("leave", "Leave voice channel and clear the queue")]
+        [SlashCommand("disconnect", "Leave current voice channel and clear the queue")]
         public async Task MusicPlaybackLeaveCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
@@ -85,7 +85,7 @@ public class MusicModule : ApplicationCommandModule
             _client.Lavalink.TrackException += new MusicModuleUtil(ctx).OnTrackException;
         }
 
-        [SlashCommand("now_playing", "Check now playing track")]
+        [SlashCommand("now_playing", "View now playing track")]
         public async Task MusicPlaybackNowPlayingCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
@@ -143,7 +143,7 @@ public class MusicModule : ApplicationCommandModule
                 .WithContent($"Skipped track: {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))}"));
         }
 
-        [SlashCommand("stop", "Stop this session")]
+        [SlashCommand("stop", "Stop this session and clear the queue")]
         public async Task MusicPlaybackStopCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
@@ -214,7 +214,7 @@ public class MusicModule : ApplicationCommandModule
                 .WithContent("Resuming"));
         }
 
-        [SlashCommand("loop", "Toggle the loop of current track")]
+        [SlashCommand("loop", "Toggle current track loop")]
         public async Task MusicPlaybackLoopCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
@@ -314,28 +314,71 @@ public class MusicModule : ApplicationCommandModule
             Enum.TryParse(source.ToString(), out SearchMode searchMode);
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-            var track = await _client.Lavalink.GetTrackAsync(query, searchMode);
+            var tracks = await _client.Lavalink.GetTracksAsync(query, searchMode);
 
-            if (track == null)
+            var lavalinkTracks = tracks.ToList();
+            
+            if (!lavalinkTracks.Any())
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Unable to get the track"));
+                    .WithContent("Unable to get the tracks"));
 
                 return;
             }
-
-            if (track.IsLiveStream)
+            
+            var selectComponentOptions = new List<DiscordSelectComponentOption>();
+            var options = new List<string>();
+            
+            var idx = 0;
+            foreach (var track in lavalinkTracks)
             {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("You are not allowed to queue a stream"));
+                if (track.IsLiveStream) continue;
+                
+                var title = $"{track.Title} - {track.Author}";
 
-                return;
+                selectComponentOptions.Add(new DiscordSelectComponentOption(string.Join("", title.Take(97)) + "...", $"{idx}", track.Source));
+                options.Add(track.Source);
+                
+                ++idx;
             }
-
-            player.Queue.Add(track);
+            
+            DiscordSelectComponent selectComponent = new("trackSelectDrop", "Choose the track", selectComponentOptions, maxOptions: 10);
+            DiscordButtonComponent nopeBtn = new(ButtonStyle.Danger, "nopeBtn", "The thing I want is not here");
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"Enqueued {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))}"));
+                .WithContent("Choose your tracks (max 10)")
+                .AddComponents(selectComponent)
+                .AddComponents(nopeBtn));
+
+            ctx.Client.ComponentInteractionCreated += async (_, e) =>
+            {
+                switch (e.Id)
+                {
+                    case "nopeBtn":
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                            .WithContent("See you again"));
+
+                        return;
+                    case "trackSelectDrop":
+                    {
+                        StringBuilder text = new();
+            
+                        foreach (var val in e.Values)
+                        {
+                            var id = Convert.ToInt32(val);
+                            var trackSelect = await _client.Lavalink.GetTrackAsync(options[id]);
+                            player.Queue.Add(trackSelect);
+                            text.AppendLine($"{Formatter.Bold(Formatter.Sanitize(trackSelect.Title))} by {Formatter.Bold(Formatter.Sanitize(trackSelect.Author))}");
+                        }
+
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                            .AddEmbed(ctx.Member.GetDefaultEmbedTemplateForUser()
+                                .WithAuthor("Enqueued tracks", null, ctx.Client.CurrentUser.AvatarUrl)
+                                .WithDescription($"{text}")));
+                        break;
+                    }
+                }
+            };
         }
 
         [SlashCommand("view", "Check the queue of current playing session")]
