@@ -236,8 +236,7 @@ public class OsuModule : ApplicationCommandModule
                 break;
 
             case OsuUserProfileSearchType.Recent:
-                scores = await _osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Recent, includeFails, omode,
-                    count);
+                scores = await _osuClient.GetUserScoresAsync(osuUser.Id, ScoreType.Recent, includeFails, omode, count);
                 break;
 
             case OsuUserProfileSearchType.First:
@@ -258,14 +257,14 @@ public class OsuModule : ApplicationCommandModule
     {
         var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
             .WithAuthor(
-                $"{osuUser.Username}'s osu! profile in {omode.ToString()} ({(osuUser.IsSupporter ? $"{DiscordEmoji.FromName(ctx.Client, ":heart:")})" : $"{DiscordEmoji.FromName(ctx.Client, ":black_heart:")})")}",
+                $"{osuUser.Username}'s osu! profile in {omode} ({(osuUser.IsSupporter ? $"{DiscordEmoji.FromName(ctx.Client, ":heart:")})" : $"{DiscordEmoji.FromName(ctx.Client, ":black_heart:")})")}",
                 $"https://osu.ppy.sh/users/{osuUser.Id}",
                 $"https://flagcdn.com/h20/{osuUser.Country.Code.ToLower()}.jpg")
-            .WithThumbnail(osuUser.AvatarUrl.ToString())
+            .WithThumbnail($"{osuUser.AvatarUrl}")
             .WithDescription($"This user is currently {(osuUser.IsOnline ? "online" : "offline/invisible")}")
-            .AddField("Join date", osuUser.JoinDate.ToString("d"), true)
-            .AddField("Play count - play time as (dd.hh\\:mm\\:ss)",
-                $"{osuUser.Statistics.PlayCount} with {TimeSpan.FromSeconds(osuUser.Statistics.PlayTime).ToString()} of playtime",
+            .AddField("Join date", $"{osuUser.JoinDate:g}", true)
+            .AddField("Play count - play time",
+                $"{osuUser.Statistics.PlayCount} with {TimeSpan.FromSeconds(osuUser.Statistics.PlayTime).ToShortReadableTimeSpan()} of playtime",
                 true)
             .AddField("Total PP",
                 $"{osuUser.Statistics.Pp} ({osuUser.Country.Name}: #{osuUser.Statistics.CountryRank} - GLB: #{osuUser.Statistics.GlobalRank})")
@@ -374,7 +373,7 @@ public class OsuModule : ApplicationCommandModule
                 .WithDescription($"Score position: {pos}\n")
                 .AddField("Known issue", "If you see 2 0's at the score part, it's fine")
                 .AddField("Total score",
-                    $"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank.GetValueOrDefault()} - GLB: #{score.GlobalRank.GetValueOrDefault()})")
+                    $"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank} - GLB: #{score.GlobalRank})")
                 .AddField("Ranking", $"{score.Rank}", true)
                 .AddField("Accuracy", $"{Math.Round(score.Accuracy * 100, 2)}%", true)
                 .AddField("Max combo", $"{score.MaxCombo}x/{map.MaxCombo}x", true)
@@ -391,6 +390,7 @@ public class OsuModule : ApplicationCommandModule
             pages.Add(new Page(
                 "If you see a \"This interaction failed\" at the first page, don't worry, it's a known issue",
                 embedBuilder));
+            
             embedBuilder.ClearFields();
         }
 
