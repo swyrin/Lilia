@@ -12,21 +12,10 @@ using DSharpPlus.SlashCommands.Attributes;
 using Lavalink4NET.Player;
 using Lavalink4NET.Rest;
 using Lilia.Commons;
+using Lilia.Enums;
 using Lilia.Services;
 
 namespace Lilia.Modules;
-
-public enum MusicSourceChoice
-{
-    [ChoiceName("soundcloud")]
-    SoundCloud,
-    
-    [ChoiceName("youtube")]
-    YouTube,
-    
-    [ChoiceName("raw")]
-    None
-}
 
 [SlashCommandGroup("music", "Music commands")]
 public class MusicModule : ApplicationCommandModule
@@ -46,13 +35,7 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
+            if (!(await MusicModuleUtil.EnsureUserInVoiceAsync(ctx))) return;
 
             var _ = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id) ??
                     await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(ctx.Guild.Id,
@@ -66,21 +49,19 @@ public class MusicModule : ApplicationCommandModule
         public async Task MusicPlaybackLeaveCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
+            
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Left already"));
-
-                return;
-            }
-
             await player.DisconnectAsync();
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Left the voice channel"));
+            
+            _client.Lavalink.TrackStarted -= new MusicModuleUtil(ctx).OnTrackStarted;
+            _client.Lavalink.TrackStuck -= new MusicModuleUtil(ctx).OnTrackStuck;
+            _client.Lavalink.TrackEnd -= new MusicModuleUtil(ctx).OnTrackEnd;
+            _client.Lavalink.TrackException -= new MusicModuleUtil(ctx).OnTrackException;
         }
 
         [SlashCommand("play", "Play queued tracks")]
@@ -88,78 +69,30 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureQueueIsNotEmptyAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
-            if (player.Queue.IsEmpty)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("The queue is empty"));
-
-                return;
-            }
-
             var track = player.Queue.Dequeue();
-
+            
             await player.PlayAsync(track, false);
 
-            _client.Lavalink.TrackStarted += async (_, e) =>
-            {
-                var currentTrack = e.Player.CurrentTrack;
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent(
-                        $"Now playing: {Formatter.Bold(Formatter.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Formatter.Bold(Formatter.Sanitize(currentTrack?.Author ?? "Unknown"))}\n" +
-                        "You should pin this message for playing status"));
-            };
-
-            _client.Lavalink.TrackStuck += async (_, e) =>
-            {
-                var currentTrack = e.Player.CurrentTrack;
-
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent($"Track stuck: {Formatter.Bold(Formatter.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Formatter.Bold(Formatter.Sanitize(currentTrack?.Author ?? "Unknown"))}"));
-            };
+            _client.Lavalink.TrackStarted += new MusicModuleUtil(ctx).OnTrackStarted;
+            _client.Lavalink.TrackStuck += new MusicModuleUtil(ctx).OnTrackStuck;
+            _client.Lavalink.TrackEnd += new MusicModuleUtil(ctx).OnTrackEnd;
+            _client.Lavalink.TrackException += new MusicModuleUtil(ctx).OnTrackException;
         }
 
         [SlashCommand("now_playing", "Check now playing track")]
         public async Task MusicPlaybackNowPlayingCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
             var track = player.CurrentTrack;
 
             if (track == null)
@@ -180,7 +113,8 @@ public class MusicModule : ApplicationCommandModule
                     .AddField("Author", Formatter.Sanitize(track.Author), true)
                     .AddField("Source", Formatter.Sanitize(track.Source ?? "Unknown"))
                     .AddField("Playback position", $"{player.Position.RelativePosition:g}/{track.Duration:g}", true)
-                    .AddField("Is looping", $"{player.IsLooping}", true)));
+                    .AddField("Is looping", $"{player.IsLooping}", true)
+                    .AddField("Is paused", $"{player.State == PlayerState.Paused}", true)));
         }
 
         [SlashCommand("skip", "Skip playing track")]
@@ -188,24 +122,10 @@ public class MusicModule : ApplicationCommandModule
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
             var track = player.CurrentTrack;
 
             if (track == null)
@@ -235,16 +155,10 @@ public class MusicModule : ApplicationCommandModule
                 return;
             }
 
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
             await player.StopAsync();
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -255,24 +169,11 @@ public class MusicModule : ApplicationCommandModule
         public async Task MusicPlaybackPauseCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
 
             if (player.State == PlayerState.Paused)
             {
@@ -292,25 +193,12 @@ public class MusicModule : ApplicationCommandModule
         public async Task MusicPlaybackResumeCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
+            
             if (player.State != PlayerState.Paused)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -325,29 +213,15 @@ public class MusicModule : ApplicationCommandModule
                 .WithContent("Resuming"));
         }
 
-        [SlashCommand("loop", "Loop playing track")]
+        [SlashCommand("loop", "Toggle the loop of current track")]
         public async Task MusicPlaybackLoopCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
             var track = player.CurrentTrack;
 
             if (track == null)
@@ -358,10 +232,10 @@ public class MusicModule : ApplicationCommandModule
                 return;
             }
 
-            player.IsLooping = true;
+            player.IsLooping = !player.IsLooping;
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"Looping the track: {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))}"));
+                .WithContent($"{(player.IsLooping ? "Looping" : "Removed the loop of")} the track: {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))}"));
         }
     }
 
@@ -382,25 +256,11 @@ public class MusicModule : ApplicationCommandModule
             string playlistUrl)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
             var tracks = await _client.Lavalink.GetTracksAsync(playlistUrl);
             var lavalinkTracks = tracks.ToList();
             
@@ -443,36 +303,22 @@ public class MusicModule : ApplicationCommandModule
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task MusicQueueAddCommand(InteractionContext ctx,
             [Option("query", "Music query")] string query,
-            [Option("source", "Music source")] MusicSourceChoice sourceChoice = MusicSourceChoice.YouTube)
+            [Option("source", "Music source")] MusicSource source = MusicSource.YouTube)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
-            Enum.TryParse(sourceChoice.ToString(), out SearchMode searchMode);
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            
+            Enum.TryParse(source.ToString(), out SearchMode searchMode);
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
             var track = await _client.Lavalink.GetTrackAsync(query, searchMode);
 
             if (track == null)
             {
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Unable to get the track or the queue is empty"));
+                    .WithContent("Unable to get the track"));
 
                 return;
             }
@@ -491,80 +337,18 @@ public class MusicModule : ApplicationCommandModule
                 .WithContent($"Enqueued {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))}"));
         }
 
-        [SlashCommand("undo", "In case you enqueue the wrong track")]
-        [SlashRequireUserPermissions(Permissions.ManageGuild)]
-        public async Task MusicQueueUndoCommand(InteractionContext ctx)
-        {
-            await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
-            var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
-            if (player.Queue.IsEmpty)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("The queue is empty"));
-
-                return;
-            }
-
-            var len = player.Queue.Count;
-            var track = player.Queue[len - 1];
-
-            player.Queue.RemoveAt(len - 1);
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"Removed previously added track - {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))}"));
-        }
-
         [SlashCommand("view", "Check the queue of current playing session")]
         public async Task MusicQueueCheckCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureQueueIsNotEmptyAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
             var queue = player.Queue;
-
-            if (queue.IsEmpty)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("The queue is empty"));
-
-                return;
-            }
-
+            
             StringBuilder text = new();
             var idx = 0;
 
@@ -586,71 +370,49 @@ public class MusicModule : ApplicationCommandModule
         public async Task MusicQueueShuffleCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureQueueIsNotEmptyAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
-            if (player.Queue.IsEmpty)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("The queue is empty"));
-
-                return;
-            }
-
+            
             player.Queue.Shuffle();
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .WithContent("Shuffled the queue"));
         }
 
+        [SlashCommand("clear", "Clear the queue")]
+        [SlashRequireUserPermissions(Permissions.ManageGuild)]
+        public async Task MusicQueueClearCommand(InteractionContext ctx)
+        {
+            await ctx.DeferAsync();
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureQueueIsNotEmptyAsync(ctx)) return;
+
+            var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
+
+            player.Queue.Clear();
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent("Cleared all tracks of the queue"));
+        }
+        
         [SlashCommand("remove", "Remove a track from the queue")]
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task MusicQueueRemoveCommand(InteractionContext ctx, 
             [Option("index", "Index to remove from 0 (first track)")] long index)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureQueueIsNotEmptyAsync(ctx)) return;
+            
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
-            if (player.Queue.IsEmpty)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("The queue is empty"));
-
-                return;
-            }
 
             if (index < 0 || index >= player.Queue.Count)
             {
@@ -669,44 +431,6 @@ public class MusicModule : ApplicationCommandModule
                 .WithContent($"Removed track at index {index}: {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))}"));           
         }
 
-        [SlashCommand("clear", "Clear the queue")]
-        [SlashRequireUserPermissions(Permissions.ManageGuild)]
-        public async Task MusicQueueClearCommand(InteractionContext ctx)
-        {
-            await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
-            var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
-            if (player.Queue.IsEmpty)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("The queue is empty"));
-
-                return;
-            }
-
-            player.Queue.Clear();
-            
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Cleared all tracks of the queue"));
-        }
-
         [SlashCommand("remove_range", "Remove a range of tracks from the queue")]
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task MusicQueueRemoveRangeCommand(InteractionContext ctx,
@@ -714,35 +438,15 @@ public class MusicModule : ApplicationCommandModule
             [Option("end_index", "Ending index to remove from 0 (first track)")] long endIndex)
         {
             await ctx.DeferAsync();
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureQueueIsNotEmptyAsync(ctx)) return;
 
             var startIndexInt = Convert.ToInt32(startIndex);
             var endIndexInt = Convert.ToInt32(endIndex);
 
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
-            if (player.Queue.IsEmpty)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("The queue is empty"));
-
-                return;
-            }
 
             if (startIndexInt < 0 || endIndexInt >= player.Queue.Count || startIndexInt > endIndexInt)
             {
@@ -768,37 +472,17 @@ public class MusicModule : ApplicationCommandModule
             await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.Member, pages, asEditResponse: true);
         }
         
-        [SlashCommand("remove_dupes", "Remove duplicating tracks from the list")]
+        [SlashCommand("make_unique", "Remove duplicating tracks from the list")]
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task MusicQueueRemoveRangeCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
-
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
+            
+            if (!await MusicModuleUtil.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtil.EnsureQueueIsNotEmptyAsync(ctx)) return;
+            
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-            if (player == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("I am not connected to the voice channel"));
-
-                return;
-            }
-
-            if (player.Queue.IsEmpty)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("The queue is empty"));
-
-                return;
-            }
 
             player.Queue.Distinct();
 
