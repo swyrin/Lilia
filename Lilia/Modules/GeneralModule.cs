@@ -21,7 +21,7 @@ public class GeneralModule : ApplicationCommandModule
     }
 
     [SlashCommand("uptime", "Check the uptime of the bot")]
-    public async Task UptimeCheckCommand(InteractionContext ctx)
+    public async Task GeneralUptimeCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
 
@@ -37,7 +37,7 @@ public class GeneralModule : ApplicationCommandModule
     }
 
     [SlashCommand("bot", "Something about me")]
-    public async Task BotInfoCommand(InteractionContext ctx)
+    public async Task GeneralBotCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
 
@@ -85,7 +85,7 @@ public class GeneralModule : ApplicationCommandModule
     }
 
     [SlashCommand("user", "What I know about an user in this guild")]
-    public async Task UserInfoCommand(InteractionContext ctx,
+    public async Task GeneralUserInfoCommand(InteractionContext ctx,
         [Option("user", "An user in this guild")]
         DiscordUser user)
     {
@@ -121,7 +121,7 @@ public class GeneralModule : ApplicationCommandModule
     }
     
     [SlashCommand("guild", "What I know about this guild")]
-    public async Task GuildInfoCommand(InteractionContext ctx)
+    public async Task GeneralGuildCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
 

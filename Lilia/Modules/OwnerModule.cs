@@ -11,7 +11,7 @@ public class OwnerModule : ApplicationCommandModule
 {
     [SlashCommand("shutdown", "Shutdown the bot")]
     [SlashRequireOwner]
-    public async Task ShutdownCommand(InteractionContext ctx)
+    public async Task OwnerShutdownCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
 
@@ -25,7 +25,7 @@ public class OwnerModule : ApplicationCommandModule
 
     [SlashCommand("refresh", "Refreshes slash commands")]
     [SlashRequireOwner]
-    public async Task CommandRefreshCommand(InteractionContext ctx)
+    public async Task OwnerRefreshCommand(InteractionContext ctx)
     {
         await ctx.DeferAsync(true);
         
