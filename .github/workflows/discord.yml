@@ -15,7 +15,6 @@ jobs:
       - name: Update bot's status
         uses: CodexLink/discord-activity-badge@latest
         with:
-          PREFERRED_ACTIVITY_TO_DISPLAY: GAME_ACTIVITY
           PROFILE_REPOSITORY: Swyreee/decoy
           DISCORD_USER_ID: ${{ secrets.DISCORD_BOT_ID }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
