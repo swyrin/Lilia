@@ -9,6 +9,8 @@ jobs:
   BadgeUpdater:
     name: Static Badge Updater
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
     steps:
       - name: Update bot's status
         uses: CodexLink/discord-activity-badge@latest
