@@ -1,3 +1,5 @@
+[![(Script) Discord Activity Badge](https://badgen.net/badge/Do-Not-Disturb/https%3A//github.com/Lilia-Workshop/Lilia?color=fc4409&labelColor=fc4409&icon=discord)](https://github.com/Lilia-Workshop/Lilia)
+
 # 🎉 Welcome to `Lilia` repository
 
 [![CodeFactor](https://www.codefactor.io/repository/github/lilia-workshop/lilia/badge)](https://www.codefactor.io/repository/github/lilia-workshop/lilia)
