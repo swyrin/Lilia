@@ -1,4 +1,7 @@
-﻿using Lilia.Services;
+﻿using System;
+using System.Reflection;
+using System.Text;
+using Lilia.Services;
 using Serilog;
 
 namespace Lilia;
@@ -7,6 +10,10 @@ internal static class Program
 {
     private static void Main()
     {
+        var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+        Console.Title = $"Lilia v{currentVersion}";
+        Console.OutputEncoding = Encoding.Unicode;
+        
         Log.Logger = new LoggerConfiguration()
             .Enrich.WithProperty("SourceContext", "Lilia")
             .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
