@@ -32,28 +32,44 @@ public class MusicModule : ApplicationCommandModule
         }
 
         [SlashCommand("connect", "Connect to your current voice channel")]
-        public async Task MusicPlaybackJoinCommand(InteractionContext ctx)
+        public async Task MusicPlaybackConnectCommand(InteractionContext ctx,
+            [Option("connect_type", "Connection type")]
+            MusicConnectType connectType = MusicConnectType.QueuedPlayer)
         {
             await ctx.DeferAsync();
 
-            if (!(await MusicModuleUtils.EnsureUserInVoiceAsync(ctx))) return;
+            if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
 
-            var _ = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id) ??
-                    await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(ctx.Guild.Id,
-                        ctx.Member.VoiceState.Channel.Id, true);
+            var player = _client.Lavalink.GetPlayer(ctx.Guild.Id);
+
+            var existedPlayerType = player is QueuedLavalinkPlayer ? "as queued player" : "as normal player";
+            var newPlayerType = connectType == MusicConnectType.QueuedPlayer ? "as queued player" : "as normal player";
+
+            if (player != null)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                        .WithContent($"Already connected {existedPlayerType}"));
+                
+                return;
+            }
+            
+            if (connectType == MusicConnectType.QueuedPlayer)
+                await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(ctx.Guild.Id, ctx.Member.VoiceState.Channel.Id, true);
+            else
+                await _client.Lavalink.JoinAsync(ctx.Guild.Id, ctx.Member.VoiceState.Channel.Id, true);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Done establishing the connection"));
+                .WithContent($"Done establishing the connection {newPlayerType}"));
         }
 
-        [SlashCommand("disconnect", "Leave current voice channel and clear the queue")]
-        public async Task MusicPlaybackLeaveCommand(InteractionContext ctx)
+        [SlashCommand("disconnect", "Leave current voice channel")]
+        public async Task MusicPlaybackDisconnectCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
             
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
 
-            var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
+            var player = _client.Lavalink.GetPlayer(ctx.Guild.Id);
             await player.DisconnectAsync();
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -64,14 +80,51 @@ public class MusicModule : ApplicationCommandModule
             _client.Lavalink.TrackEnd -= new MusicModuleUtils(ctx).OnTrackEnd;
             _client.Lavalink.TrackException -= new MusicModuleUtils(ctx).OnTrackException;
         }
+        
+        [SlashCommand("play_stream", "Play a stream")]
+        public async Task MusicPlaybackPlayStreamCommand(InteractionContext ctx,
+            [Option("stream_url", "Stream URL")]
+            string streamUrl)
+        {
+            await ctx.DeferAsync();
+            
+            if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureNormalPlayerAsync(ctx)) return;
 
-        [SlashCommand("play", "Play queued tracks")]
-        public async Task MusicPlaybackPlayCommand(InteractionContext ctx)
+            if (!Uri.IsWellFormedUriString(streamUrl, UriKind.Absolute))
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You need to provide a valid URL"));
+
+                return;
+            }
+
+            var track = await _client.Lavalink.GetTrackAsync(streamUrl);
+
+            if (track == null)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Unable to get the stream"));
+
+                return;
+            }
+
+            var player = _client.Lavalink.GetPlayer(ctx.Guild.Id);
+            await player.PlayAsync(track);
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Now playing a stream from {streamUrl}"));
+        }
+
+        [SlashCommand("play_queue", "Play queued tracks")]
+        public async Task MusicPlaybackPlayQueueCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
 
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureQueueIsNotEmptyAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
@@ -93,7 +146,7 @@ public class MusicModule : ApplicationCommandModule
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
 
-            var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
+            var player = _client.Lavalink.GetPlayer(ctx.Guild.Id);
             var track = player.CurrentTrack;
 
             if (track == null)
@@ -104,17 +157,24 @@ public class MusicModule : ApplicationCommandModule
                 return;
             }
 
+            var isStream = track.IsLiveStream;
+
             var art = await _client.ArtworkService.ResolveAsync(track);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
                 .AddEmbed(ctx.Member.GetDefaultEmbedTemplateForUser()
                     .WithAuthor("Currently playing track", null, ctx.Client.CurrentUser.AvatarUrl)
                     .WithThumbnail(art?.OriginalString ?? "")
-                    .AddField("Title", Formatter.Sanitize(track.Title), true)
+                    .AddField("Title", Formatter.Sanitize(track.Title))
                     .AddField("Author", Formatter.Sanitize(track.Author), true)
-                    .AddField("Source", Formatter.Sanitize(track.Source ?? "Unknown"))
-                    .AddField("Playback position", $"{player.Position.RelativePosition:g}/{track.Duration:g}", true)
-                    .AddField("Is looping", $"{player.IsLooping}", true)
+                    .AddField("Source", Formatter.Sanitize(track.Source ?? "Unknown"), true)
+                    .AddField(isStream ? "Playtime": "Position",
+                        isStream ? (player.Position.RelativePosition - track.Position).ToLongReadableTimeSpan() : $"{player.Position.RelativePosition:g}/{track.Duration:g}",
+                        true)
+                    .AddField("Is looping",
+                        player is QueuedLavalinkPlayer lavalinkPlayer
+                            ? $"{lavalinkPlayer.IsLooping}"
+                            : "This is not a queued player", true)
                     .AddField("Is paused", $"{player.State == PlayerState.Paused}", true)));
         }
 
@@ -125,7 +185,8 @@ public class MusicModule : ApplicationCommandModule
 
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
-            
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
+
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
             var track = player.CurrentTrack;
 
@@ -143,23 +204,15 @@ public class MusicModule : ApplicationCommandModule
                 .WithContent($"Skipped track: {Formatter.Bold(Formatter.Sanitize(track.Title))} by {Formatter.Bold(Formatter.Sanitize(track.Author))}"));
         }
 
-        [SlashCommand("stop", "Stop this session and clear the queue")]
+        [SlashCommand("stop", "Stop this session")]
         public async Task MusicPlaybackStopCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
 
-            if (ctx.Member.VoiceState?.Channel == null)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Join a voice channel please"));
-
-                return;
-            }
-
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
 
-            var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
+            var player = _client.Lavalink.GetPlayer(ctx.Guild.Id);
             await player.StopAsync();
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -174,7 +227,7 @@ public class MusicModule : ApplicationCommandModule
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
             
-            var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
+            var player = _client.Lavalink.GetPlayer(ctx.Guild.Id);
 
             if (player.State == PlayerState.Paused)
             {
@@ -198,7 +251,7 @@ public class MusicModule : ApplicationCommandModule
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
             
-            var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
+            var player = _client.Lavalink.GetPlayer(ctx.Guild.Id);
             
             if (player.State != PlayerState.Paused)
             {
@@ -221,6 +274,7 @@ public class MusicModule : ApplicationCommandModule
             
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
             var track = player.CurrentTrack;
@@ -253,13 +307,22 @@ public class MusicModule : ApplicationCommandModule
         [SlashCommand("add_playlist", "Add a playlist to queue")]
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task MusicQueueAddPlaylistCommand(InteractionContext ctx,
-            [Option("playlist_url", "Music query")]
+            [Option("playlist_url", "Playlist URl")]
             string playlistUrl)
         {
             await ctx.DeferAsync();
             
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
+            
+            if (!Uri.IsWellFormedUriString(playlistUrl, UriKind.Absolute))
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("You need to provide a valid URL"));
+
+                return;
+            }
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
             var tracks = await _client.Lavalink.GetTracksAsync(playlistUrl);
@@ -310,6 +373,7 @@ public class MusicModule : ApplicationCommandModule
             
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
             
             Enum.TryParse(source.ToString(), out SearchMode searchMode);
 
@@ -397,6 +461,7 @@ public class MusicModule : ApplicationCommandModule
             
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureQueueIsNotEmptyAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
@@ -426,6 +491,7 @@ public class MusicModule : ApplicationCommandModule
             
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureQueueIsNotEmptyAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
@@ -444,6 +510,7 @@ public class MusicModule : ApplicationCommandModule
             
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureQueueIsNotEmptyAsync(ctx)) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
@@ -463,6 +530,7 @@ public class MusicModule : ApplicationCommandModule
             
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureQueueIsNotEmptyAsync(ctx)) return;
             
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
@@ -494,6 +562,7 @@ public class MusicModule : ApplicationCommandModule
             
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureQueueIsNotEmptyAsync(ctx)) return;
 
             var startIndexInt = Convert.ToInt32(startIndex);
@@ -533,6 +602,7 @@ public class MusicModule : ApplicationCommandModule
             
             if (!await MusicModuleUtils.EnsureUserInVoiceAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureClientInVoiceAsync(ctx)) return;
+            if (!await MusicModuleUtils.EnsureQueuedPlayerAsync(ctx)) return;
             if (!await MusicModuleUtils.EnsureQueueIsNotEmptyAsync(ctx)) return;
             
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);

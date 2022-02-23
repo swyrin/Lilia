@@ -18,6 +18,28 @@ public class MusicModuleUtils
         _ctx = ctx;
     }
     
+    public static async Task<bool> EnsureNormalPlayerAsync(InteractionContext ctx)
+    {
+        var player = ctx.Services.GetService<LiliaClient>()?.Lavalink.GetPlayer(ctx.Guild.Id);
+        if (player is not QueuedLavalinkPlayer) return true;
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("You have to use the normal player to use this command"));
+        
+        return false;
+    }
+
+    public static async Task<bool> EnsureQueuedPlayerAsync(InteractionContext ctx)
+    {
+        var player = ctx.Services.GetService<LiliaClient>()?.Lavalink.GetPlayer(ctx.Guild.Id);
+        if (player is QueuedLavalinkPlayer) return true;
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+            .WithContent("You have to use the queued player to use this command"));
+        
+        return false;
+    }
+    
     public static async Task<bool> EnsureUserInVoiceAsync(InteractionContext ctx)
     {
         if (ctx.Member.VoiceState?.Channel != null) return true;
@@ -30,7 +52,7 @@ public class MusicModuleUtils
 
     public static async Task<bool> EnsureClientInVoiceAsync(InteractionContext ctx)
     {
-        var player = ctx.Services.GetService<LiliaClient>()?.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
+        var player = ctx.Services.GetService<LiliaClient>()?.Lavalink.GetPlayer(ctx.Guild.Id);
 
         if (player != null) return true;
         
