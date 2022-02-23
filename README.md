@@ -1,5 +1,3 @@
-[![(Script) Discord Activity Badge](https://badgen.net/badge/Discord%20User/Do-Not-Disturb?color=fc4409&labelColor=434343&icon=discord)](https://github.com/Lilia-Workshop/Lilia)
-
 # 🎉 Welcome to `Lilia` repository
 
 [![CodeFactor](https://www.codefactor.io/repository/github/lilia-workshop/lilia/badge)](https://www.codefactor.io/repository/github/lilia-workshop/lilia)
@@ -19,8 +17,9 @@ Lilia is a Discord bot created as my pet project for learning, aiming to be a go
 > 
 > ⚠️ This project is going through a continuous development phase so **please don't** expect this to work.
 
-> Community Discord: https://discord.gg/yZ3VVUkZ82
-> 
+- Community Discord: https://discord.gg/yZ3VVUkZ82
+- Pre-hosted instance: [Click me](https://discord.com/oauth2/authorize?client_id=884066006115442708&scope=bot%20applications.commands&permissions=964525673686)
+ 
 > ![The Badge](https://img.shields.io/badge/%E2%9D%A4%EF%B8%8FMade%20with%20love%20by-Swyrin%237193-red?style=for-the-badge&logo=discord)
 
 # 📊 CI Status
