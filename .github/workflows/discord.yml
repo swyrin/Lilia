@@ -1,0 +1,27 @@
+name: Discord Rich Presence Activity Badge
+
+on:
+  schedule:                 # Scheduling with Github Actions is inconsistent.
+    - cron: "5 0-23 * * *" # Construct your Cronjob Schedule at https://crontab.guru/.
+  workflow_dispatch:        # Enables you to dispatch the workflow at your click.
+
+jobs:
+  BadgeUpdater:
+    name: Static Badge Updater
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update bot's status
+        uses: CodexLink/discord-activity-badge@latest
+        with:
+          PREFERRED_ACTIVITY_TO_DISPLAY: GAME_ACTIVITY
+          PROFILE_REPOSITORY: https://github.com/Swyreee/decoy
+          DISCORD_USER_ID: ${{ secrets.DISCORD_BOT_ID }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      - name: Update owner's status
+        uses: CodexLink/discord-activity-badge@latest
+        with:
+          PREFERRED_ACTIVITY_TO_DISPLAY: GAME_ACTIVITY
+          PROFILE_REPOSITORY: https://github.com/Swyreee/decoy
+          DISCORD_USER_ID: ${{ secrets.DISCORD_USER_ID }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          
