@@ -8,6 +8,7 @@ using Lilia.Database;
 using Lilia.Database.Extensions;
 using Lilia.Services;
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.Interactivity.Enums;
@@ -127,7 +128,7 @@ public class ModerationModule : ApplicationCommandModule
 
         [SlashCommand("warn_add", "Add a warn to an user")]
         public async Task ModerationGeneralWarnAddCommand(InteractionContext ctx,
-            [Option("user", "The target user to add a warn")]
+            [Option("user", "The user to add a warn")]
             DiscordUser user,
             [Option("reason", "Reason to execute")]
             string reason = "Rule violation")
@@ -192,7 +193,7 @@ public class ModerationModule : ApplicationCommandModule
         
         [SlashCommand("warn_remove", "Remove a warn from an user")]
         public async Task ModerationGeneralWarnRemoveCommand(InteractionContext ctx,
-            [Option("user", "The target user to remove a warn")]
+            [Option("user", "The user to remove a warn")]
             DiscordUser user,
             [Option("reason", "Reason to execute")]
             string reason = "False warn")
@@ -255,6 +256,92 @@ public class ModerationModule : ApplicationCommandModule
                 await mentionedMember.SendMessageAsync(embedBuilder);
             
             await _dbCtx.SaveChangesAsync();
+        }
+
+        [SlashCommand("mute", "Mute an user, like Timeout but infinite duration")]
+        public async Task ModerationGeneralMuteCommand(InteractionContext ctx,
+            [Option("user", "The user to mute")]
+            DiscordUser user,
+            [Option("reason", "The reason")]
+            string reason = "Excessive rule violation")
+        {
+            await ctx.DeferAsync();
+            var mentionedMember = (DiscordMember) user;
+            
+            if (mentionedMember == ctx.Member || mentionedMember == ctx.Client.CurrentUser)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Skipped because it is either you or me"));
+
+                return;
+            }
+            
+            var (isExistedInPast, liliaMuteRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(ctx, MuteRoleName, "Mute role creation", Permissions.None);
+
+            if (!isExistedInPast)
+            {
+                foreach (var channel in ctx.Guild.Channels)
+                {
+                    await channel.Value.AddOverwriteAsync(liliaMuteRole, Permissions.None, Permissions.SendMessages, "Muted");
+                }    
+            }
+
+            // no equivalent like Has?
+            if (mentionedMember.Roles.Count(x => x == liliaMuteRole) == 1)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Already muted"));
+                
+                return;
+            }
+            
+            await mentionedMember.GrantRoleAsync(liliaMuteRole);           
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Muted {Formatter.Mention(mentionedMember)} because of reason: {Formatter.Bold(reason)}"));
+        }
+        
+        [SlashCommand("unmute", "Unmute an user, like Remove Timeout")]
+        public async Task ModerationGeneralUnmuteCommand(InteractionContext ctx,
+            [Option("user", "The user to mute")]
+            DiscordUser user,
+            [Option("reason", "The reason")]
+            string reason = "Good behavior")
+        {
+            await ctx.DeferAsync(); 
+            var mentionedMember = (DiscordMember) user;
+            
+            if (mentionedMember == ctx.Member || mentionedMember == ctx.Client.CurrentUser)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Skipped because it is either you or me"));
+
+                return;
+            }
+            
+            var (isExistedInPast, liliaMuteRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(ctx, MuteRoleName, "Mute role creation", Permissions.None);
+
+            if (!isExistedInPast)
+            {
+                foreach (var channel in ctx.Guild.Channels)
+                {
+                    await channel.Value.AddOverwriteAsync(liliaMuteRole, Permissions.None, Permissions.SendMessages, "Muted");
+                }    
+            }
+
+            // no equivalent like Has?
+            if (mentionedMember.Roles.Count(x => x == liliaMuteRole) == 0)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                    .WithContent("Already unmuted"));
+                
+                return;
+            }
+            
+            await mentionedMember.RevokeRoleAsync(liliaMuteRole);           
+            
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
+                .WithContent($"Unmuted {Formatter.Mention(mentionedMember)} because of reason: {Formatter.Bold(reason)}"));
         }
     }
 
