@@ -1,11 +1,11 @@
 ﻿using DSharpPlus.SlashCommands;
 
-namespace Lilia.Modules;
+namespace Lilia.Enums;
 
 public enum MusicConnectType
 {
-    [ChoiceName("stream")]
-    Stream,
+    [ChoiceName("normal")]
+    Normal,
     
     [ChoiceName("queued_player")]
     QueuedPlayer

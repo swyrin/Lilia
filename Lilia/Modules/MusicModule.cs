@@ -33,7 +33,7 @@ public class MusicModule : ApplicationCommandModule
 
         [SlashCommand("connect", "Connect to your current voice channel")]
         public async Task MusicPlaybackConnectCommand(InteractionContext ctx,
-            [Option("connect_type", "Connection type")]
+            [Option("connection_type", "Connection type")]
             MusicConnectType connectType = MusicConnectType.QueuedPlayer)
         {
             await ctx.DeferAsync();
@@ -178,7 +178,7 @@ public class MusicModule : ApplicationCommandModule
                     .AddField("Is paused", $"{player.State == PlayerState.Paused}", true)));
         }
 
-        [SlashCommand("skip", "Skip playing track")]
+        [SlashCommand("skip", "Skip this track")]
         public async Task MusicPlaybackSkipCommand(InteractionContext ctx)
         {
             await ctx.DeferAsync();
@@ -304,7 +304,7 @@ public class MusicModule : ApplicationCommandModule
             _client = client;
         }
 
-        [SlashCommand("add_playlist", "Add a playlist to queue")]
+        [SlashCommand("add_playlist", "Add tracks from a playlist to queue")]
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task MusicQueueAddPlaylistCommand(InteractionContext ctx,
             [Option("playlist_url", "Playlist URl")]
@@ -363,7 +363,7 @@ public class MusicModule : ApplicationCommandModule
             await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.Member, pages, asEditResponse: true);
         }
 
-        [SlashCommand("add", "Add a track to queue")]
+        [SlashCommand("add_track", "Add tracks to queue")]
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task MusicQueueAddCommand(InteractionContext ctx,
             [Option("query", "Music query")] string query,
@@ -393,7 +393,8 @@ public class MusicModule : ApplicationCommandModule
             var selectComponentOptions = new List<DiscordSelectComponentOption>();
             var options = new List<string>();
 
-            selectComponentOptions.Add(new DiscordSelectComponentOption("The thing I need is not here", "-1", "If you choose this, other choices are ignored"));
+            selectComponentOptions.Add(new DiscordSelectComponentOption("Wait, I want to go back!!!", "-1",
+                "Cancel current operation", emoji: new DiscordComponentEmoji(":x:")));
             
             var idx = 0;
             foreach (var track in lavalinkTracks)
@@ -593,7 +594,7 @@ public class MusicModule : ApplicationCommandModule
 
             await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.Member, pages, asEditResponse: true);
         }
-        
+
         [SlashCommand("make_unique", "Remove duplicating tracks from the list")]
         [SlashRequireUserPermissions(Permissions.ManageGuild)]
         public async Task MusicQueueRemoveRangeCommand(InteractionContext ctx)
