@@ -1,40 +1,23 @@
-﻿using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
-using Lilia.Services;
+﻿using Lilia.Services;
 using Serilog;
 using System.Threading.Tasks;
+using Discord.Interactions;
 
 namespace Lilia.Modules;
 
-public class OwnerModule : ApplicationCommandModule
+public class OwnerModule : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("shutdown", "Shutdown the bot")]
-    [SlashRequireOwner]
-    public async Task OwnerShutdownCommand(InteractionContext ctx)
+    [RequireOwner]
+    public async Task OwnerShutdownCommand()
     {
-        await ctx.DeferAsync(true);
+        await Context.Interaction.DeferAsync();
 
         Log.Logger.Warning("Shutting down");
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("Goodbye"));
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            x.Content = "Goodbye");
 
         LiliaClient.Cts.Cancel();
-    }
-
-    [SlashCommand("refresh", "Refreshes slash commands")]
-    [SlashRequireOwner]
-    public async Task OwnerRefreshCommand(InteractionContext ctx)
-    {
-        await ctx.DeferAsync(true);
-        
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("Processing"));
-
-        await ctx.Client.GetSlashCommands().RefreshCommands();
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("Done refreshing slash commands"));
-    }
+    }     
 }
