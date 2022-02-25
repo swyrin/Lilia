@@ -7,6 +7,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,14 +15,14 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Fergun.Interactive;
+using Lavalink4NET;
+using Lavalink4NET.DiscordNet;
 using Lilia.Database;
 using Lilia.Database.Interactors;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Npgsql;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
-using Victoria.Node;
 
 namespace Lilia.Services;
 
@@ -32,7 +33,7 @@ public class LiliaClient
     private ServiceProvider _serviceProvider;
     
     public InteractiveService InteractiveService;
-    public LavaNode Lavalink;
+    public LavalinkNode Lavalink;
     public LiliaDatabase Database;
     public DateTime StartTime;
 
@@ -128,18 +129,20 @@ public class LiliaClient
             DefaultTimeout = TimeSpan.FromMinutes(1),
             LogLevel = LogSeverity.Debug
         });
-
-        var lavalinkConf = BotConfiguration.Credentials.Lavalink;
         
-        Lavalink = new LavaNode(_client, new NodeConfiguration
-        {
-            Port = (ushort) lavalinkConf.Port,
-            Authorization = lavalinkConf.Password,
-            Hostname = lavalinkConf.Host,
-            EnableResume = true,
-            SelfDeaf = true
-        }, new Logger<LavaNode>(new SerilogLoggerFactory(Log.Logger)));
-
+        var lavalinkConfig = BotConfiguration.Credentials.Lavalink;
+        Lavalink = new LavalinkNode(new LavalinkNodeOptions
+            {
+                RestUri = $"http://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
+                WebSocketUri = $"ws://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
+                Password = lavalinkConfig.Password,
+#if DEBUG
+                DebugPayloads = true,
+#endif
+                DisconnectOnStop = false
+            }, new DiscordClientWrapper(_client),
+            new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("Lavalink")));
+        
         _serviceProvider = new ServiceCollection()
             .AddLogging(x => x.AddSerilog())
             .AddDefaultSerializer()
@@ -157,17 +160,17 @@ public class LiliaClient
         await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
 
         Log.Logger.Information("Registering event handlers");
+        InteractiveService.Log += OnLog;
+        _client.Log += OnLog;
+        
         _client.GuildAvailable += OnClientGuildAvailable;
         _client.GuildUnavailable += OnClientGuildUnavailable;
         _client.JoinedGuild += OnClientGuildAvailable;
         _client.LeftGuild += OnClientGuildUnavailable;
         _client.UserJoined += OnClientUserJoined;
         _client.UserLeft += OnClientUserLeft;
-        _client.InteractionCreated += OnClientInteractionCreated;
-        _client.Log += OnLog;
         _client.Ready += OnClientReady;
-        InteractiveService.Log += OnLog;
-
+        
         Log.Logger.Information("Connecting and waiting for shutdown");
         
         await _client.LoginAsync(TokenType.Bot, BotConfiguration.Client.Token);
@@ -175,7 +178,7 @@ public class LiliaClient
 
         while (!Cts.IsCancellationRequested) await Task.Delay(200);
 
-        await Lavalink.DisconnectAsync();
+        await Lavalink.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client shutdown");
         await Lavalink.DisposeAsync();
         await _client.StopAsync();
         await _client.LogoutAsync();
@@ -304,12 +307,5 @@ public class LiliaClient
             .Replace("{guild}", guild.Name);
 
         await ((SocketTextChannel) chn).SendMessageAsync(postProcessedMessage);
-    }
-
-    private async Task OnClientInteractionCreated(SocketInteraction interaction)
-    {
-        var scope = _serviceProvider.CreateScope();
-        var ctx = new SocketInteractionContext(_client, interaction);
-        await _interactionService.ExecuteCommandAsync(ctx, scope.ServiceProvider);
     }
 }
