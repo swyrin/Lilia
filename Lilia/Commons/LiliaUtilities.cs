@@ -1,8 +1,9 @@
-﻿using DSharpPlus.Entities;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using Discord;
+using Discord.WebSocket;
 
 namespace Lilia.Commons;
 
@@ -10,12 +11,12 @@ public static class LiliaUtilities
 {
     private static readonly CultureInfo EnglishCulture = new("en-GB");
     
-    public static DiscordEmbedBuilder GetDefaultEmbedTemplateForUser(this DiscordUser user)
+    public static EmbedBuilder CreateEmbedWithUserData(this SocketUser user)
     {
-        return new DiscordEmbedBuilder()
+        return new EmbedBuilder()
             .WithTimestamp(DateTime.Now)
-            .WithColor(DiscordColor.Rose)
-            .WithFooter($"Requested by: {user.Username}#{user.Discriminator}", user.AvatarUrl);
+            .WithColor(Color.DarkRed)
+            .WithFooter($"Requested by: {user.Username}#{user.Discriminator}", user.GetAvatarUrl());
     }
     
     public static Tuple<ulong, ulong, ulong> ResolveDiscordMessageJumpLink(this string str)
