@@ -1,12 +1,12 @@
-﻿using DSharpPlus.Entities;
+﻿using System.Linq;
+using Discord;
 using Lilia.Database.Models;
-using System.Linq;
 
-namespace Lilia.Database.Extensions;
+namespace Lilia.Database.Interactors;
 
-public static class GuildDbAccess
+public static class GuildDbInteractor
 {
-    public static DbGuild GetGuildRecord(this LiliaDatabaseContext ctx, DiscordGuild discordGuild)
+    public static DbGuild GetGuildRecord(this LiliaDatabaseContext ctx, IGuild discordGuild)
     {
         var guilds = ctx.Guilds;
         var guild = guilds.FirstOrDefault(entity => entity.Id == discordGuild.Id);

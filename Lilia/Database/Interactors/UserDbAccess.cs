@@ -1,12 +1,12 @@
-﻿using DSharpPlus.Entities;
+﻿using System.Linq;
+using Discord;
 using Lilia.Database.Models;
-using System.Linq;
 
-namespace Lilia.Database.Extensions;
+namespace Lilia.Database.Interactors;
 
-public static class UserDbAccess
+public static class UserDbInteractor
 {
-    public static DbUser GetUserRecord(this LiliaDatabaseContext ctx, DiscordUser discordUser)
+    public static DbUser GetUserRecord(this LiliaDatabaseContext ctx, IUser discordUser)
     {
         var users = ctx.Users;
         var user = users.FirstOrDefault(entity => entity.Id == discordUser.Id);
