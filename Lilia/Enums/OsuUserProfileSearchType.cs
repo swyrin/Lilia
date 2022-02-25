@@ -1,18 +1,18 @@
-﻿using DSharpPlus.SlashCommands;
+﻿using Discord.Interactions;
 
 namespace Lilia.Enums;
 
 public enum OsuUserProfileSearchType
 {
-    [ChoiceName("profile")]
+    [ChoiceDisplay("profile")]
     Profile,
 
-    [ChoiceName("best_plays")]
+    [ChoiceDisplay("best_plays")]
     Best,
 
-    [ChoiceName("first_place_plays")]
+    [ChoiceDisplay("first_place_plays")]
     First,
 
-    [ChoiceName("recent_plays")]
+    [ChoiceDisplay("recent_plays")]
     Recent
 }

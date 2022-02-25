@@ -1,203 +1,203 @@
-﻿using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
-using Lilia.Commons;
-using Lilia.Database;
-using Lilia.Database.Extensions;
-using OsuSharp.Domain;
-using OsuSharp.Exceptions;
-using OsuSharp.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
+using Fergun.Interactive;
+using Fergun.Interactive.Pagination;
+using Lilia.Commons;
+using Lilia.Database;
+using Lilia.Database.Interactors;
 using Lilia.Enums;
 using Lilia.Services;
+using OsuSharp.Domain;
+using OsuSharp.Exceptions;
+using OsuSharp.Interfaces;
 
 namespace Lilia.Modules;
 
-[SlashCommandGroup("osu", "osu! related commands")]
-public class OsuModule : ApplicationCommandModule
+[Group("osu", "osu! related commands")]
+public class OsuModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly LiliaDatabaseContext _dbCtx;
     private readonly IOsuClient _osuClient;
+    private readonly LiliaClient _liliaClient;
+    private readonly LiliaDatabaseContext _dbCtx;
 
-    public OsuModule(LiliaDatabase database, IOsuClient osuClient)
+    public OsuModule(LiliaClient liliaClient, LiliaDatabase database, IOsuClient osuClient)
     {
+        _liliaClient = liliaClient;
         _dbCtx = database.GetContext();
         _osuClient = osuClient;
     }
 
-    [SlashCommand("self_update", "Update your osu! profile information in my database")]
-    public async Task OsuSelfUpdateCommand(InteractionContext ctx,
-        [Option("username", "Your osu! username")]
+    [SlashCommand("self_update", "Update your osu! profile information in my database", runMode: RunMode.Async)]
+    public async Task OsuSelfUpdateCommand(
+        [Summary(description: "Your osu! username")]
         string username,
-        [Option("mode", "Mode")]
-        OsuUserProfileSearchMode searchMode = OsuUserProfileSearchMode.Osu)
+        [Summary("mode", "Your osu! preferred mode")]
+        OsuUserProfileSearchMode searchMode = OsuUserProfileSearchMode.Default)
     {
-        await ctx.DeferAsync(true);
-
+        await Context.Interaction.DeferAsync();
+        
         if (searchMode == OsuUserProfileSearchMode.Default) searchMode = OsuUserProfileSearchMode.Osu;
 
-        var dbUser = _dbCtx.GetUserRecord(ctx.Member);
+        var dbUser = _dbCtx.GetUserRecord(Context.User);
         dbUser.OsuUsername = username;
         dbUser.OsuMode = ToGameMode(searchMode).ToString();
 
         _dbCtx.Update(dbUser);
         await _dbCtx.SaveChangesAsync();
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Successfully set your osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchMode.GetName())}"));
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            x.Content = $"Set your osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
     }
 
-    [SlashCommand("force_update", "Update an user's osu! profile information in my database")]
-    [SlashRequireUserPermissions(Permissions.ManageGuild)]
-    public async Task OsuForceUpdateCommand(InteractionContext ctx,
-        [Option("user", "User to update, should be an user from your guild")]
-        DiscordUser user,
-        [Option("username", "osu! username")]
+    [SlashCommand("force_update", "Update a member's osu! profile information in my database", runMode: RunMode.Async)]
+    [RequireUserPermission(GuildPermission.ManageGuild)]
+    public async Task OsuForceUpdateCommand(
+        [Summary(description: "Member to update")]
+        SocketGuildUser member,
+        [Summary("username", "osu! username")]
         string username,
-        [Option("mode", "Mode")]
+        [Summary("mode", "Mode")]
         OsuUserProfileSearchMode searchMode = OsuUserProfileSearchMode.Osu)
     {
-        await ctx.DeferAsync(true);
+        await Context.Interaction.DeferAsync(true);
 
         if (searchMode == OsuUserProfileSearchMode.Default) searchMode = OsuUserProfileSearchMode.Osu;
 
-        var dbUser = _dbCtx.GetUserRecord(user);
+        var dbUser = _dbCtx.GetUserRecord(member);
         dbUser.OsuUsername = username;
         dbUser.OsuMode = ToGameMode(searchMode).ToString();
 
         _dbCtx.Update(dbUser);
         await _dbCtx.SaveChangesAsync();
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Successfully the user's osu! username to {Formatter.Bold(username)} and osu! mode to {Formatter.Bold(searchMode.GetName())}"));
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            x.Content = $"Set the member's osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
     }
 
     [SlashCommand("info", "Get your linked data with me")]
-    public async Task OsuInfoCommand(InteractionContext ctx)
+    public async Task OsuInfoCommand()
     {
-        await ctx.DeferAsync(true);
-        var dbUser = _dbCtx.GetUserRecord(ctx.Member);
+        await Context.Interaction.DeferAsync(true);
+        var dbUser = _dbCtx.GetUserRecord(Context.Interaction.User);
 
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
-            .AddField("Username",
-                !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
-            .AddField("Default mode", !string.IsNullOrWhiteSpace(dbUser.OsuMode) ? dbUser.OsuMode : "Not linked yet",
-                true);
+        var embedBuilder = Context.Interaction.User.CreateEmbedWithUserData()
+            .AddField("Username", !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
+            .AddField("Mode", !string.IsNullOrWhiteSpace(dbUser.OsuMode) ? dbUser.OsuMode : "Not linked yet", true);
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("Here is your linked data with me")
-            .AddEmbed(embedBuilder.Build()));
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
+        {
+            x.Content = "Here is your linked data with me";
+            x.Embed = embedBuilder.Build();
+        });
     }
 
     [SlashCommand("lookup", "Get a member's osu! profile")]
-    public async Task OsuLookupCommand(InteractionContext ctx,
-        [Option("user", "Someone in this Discord server")]
-        DiscordUser user,
-        [Option("type", "Search type")]
+    public async Task OsuLookupCommand(
+        [Summary("user", "Someone in this Discord server")]
+        SocketUser user,
+        [Summary("type", "Search type")]
         OsuUserProfileSearchType profileSearchType = OsuUserProfileSearchType.Profile,
-        [Option("mode", "Search mode")]
+        [Summary("mode", "Search mode")]
         OsuUserProfileSearchMode osuUserProfileSearchMode = OsuUserProfileSearchMode.Default)
     {
-        await ctx.DeferAsync();
+        await Context.Interaction.DeferAsync();
 
         var dbUser = _dbCtx.GetUserRecord(user);
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("The requested user doesn't exist in my database"));
+            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                x.Content = "The requested user doesn't exist in my database");
 
             return;
         }
 
         GameMode omode;
+        
         if (osuUserProfileSearchMode == OsuUserProfileSearchMode.Default) Enum.TryParse(dbUser.OsuMode, out omode);
         else omode = ToGameMode(osuUserProfileSearchMode);
 
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, profileSearchType, FromGameMode(omode));
+        await GenericOsuProcessing(dbUser.OsuUsername, profileSearchType, FromGameMode(omode));
     }
 
     [SlashCommand("profile", "Get osu! profile from username")]
-    public async Task OsuProfileCommand(InteractionContext ctx,
-        [Option("username", "osu! username")]
+    public async Task OsuProfileCommand(
+        [Summary("username", "osu! username")]
         string username,
-        [Option("type", "Search type")]
+        [Summary("type", "Search type")]
         OsuUserProfileSearchType profileSearchType = OsuUserProfileSearchType.Profile,
-        [Option("mode", "Search mode")]
+        [Summary("mode", "Search mode")]
         OsuUserProfileSearchMode osuUserProfileSearchMode = OsuUserProfileSearchMode.Default)
     {
-        await ctx.DeferAsync();
-        await GenericOsuProcessing(ctx, username, profileSearchType, osuUserProfileSearchMode);
+        await Context.Interaction.DeferAsync();
+        await GenericOsuProcessing(username, profileSearchType, osuUserProfileSearchMode);
     }
-
-    [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get profile")]
-    public async Task OsuProfileContextMenu(ContextMenuContext ctx)
+    
+    [UserCommand("osu! - Get profile")]
+    public async Task OsuProfileContextMenu(SocketUser user)
     {
-        await ctx.DeferAsync(true);
+        await Context.Interaction.DeferAsync();
 
-        DiscordUser member = ctx.TargetMember;
+        var member = (SocketGuildUser) user;
         var dbUser = _dbCtx.GetUserRecord(member);
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("The requested user doesn't exist in my database"));
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
 
             return;
         }
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
-
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, OsuUserProfileSearchType.Profile, FromGameMode(omode));
+        await GenericOsuProcessing(dbUser.OsuUsername, OsuUserProfileSearchType.Profile, FromGameMode(omode), true);
     }
 
-    [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get latest score")]
-    public async Task OsuLatestContextMenu(ContextMenuContext ctx)
+    [UserCommand("osu! - Get latest score")]
+    public async Task OsuLatestContextMenu(SocketUser user)
     {
-        await ctx.DeferAsync(true);
+        await Context.Interaction.DeferAsync();
 
-        DiscordUser member = ctx.TargetMember;
+        var member = (SocketGuildUser) user;
         var dbUser = _dbCtx.GetUserRecord(member);
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("The requested user doesn't exist in my database"));
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+
+            return;
+        }
+        
+        Enum.TryParse(dbUser.OsuMode, out GameMode omode);
+        await GenericOsuProcessing(dbUser.OsuUsername, OsuUserProfileSearchType.Recent, FromGameMode(omode), true);
+    }
+
+    [UserCommand("osu! - Get best play")]
+    public async Task OsuBestContextMenu(SocketUser user)
+    {
+        await Context.Interaction.DeferAsync();
+
+        var member = (SocketGuildUser) user;
+        var dbUser = _dbCtx.GetUserRecord(member);
+
+        if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
+        {
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
 
             return;
         }
 
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
-
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, OsuUserProfileSearchType.Recent, FromGameMode(omode));
+        await GenericOsuProcessing(dbUser.OsuUsername, OsuUserProfileSearchType.Best, FromGameMode(omode), true);
     }
-
-    [ContextMenu(ApplicationCommandType.UserContextMenu, "osu! - Get best play")]
-    public async Task OsuBestContextMenu(ContextMenuContext ctx)
-    {
-        await ctx.DeferAsync(true);
-
-        DiscordUser member = ctx.TargetMember;
-        var dbUser = _dbCtx.GetUserRecord(member);
-
-        if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("The requested user doesn't exist in my database"));
-
-            return;
-        }
-
-        Enum.TryParse(dbUser.OsuMode, out GameMode omode);
-        await GenericOsuProcessing(ctx, dbUser.OsuUsername, OsuUserProfileSearchType.Best, FromGameMode(omode));
-    }
-
+    
     private static GameMode ToGameMode(OsuUserProfileSearchMode choice)
     {
         return choice switch
@@ -253,14 +253,14 @@ public class OsuModule : ApplicationCommandModule
         return scores;
     }
 
-    private async Task OsuProfileProcessAsync(BaseContext ctx, IUser osuUser, GameMode omode)
+    private async Task OsuProfileProcessAsync(OsuSharp.Interfaces.IUser osuUser, GameMode omode)
     {
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
+        var embedBuilder = Context.Interaction.User.CreateEmbedWithUserData()
             .WithAuthor(
-                $"{osuUser.Username}'s osu! profile in {omode} ({(osuUser.IsSupporter ? $"{DiscordEmoji.FromName(ctx.Client, ":heart:")})" : $"{DiscordEmoji.FromName(ctx.Client, ":black_heart:")})")}",
+                $"{osuUser.Username}'s osu! profile in {omode} ( {(osuUser.IsSupporter ? ":heart:" : ":black_heart:")} )",
                 $"https://osu.ppy.sh/users/{osuUser.Id}",
                 $"https://flagcdn.com/h20/{osuUser.Country.Code.ToLower()}.jpg")
-            .WithThumbnail($"{osuUser.AvatarUrl}")
+            .WithThumbnailUrl($"{osuUser.AvatarUrl}")
             .WithDescription($"This user is currently {(osuUser.IsOnline ? "online" : "offline/invisible")}")
             .AddField("Join date", $"{osuUser.JoinDate:g}", true)
             .AddField("Play count - play time",
@@ -273,21 +273,21 @@ public class OsuModule : ApplicationCommandModule
                 $"{osuUser.Statistics.UserLevel.Current} (at {osuUser.Statistics.UserLevel.Progress}%)", true)
             .AddField("Max combo", $"{osuUser.Statistics.MaximumCombo}", true);
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .AddEmbed(embedBuilder.Build()));
+        await Context.Interaction.ModifyOriginalResponseAsync(x => 
+            x.Embed = embedBuilder.Build());
     }
 
-    private async Task OsuScoresProcessAsync(BaseContext ctx, string username, GameMode omode,
+    private async Task OsuScoresProcessAsync(string username, GameMode omode,
         OsuUserProfileSearchType profileSearchType, OsuUserProfileSearchMode profileSearchMode, bool isContextMenu)
     {
         // do a test run before actual stuffs
         var testRun = await GetOsuScoresAsync(username, omode, profileSearchType, true, 2);
         if (!testRun.Any())
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("No scores found. Possible reasons:\n" +
-                             $"1. The user {Formatter.Bold(username)} doesn't play the mode {Formatter.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
-                             "2. Internal issue, contact the owner(s) if the issue persists"));
+            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                x.Content = "No scores found. Possible reasons:\n" +
+                             $"1. The user {Format.Bold(username)} does not play the mode {Format.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
+                             "2. Internal issue, contact the owner(s) if the issue persists");
             return;
         }
 
@@ -296,29 +296,31 @@ public class OsuModule : ApplicationCommandModule
 
         #region Fail inclusion prompt
         
-        // sneaky
-        var interactivity = ctx.Client.GetInteractivity();
+        var componentBuilder = new ComponentBuilder()
+            .WithButton("Yes, please!", "yesBtn", ButtonStyle.Success)
+            .WithButton("Probably not!", "noBtn", ButtonStyle.Danger);
 
         if (profileSearchType == OsuUserProfileSearchType.Recent && !isContextMenu)
         {
-            var yesBtn = new DiscordButtonComponent(ButtonStyle.Success, "yesBtn", "Yes please!");
-            var noBtn = new DiscordButtonComponent(ButtonStyle.Danger, "noBtn", "Probably not!");
-
-            var failAsk = await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Do you want to include fail scores?")
-                .AddComponents(yesBtn, noBtn));
-
-            var btnRes = await failAsk.WaitForButtonAsync(ctx.Member);
-
-            if (btnRes.TimedOut)
+            var failAsk = await Context.Interaction.ModifyOriginalResponseAsync(x =>
             {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Timed out"));
+                x.Content = "Do you want to include fail scores?";
+                x.Components = componentBuilder.Build();
+            });
 
+            var res = await InteractionUtility.WaitForMessageComponentAsync(Context.Client, failAsk, TimeSpan.FromMinutes(1));
+            var selectedBtnId = ((SocketMessageComponentData) res.Data).CustomId;
+
+            if (res.HasResponded)
+            {
+                includeFails = selectedBtnId == "yesBtn";
+                await res.RespondAsync("Please wait...");    
+            }
+            else
+            {
+                await res.RespondAsync("Timed out");
                 return;
             }
-
-            includeFails = btnRes.Result.Id == "yesBtn";
         }
 
         #endregion
@@ -327,49 +329,57 @@ public class OsuModule : ApplicationCommandModule
         
         if (!isContextMenu)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("How many scores do you want to get? (1 to 100)"));
+            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                x.Content = "How many scores do you want to get? (1 to 100)");
 
-            InteractivityResult<DiscordMessage> res = await interactivity.WaitForMessageAsync(m =>
+            var nextMessage =
+                await _liliaClient.InteractiveService.NextMessageAsync(x =>
+                    x.Channel.Id == Context.Channel.Id &&
+                    x.Author.Id == Context.User.Id &&
+                    int.TryParse(x.Content, out var v) &&
+                    v is >= 1 and <= 100);
+
+            if (nextMessage.IsTimeout)
             {
-                bool isNumber = int.TryParse(m.Content, out r);
-                return isNumber && r is >= 1 and <= 100;
-            });
-
-            if (res.TimedOut)
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent("Timed out"));
-
+                await Context.Interaction.ModifyOriginalResponseAsync(x => x.Content = "Timed out");
                 return;
             }
 
-            // delete the input for the sake of beauty
-            await res.Result.DeleteAsync();
+            if (nextMessage.IsSuccess)
+            {
+                r = Convert.ToInt32(nextMessage.Value?.Content ?? "1");
+            }
+            else
+            {
+                await Context.Interaction.ModifyOriginalResponseAsync(x => x.Content = "An unknown issue found");
+                return;
+            }
         }
         
         #endregion
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("Processing, please wait (this might take a while)"));
+        await Context.Interaction.ModifyOriginalResponseAsync(x => 
+            x.Content = "Processing, please wait (this might take a while)");
+
+        var pages = new List<PageBuilder>();
 
         var scores = await GetOsuScoresAsync(username, omode, profileSearchType, includeFails, r);
-        List<Page> pages = new();
-
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser();
-
+        var defEmbed = Context.User.CreateEmbedWithUserData();
+        
         var pos = 0;
         foreach (var score in scores)
         {
             ++pos;
             var map = await _osuClient.GetBeatmapAsync(score.Beatmap.Id);
             var isPpExists = score.PerformancePoints != null && score.Weight != null;
-
-            embedBuilder
-                .WithThumbnail(score.Beatmapset.Covers.Card2x)
-                .WithAuthor(
-                    $"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{map.Version}]{(score.Mods.Any() ? $" +{string.Join(string.Empty, score.Mods)}" : string.Empty)}",
-                    $"{map.Url}", $"{score.User.AvatarUrl}")
+            
+            pages.Add(new PageBuilder()
+                .WithColor(defEmbed.Color ?? Color.Red)
+                .WithFooter(defEmbed.Footer)
+                .WithTimestamp(defEmbed.Timestamp)
+                .WithAuthor($"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{map.Version}]{(score.Mods.Any() ? $" +{string.Join(string.Empty, score.Mods)}" : string.Empty)}",
+                    map.Url)
+                .WithThumbnailUrl(score.Beatmapset.Covers.Card2x)
                 .WithDescription($"Score position: {pos}\n")
                 .AddField("Known issue", "If you see 2 0's at the score part, it's fine")
                 .AddField("Total score",
@@ -385,25 +395,22 @@ public class OsuModule : ApplicationCommandModule
                         ? $"{score.PerformancePoints} * {Math.Round(score.Weight.Percentage, 2)}% -> {Math.Round(score.Weight.PerformancePoints, 2)}"
                         : "0",
                     true)
-                .AddField("Submission time", $"{score.CreatedAt:g}", true);
-
-            pages.Add(new Page(
-                "If you see a \"This interaction failed\" at the first page, don't worry, it's a known issue",
-                embedBuilder));
-            
-            embedBuilder.ClearFields();
+                .AddField("Submission time", $"{score.CreatedAt:g}", true));
         }
 
-        await interactivity.SendPaginatedResponseAsync(ctx.Interaction, false, ctx.Member, pages, asEditResponse: true);
+        var staticPageBuilder = new StaticPaginatorBuilder()
+            .AddUser(Context.User)
+            .WithPages(pages)
+            .Build();
+        
+        await _liliaClient.InteractiveService.SendPaginatorAsync(staticPageBuilder, Context.Channel, resetTimeoutOnInput: true);
     }
 
-    private async Task GenericOsuProcessing(BaseContext ctx, string username, OsuUserProfileSearchType profileSearchType, OsuUserProfileSearchMode profileSearchMode)
+    private async Task GenericOsuProcessing(string username, OsuUserProfileSearchType profileSearchType, OsuUserProfileSearchMode profileSearchMode, bool isContextMenu = false)
     {
         try
         {
-            var isContextMenu = ctx is ContextMenuContext;
-
-            IUser osuUser;
+            OsuSharp.Interfaces.IUser osuUser;
             GameMode omode;
 
             if (profileSearchMode == OsuUserProfileSearchMode.Default)
@@ -419,24 +426,24 @@ public class OsuModule : ApplicationCommandModule
 
             if (profileSearchType == OsuUserProfileSearchType.Profile)
             {
-                await OsuProfileProcessAsync(ctx, osuUser, omode);
+                await OsuProfileProcessAsync(osuUser, omode);
             }
             else
             {
-                await OsuScoresProcessAsync(ctx, username, omode, profileSearchType, profileSearchMode, isContextMenu);
+                await OsuScoresProcessAsync(username, omode, profileSearchType, profileSearchMode, isContextMenu);
             }
         }
         catch (ApiException)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when sending the request"));
+            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                x.Content = "Something went wrong when sending a request");
         }
         catch (OsuDeserializationException)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent("Something went wrong when parsing the response. Possible reasons:\n" +
-                             $"1. The user {Formatter.Bold(username)} doesn't play the mode {Formatter.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
-                             "2. Internal issue, contact the owner(s) if the issue persists"));
+            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                x.Content = "No scores found. Possible reasons:\n" +
+                            $"1. The user {Format.Bold(username)} does not play the mode {Format.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
+                            "2. Internal issue, contact the owner(s) if the issue persists");
         }
     }
 }

@@ -1,21 +1,21 @@
-﻿using DSharpPlus.SlashCommands;
+﻿using Discord.Interactions;
 
 namespace Lilia.Enums;
 
 public enum OsuUserProfileSearchMode
 {
-    [ChoiceName("default")]
+    [ChoiceDisplay("default")]
     Default,
 
-    [ChoiceName("standard")]
+    [ChoiceDisplay("osu")]
     Osu,
 
-    [ChoiceName("mania")]
+    [ChoiceDisplay("mania")]
     Mania,
 
-    [ChoiceName("catch_the_beat")]
+    [ChoiceDisplay("catch_the_beat")]
     Fruits,
 
-    [ChoiceName("taiko")]
+    [ChoiceDisplay("taiko")]
     Taiko
 }
