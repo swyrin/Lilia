@@ -163,8 +163,9 @@ public class LiliaClient
 
         Log.Logger.Information("Registering event handlers");
         InteractiveService.Log += OnLog;
+        _interactionService.Log += OnLog;
         _client.Log += OnLog;
-        
+        _client.InteractionCreated += OnClientInteractionCreated;
         _client.GuildAvailable += OnClientGuildAvailable;
         _client.GuildUnavailable += OnClientGuildUnavailable;
         _client.JoinedGuild += OnClientGuildAvailable;
@@ -184,6 +185,25 @@ public class LiliaClient
         await _client.StopAsync();
         await _client.LogoutAsync();
         await Database.GetContext().DisposeAsync();
+    }
+
+    private async Task OnClientInteractionCreated(SocketInteraction interaction)
+    {
+        try
+        {
+            var context = new SocketInteractionContext(_client, interaction);
+            await _interactionService.ExecuteCommandAsync(context, _serviceProvider);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.ToString());
+        
+            if(interaction.Type == InteractionType.ApplicationCommand)
+            {
+                await interaction.GetOriginalResponseAsync()
+                    .ContinueWith(async message => await message.Result.DeleteAsync());
+            }
+        }
     }
 
     private Task OnLog(LogMessage message)
