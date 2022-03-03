@@ -1,114 +1,111 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
+using Discord;
+using Discord.WebSocket;
 using Lavalink4NET.Events;
 using Lavalink4NET.Player;
-using Lilia.Services;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Lilia.Modules.Utils;
 
 public class MusicModuleUtils
 {
-    private readonly InteractionContext _ctx;
+    private readonly SocketInteraction _interaction;
+    private readonly LavalinkPlayer _player;
 
-    public MusicModuleUtils(InteractionContext ctx)
+    public MusicModuleUtils(SocketInteraction interaction, LavalinkPlayer player)
     {
-        _ctx = ctx;
+        _interaction = interaction;
+        _player = player;
     }
     
-    public static async Task<bool> EnsureNormalPlayerAsync(InteractionContext ctx)
+    public async Task<bool> EnsureNormalPlayerAsync()
     {
-        var player = ctx.Services.GetService<LiliaClient>()?.Lavalink.GetPlayer(ctx.Guild.Id);
-        if (player is not QueuedLavalinkPlayer) return true;
+        if (_player is not QueuedLavalinkPlayer) return true;
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("You have to use the normal player to use this command"));
+        await _interaction.ModifyOriginalResponseAsync(x => 
+            x.Content = "You have to use the normal player to use this command");
         
         return false;
     }
 
-    public static async Task<bool> EnsureQueuedPlayerAsync(InteractionContext ctx)
+    public async Task<bool> EnsureQueuedPlayerAsync()
     {
-        var player = ctx.Services.GetService<LiliaClient>()?.Lavalink.GetPlayer(ctx.Guild.Id);
-        if (player is QueuedLavalinkPlayer) return true;
+        if (_player is QueuedLavalinkPlayer) return true;
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("You have to use the queued player to use this command"));
+        await _interaction.ModifyOriginalResponseAsync(x => 
+            x.Content = "You have to use the queued player to use this command");
         
         return false;
     }
     
-    public static async Task<bool> EnsureUserInVoiceAsync(InteractionContext ctx)
+    public async Task<bool> EnsureUserInVoiceAsync()
     {
-        if (ctx.Member.VoiceState?.Channel != null) return true;
+        if (((SocketGuildUser) _interaction.User).VoiceState != null) return true;
         
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("Join a voice channel please"));
+        await _interaction.ModifyOriginalResponseAsync(x =>
+            x.Content = "Join a voice channel please");
 
         return false;
     }
 
-    public static async Task<bool> EnsureClientInVoiceAsync(InteractionContext ctx)
+    public async Task<bool> EnsureClientInVoiceAsync()
     {
-        var player = ctx.Services.GetService<LiliaClient>()?.Lavalink.GetPlayer(ctx.Guild.Id);
-
-        if (player != null) return true;
+        if (_player != null) return true;
         
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("I am not in a voice channel right now"));
+        await _interaction.ModifyOriginalResponseAsync(x =>
+            x.Content = "I am not in a voice channel now");
 
         return false;
     }
 
-    public static async Task<bool> EnsureQueueIsNotEmptyAsync(InteractionContext ctx)
+    public async Task<bool> EnsureQueueIsNotEmptyAsync()
     {
-        var player = ctx.Services.GetService<LiliaClient>()?.Lavalink.GetPlayer<QueuedLavalinkPlayer>(ctx.Guild.Id);
-
-        if (!player.Queue.IsEmpty) return true;
+        if (!((QueuedLavalinkPlayer) _player).Queue.IsEmpty) return true;
         
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent("The queue is empty"));
+        await _interaction.ModifyOriginalResponseAsync(x =>
+            x.Content = "The queue is empty now");
 
         return false;
     }
 
-    public async Task OnTrackStarted(object sender, TrackStartedEventArgs e)
+    public async Task OnTrackStarted(object _, TrackStartedEventArgs e)
     {
         var currentTrack = e.Player.CurrentTrack;
 
-        await _ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent(
-                $"Now playing: {Formatter.Bold(Formatter.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Formatter.Bold(Formatter.Sanitize(currentTrack?.Author ?? "Unknown"))}\n" +
-                "You should pin this message for playing status"));
+        await _interaction.ModifyOriginalResponseAsync(x =>
+            x.Content = $"Now playing: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}\n" +
+                        "You should pin this message for playing status");
     }
 
-    public async Task OnTrackStuck(object sender, TrackStuckEventArgs e)
+    public async Task OnTrackStuck(object _, TrackStuckEventArgs e)
     {
         var currentTrack = e.Player.CurrentTrack;
 
-        await _ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Track stuck: {Formatter.Bold(Formatter.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Formatter.Bold(Formatter.Sanitize(currentTrack?.Author ?? "Unknown"))}"));
+        await _interaction.ModifyOriginalResponseAsync(x =>
+            x.Content = $"Track stuck: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}\n");
     }
 
-    public async Task OnTrackEnd(object sender, TrackEventArgs e)
+    public async Task OnTrackEnd(object _, TrackEventArgs e)
     {
         var currentTrack = e.Player.CurrentTrack;
 
-        await _ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"Finished playing: {Formatter.Bold(Formatter.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Formatter.Bold(Formatter.Sanitize(currentTrack?.Author ?? "Unknown"))}\n" +
-                         "If you see this instead of Playing {{next track}}, probably this is the end of the queue"));
+        await _interaction.ModifyOriginalResponseAsync(x =>
+            x.Content = $"Finished playing: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}\n" +
+                        "You should pin this message for playing status");
     }
 
-    public async Task OnTrackException(object sender, TrackExceptionEventArgs e)
+    public async Task OnTrackException(object _, TrackExceptionEventArgs e)
     {
         var currentTrack = e.Player.CurrentTrack;
 
-        await _ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .WithContent($"There was an error playing: {Formatter.Bold(Formatter.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Formatter.Bold(Formatter.Sanitize(currentTrack?.Author ?? "Unknown"))}")
-            .AddEmbed(new DiscordEmbedBuilder()
-                .WithTitle("Error message")
-                .WithDescription(e.ErrorMessage)));
+        await _interaction.ModifyOriginalResponseAsync(x =>
+            {
+                x.Content =
+                    $"There was an error playing: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}";
+                x.Embed = new EmbedBuilder()
+                    .WithTitle("Error message")
+                    .WithDescription(e.ErrorMessage)
+                    .Build();
+            }
+        );
     }
 }

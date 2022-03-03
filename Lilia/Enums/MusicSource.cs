@@ -1,15 +1,15 @@
-﻿using DSharpPlus.SlashCommands;
+﻿using Discord.Interactions;
 
 namespace Lilia.Enums;
 
 public enum MusicSource
 {
-    [ChoiceName("soundcloud")]
+    [ChoiceDisplay("soundcloud")]
     SoundCloud,
     
-    [ChoiceName("youtube")]
+    [ChoiceDisplay("youtube")]
     YouTube,
     
-    [ChoiceName("raw")]
+    [ChoiceDisplay("raw")]
     None
 }

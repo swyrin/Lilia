@@ -16,7 +16,9 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Fergun.Interactive;
 using Lavalink4NET;
+using Lavalink4NET.Artwork;
 using Lavalink4NET.DiscordNet;
+using Lavalink4NET.Tracking;
 using Lilia.Database;
 using Lilia.Database.Interactors;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +35,8 @@ public class LiliaClient
     private ServiceProvider _serviceProvider;
     
     public InteractiveService InteractiveService;
+    public ArtworkService ArtworkService;
+    public InactivityTrackingService InactivityTracker;
     public LavalinkNode Lavalink;
     public LiliaDatabase Database;
     public DateTime StartTime;
@@ -126,10 +130,10 @@ public class LiliaClient
         _interactionService = new InteractionService(_client.Rest);
         InteractiveService = new InteractiveService(_client, new InteractiveConfig
         {
-            DefaultTimeout = TimeSpan.FromMinutes(1),
+            DefaultTimeout = TimeSpan.FromMinutes(2),
             LogLevel = LogSeverity.Debug
         });
-        
+
         var lavalinkConfig = BotConfiguration.Credentials.Lavalink;
         Lavalink = new LavalinkNode(new LavalinkNodeOptions
             {
@@ -170,7 +174,7 @@ public class LiliaClient
         _client.UserJoined += OnClientUserJoined;
         _client.UserLeft += OnClientUserLeft;
         _client.Ready += OnClientReady;
-        
+
         Log.Logger.Information("Connecting and waiting for shutdown");
         
         await _client.LoginAsync(TokenType.Bot, BotConfiguration.Client.Token);
@@ -251,8 +255,14 @@ public class LiliaClient
         #endregion Activity Setup
 
         Log.Logger.Information("Initializing Lavalink connection");
-        if (!Lavalink.IsConnected)
-            await Lavalink.ConnectAsync();
+        await Lavalink.InitializeAsync();
+        ArtworkService = new ArtworkService();
+        InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(_client), new InactivityTrackingOptions
+        {
+            PollInterval = TimeSpan.FromMinutes(2),
+            DisconnectDelay = TimeSpan.Zero,
+            TrackInactivity = true
+        }, new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("InteractivityTracker")));
 
         Log.Logger.Information($"Client is ready to serve as {Format.UsernameAndDiscriminator(_client.CurrentUser)}");
         StartTime = DateTime.Now;
