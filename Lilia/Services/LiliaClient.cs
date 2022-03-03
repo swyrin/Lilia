@@ -5,7 +5,6 @@ using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -43,7 +42,6 @@ public class LiliaClient
 
     public static readonly BotConfiguration BotConfiguration;
     public static readonly CancellationTokenSource Cts;
-    public static readonly List<SocketGuild> JoinedGuilds = new();
     public static readonly DbContextOptionsBuilder<LiliaDatabaseContext> OptionsBuilder = new();
 
     public const GuildPermission RequiredPermissions =
@@ -201,8 +199,11 @@ public class LiliaClient
             LogSeverity.Debug => LogEventLevel.Debug,
             _ => LogEventLevel.Information
         };
+
+        Log
+            .ForContext("SourceContext", message.Source)
+            .Write(severity, message.Exception, "{Message:l}", message.Message);
         
-        Log.Write(severity, message.Exception, "{Message:ij}", message.Message.Replace("\"", string.Empty));
         return Task.CompletedTask;
     }
 
@@ -271,14 +272,12 @@ public class LiliaClient
     private Task OnClientGuildAvailable(SocketGuild guild)
     {
         Log.Logger.Debug($"Guild cache added: {guild.Name} (ID: {guild.Id})");
-        JoinedGuilds.Add(guild);
         return Task.CompletedTask;
     }
 
     private Task OnClientGuildUnavailable(SocketGuild guild)
     {
         Log.Logger.Debug($"Guild cache removed: {guild.Name} (ID: {guild.Id})");
-        JoinedGuilds.Remove(guild);
         return Task.CompletedTask;
     }
 
