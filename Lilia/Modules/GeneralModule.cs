@@ -1,17 +1,16 @@
-﻿using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using Lilia.Commons;
+﻿using Lilia.Commons;
 using Lilia.Services;
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace Lilia.Modules;
 
-public class GeneralModule : ApplicationCommandModule
+public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly LiliaClient _client;
 
@@ -21,117 +20,115 @@ public class GeneralModule : ApplicationCommandModule
     }
 
     [SlashCommand("uptime", "Check the uptime of the bot")]
-    public async Task GeneralUptimeCommand(InteractionContext ctx)
+    public async Task GeneralUptimeCommand()
     {
-        await ctx.DeferAsync(true);
+        await Context.Interaction.DeferAsync(true);
 
         var timeDiff = DateTime.Now.Subtract(_client.StartTime);
 
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
-            .WithAuthor("My uptime", null, ctx.Client.CurrentUser.AvatarUrl)
+        var embedBuilder = Context.User.CreateEmbedWithUserData()
+            .WithAuthor("My uptime", null, Context.Client.CurrentUser.GetAvatarUrl())
             .AddField("Uptime", timeDiff.ToLongReadableTimeSpan(), true)
             .AddField("Start since", _client.StartTime.ToLongDateTime(), true);
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .AddEmbed(embedBuilder.Build()));
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            x.Embed = embedBuilder.Build());
     }
 
     [SlashCommand("bot", "Something about me")]
-    public async Task GeneralBotCommand(InteractionContext ctx)
+    public async Task GeneralBotCommand()
     {
-        await ctx.DeferAsync(true);
+        await Context.Interaction.DeferAsync(true);
 
-        StringBuilder owners = new();
+        ulong memberCount = Context.Client.Guilds.Aggregate<SocketGuild, ulong>(0, (current, guild) => current + Convert.ToUInt64(guild.MemberCount));
 
-        ulong memberCount = 0;
-
-        LiliaClient.JoinedGuilds.ForEach(guild => memberCount += Convert.ToUInt64(guild.MemberCount));
-
-        foreach (var owner in ctx.Client.CurrentApplication.Owners)
-            owners.Append(owner.Username).Append('#').AppendLine(owner.Discriminator);
-
-        // a delicious slash command please :D
-        var botInv = ctx.Client.CurrentApplication.GenerateBotOAuth(LiliaClient.RequiredPermissions).Replace("scope=bot", "scope=bot%20applications.commands");
+        var botId = Context.Client.CurrentUser.Id;
+        const GuildPermission perms = LiliaClient.RequiredPermissions;
+        var botInv = $"https://discord.com/api/oauth2/authorize?client_id={botId}&permissions={perms}&scope=bot%20applications.commands";
         var guildInv = LiliaClient.BotConfiguration.Client.SupportGuildInviteLink;
 
         // dodge 400
         if (string.IsNullOrWhiteSpace(guildInv)) guildInv = "https://placehold.er";
         var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 
-        var inviteBtn = new DiscordLinkButtonComponent(botInv, "Interested in me?", !ctx.Client.CurrentApplication.IsPublic.GetValueOrDefault());
-        var supportGuildBtn = new DiscordLinkButtonComponent(guildInv, "Need supports?", !isValidGuildInviteLink);
-        var selfHostBtn = new DiscordLinkButtonComponent("https://github.com/Lilia-Workshop/Lilia", "Want to host your own bot?");
+        var componentBuilder = new ComponentBuilder()
+            .WithButton("Interested in me?", "inviteBtn", ButtonStyle.Link, url: botInv,
+                disabled: !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic)
+            .WithButton("Need supports?", "supportGuildBtn", ButtonStyle.Link, url: guildInv,
+                disabled: !isValidGuildInviteLink)
+            .WithButton("Want to self host?", "selfHostBtn", ButtonStyle.Link,
+                url: "https://github.com/Lilia-Workshop/Lilia");
 
         var timeDiff = DateTime.Now.Subtract(_client.StartTime);
 
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
+        var embedBuilder = Context.User.CreateEmbedWithUserData()
             .WithTitle("Something about me :D")
-            .WithThumbnail(ctx.Client.CurrentUser.AvatarUrl)
+            .WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl())
             .WithDescription(
-                $"Hi, I am {Formatter.Bold($"{ctx.Client.CurrentUser.Username}#{ctx.Client.CurrentUser.Discriminator}")}, a bot running on the source code of {Formatter.Bold("Lilia")} written by {Formatter.Bold("Swyrin#7193")}")
-            .AddField("Server count", LiliaClient.JoinedGuilds.Count.ToString(), true)
-            .AddField("Member count", memberCount.ToString(), true)
-            .AddField("Owner(s)", owners.ToString())
+                $"Hi, I am {Format.Bold(Format.UsernameAndDiscriminator(Context.Client.CurrentUser))}, a bot running on the source code of {Format.Bold("Lilia")} written by {Format.Bold("Swyrin#7193")}")
+            .AddField("Server count", $"{Context.Client.Guilds.Count}", true)
+            .AddField("Member count", $"{memberCount}", true)
             .AddField("Uptime",
-                $"{Formatter.Bold(timeDiff.ToLongReadableTimeSpan())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
+                $"{Format.Bold(timeDiff.ToLongReadableTimeSpan())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
             .AddField("Version", $"{Assembly.GetExecutingAssembly().GetName().Version}", true)
-            .AddField("Command count", $"{(await ctx.Client.GetGlobalApplicationCommandsAsync()).Count}", true)
+            .AddField("Command count", $"{(await Context.Client.GetGlobalApplicationCommandsAsync()).Count}", true)
             .AddField("How to invite me?",
-                $"Either click the {Formatter.Bold("Interested in me?")} button below or click on me, choose {Formatter.Bold("Add to Server")} if it exists");
+                $"Either click the {Format.Bold("Interested in me?")} button below or click on me, choose {Format.Bold("Add to Server")} if it exists");
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .AddEmbed(embedBuilder.Build())
-            .AddComponents(inviteBtn, supportGuildBtn, selfHostBtn));;
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
+        {
+            x.Embed = embedBuilder.Build();
+            x.Components = componentBuilder.Build();
+        });
     }
 
     [SlashCommand("user", "What I know about an user in this guild")]
-    public async Task GeneralUserInfoCommand(InteractionContext ctx,
-        [Option("user", "An user in this guild")]
-        DiscordUser user)
+    public async Task GeneralUserCommand(
+        [Summary("member", "A member in this guild")]
+        SocketGuildUser member)
     {
-        await ctx.DeferAsync(true);
-
-        var member = (DiscordMember) user;
-
-        if (member == ctx.Client.CurrentUser)
+        await Context.Interaction.DeferAsync(true);
+        
+        if (member.Id == Context.Client.CurrentUser.Id)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-                .WithContent($"If you want to know about me, there is a {Formatter.InlineCode("/bot")} command for it"));
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                x.Content = $"If you want to know about me, there is a {Format.Bold("/bot")} command for it");
             
             return;
         }
         
-        var creationDate = member.CreationTimestamp.DateTime;
-        var joinDate = member.JoinedAt.DateTime;
+        var creationDate = member.CreatedAt.DateTime;
+        var joinDate = member.JoinedAt.GetValueOrDefault().DateTime;
         var accountAge = DateTimeOffset.Now.Subtract(creationDate);
         var membershipAge = DateTimeOffset.Now.Subtract(joinDate);
 
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
-            .WithAuthor($"What I know about {member.DisplayName}#{member.Discriminator} :D", null,ctx.Client.CurrentUser.AvatarUrl)
-            .WithThumbnail(member.GuildAvatarUrl ?? member.AvatarUrl)
+        var embedBuilder = Context.User.CreateEmbedWithUserData()
+            .WithAuthor($"What I know about {member.Username}#{member.Discriminator} :D", null,
+                Context.Client.CurrentUser.GetDefaultAvatarUrl())
+            .WithThumbnailUrl(member.GetGuildAvatarUrl())
             .WithDescription($"User ID: {member.Id}")
             .AddField("Account age", $"{accountAge.ToShortReadableTimeSpan()} (since {creationDate.ToShortDateTime()})")
-            .AddField("Membership age", $"{membershipAge.ToShortReadableTimeSpan()} (since {joinDate.ToShortDateTime()})")
-            .AddField("Is this guild owner?", member.IsOwner.ToString(), true)
+            .AddField("Membership age",
+                $"{membershipAge.ToShortReadableTimeSpan()} (since {joinDate.ToShortDateTime()})")
+            .AddField("Is guild owner?", Context.Guild.Owner == member, true)
             .AddField("Is a bot?", member.IsBot ? "Hello fellow bot :D" : "Probably not", true)
-            .AddField("Badge list", member.Flags.ToString() ?? "None", true);
+            .AddField("Badge list", $"{member.PublicFlags}", true)
+            .AddField("Mutual server count with me", member.MutualGuilds);
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .AddEmbed(embedBuilder.Build()));
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            x.Embed = embedBuilder.Build());
     }
     
     [SlashCommand("guild", "What I know about this guild")]
-    public async Task GeneralGuildCommand(InteractionContext ctx)
+    public async Task GeneralGuildCommand()
     {
-        await ctx.DeferAsync(true);
+        await Context.Interaction.DeferAsync(true);
 
-        var guild = ctx.Guild;
+        var guild = Context.Guild;
+        await Context.Client.DownloadUsersAsync(new [] { guild });
+        var members = Context.Guild.Users.ToList();
         
-        // Discord includes only me and the bot
-        // so I guess this is a good workaround?
-        var members = await guild.GetAllMembersAsync();
-
-        var creationDate = guild.CreationTimestamp.DateTime;
+        var creationDate = guild.CreatedAt.DateTime;
         var guildAge = DateTimeOffset.Now.Subtract(creationDate);
         var memberCount = members.Count;
         var botList = members.Where(member => member.IsBot).ToList();
@@ -139,25 +136,25 @@ public class GeneralModule : ApplicationCommandModule
         var humanCount = memberCount - botCount;
 
         var isBoosted = guild.PremiumSubscriptionCount > 0;
+        var boosters = members.Where(x => x.PremiumSince != null);
 
-        var embedBuilder = ctx.Member.GetDefaultEmbedTemplateForUser()
+        var embedBuilder = Context.User.CreateEmbedWithUserData()
             .WithAuthor(guild.Name, null, guild.IconUrl)
-            .WithThumbnail(guild.BannerUrl)
-            .WithDescription($"Guild ID: {guild.Id} - Owner {Formatter.Mention(guild.Owner)}")
+            .WithThumbnailUrl(guild.BannerUrl)
+            .WithDescription($"Guild ID: {guild.Id} - Owner: <@{guild.Owner.Id}>")
             .AddField("Guild age", $"{guildAge.ToShortReadableTimeSpan()} (since {creationDate.ToShortDateTime()})")
             .AddField("Humans", $"{humanCount}", true)
             .AddField("Bots", $"{botCount}", true)
             .AddField("Total", $"{memberCount}", true)
-            .AddField("Channels count",
-                $"{guild.Channels.Count} with {guild.Threads.Count(x => !x.Value.IsPrivate)} public threads", true)
+            .AddField("Channels count", $"{guild.Channels.Count} with {guild.ThreadChannels.Count(x => !x.IsPrivateThread)} public threads", true)
             .AddField("Roles", $"{guild.Roles.Count}", true)
-            .AddField("Events", $"{guild.ScheduledEvents.Count} pending", true)
+            .AddField("Events", $"{guild.Events.Count} pending", true)
             .AddField("Boosts",
                 isBoosted
-                    ? $"{guild.PremiumSubscriptionCount ?? 0} boost(s) (lvl. {(int) guild.PremiumTier}) from {guild.PremiumSubscriptionCount ?? 0} booster(s)"
+                    ? $"{guild.PremiumSubscriptionCount} boost(s) (lvl. {(int) guild.PremiumTier}) from {boosters.Count()} booster(s)"
                     : "Not having any boosts");
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder()
-            .AddEmbed(embedBuilder.Build()));
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            x.Embed = embedBuilder.Build());
     }
 }
