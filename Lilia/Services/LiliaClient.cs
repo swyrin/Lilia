@@ -144,7 +144,7 @@ public class LiliaClient
                 DisconnectOnStop = false
             }, new DiscordClientWrapper(_client),
             new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("Lavalink")));
-        
+
         _serviceProvider = new ServiceCollection()
             .AddLogging(x => x.AddSerilog())
             .AddDefaultSerializer()
@@ -174,7 +174,6 @@ public class LiliaClient
         _client.Ready += OnClientReady;
 
         Log.Logger.Information("Connecting and waiting for shutdown");
-        
         await _client.LoginAsync(TokenType.Bot, BotConfiguration.Client.Token);
         await _client.StartAsync();
 
