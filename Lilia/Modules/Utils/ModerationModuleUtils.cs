@@ -1,46 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
+using Fergun.Interactive;
 
 namespace Lilia.Modules.Utils;
 
 public static class ModerationModuleUtils
 {
-    public static async Task<IEnumerable<DiscordUser>> GetMentionedUsersAsync(InteractionContext ctx,
-        bool deleteResponse = true)
+    public static async Task<(bool, IRole)> GetOrCreateRoleAsync(SocketInteractionContext ctx, string roleName,
+        GuildPermissions perms, Color color, bool isHoisted = false, bool isMentionable = false)
     {
-        var interactivity = ctx.Client.GetInteractivity();
-        var res = await interactivity.WaitForMessageAsync(x => x.MentionedUsers.Any(), TimeSpan.FromMinutes(5));
+        IRole testRole = ctx.Guild.Roles.ToList().Find(x => x.Name == roleName);
 
-        if (res.TimedOut)
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent("Timed out"));
+        if (testRole != default) return (true, testRole);
+        testRole = await ctx.Guild.CreateRoleAsync(roleName, perms, color, isHoisted, isMentionable);
 
-            return new List<DiscordUser>();
-        }
-
-        if (deleteResponse) await res.Result.DeleteAsync();
-
-        return res.Result.MentionedUsers.Distinct();
+        return (false, testRole);
     }
 
-    public static async Task<(bool, DiscordRole)> GetOrCreateRoleAsync(InteractionContext ctx, string roleName, string createReason, Permissions perms)
+    public static async Task<IReadOnlyCollection<SocketUser>> GetMentionedUsersAsync(SocketInteractionContext ctx, InteractiveService interactive)
     {
-        var testRole = ctx.Guild.Roles.ToList().Find(x => x.Value.Name == roleName).Value;
-        var isExistedFromTheBeginning = true;
-
-        if (testRole == default)
-        {
-            isExistedFromTheBeginning = false;
-            testRole = await ctx.Guild.CreateRoleAsync(roleName, reason: createReason, permissions: perms);
-        }
-
-        return (isExistedFromTheBeginning, testRole);
+        var result = await interactive.NextMessageAsync(x => x.Channel.Id == ctx.Channel.Id && x.Author == ctx.User);
+        return result.IsSuccess ? result.Value?.MentionedUsers : new List<SocketUser>();
     }
 }
