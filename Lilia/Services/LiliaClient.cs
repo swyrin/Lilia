@@ -123,7 +123,8 @@ public class LiliaClient
             GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
             LogLevel = LogSeverity.Debug,
             LogGatewayIntentWarnings = true,
-            UseInteractionSnowflakeDate = false
+            UseInteractionSnowflakeDate = false,
+            AlwaysDownloadUsers = true
         });
 
         _interactionService = new InteractionService(_client.Rest, new InteractionServiceConfig

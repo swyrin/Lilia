@@ -52,7 +52,7 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
     public async Task ConfigGoodbyeChannelCommand(
         [Summary("channel", "Channel to dump all goodbye messages")]
         [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
-        SocketChannel channel)
+        SocketGuildChannel channel)
     {
         await Context.Interaction.DeferAsync(true);
 
@@ -70,7 +70,7 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
         await _dbCtx.SaveChangesAsync();
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
-            x.Content = $"Set the goodbye channel of this guild to {channel.GetMention()}");
+            x.Content = $"Set the goodbye channel of this guild to #{channel.Name}");
     }
 
     [SlashCommand("goodbye_message", "Set the goodbye message")]
@@ -204,7 +204,7 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
             .AddField("{guild} - The guild's name", $"Example: {{guild}} = {Context.Guild.Name}\n" +
                                                     "Restrictions: None")
             .AddField("{@user} - User mention",
-                $"Example: Swyrin#7193 -> {{@user}} = {Context.User.GetMention()}\n" +
+                $"Example: Swyrin#7193 -> {{@user}} = {Context.User.Mention}\n" +
                 "Restrictions: Welcome message only");
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
@@ -219,21 +219,19 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
         var dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
 
         var welcomeChnMention = GuildConfigModuleUtils.IsChannelExist(Context, dbGuild.WelcomeChannelId)
-            ? Context.Guild.GetChannel(dbGuild.GoodbyeChannelId).GetMention()
+            ? $"#{Context.Guild.GetChannel(dbGuild.GoodbyeChannelId)}"
             : "Channel not exist or not set";
 
         var goodbyeChnMention = GuildConfigModuleUtils.IsChannelExist(Context, dbGuild.GoodbyeChannelId)
-            ? Context.Guild.GetChannel(dbGuild.GoodbyeChannelId).GetMention()
+            ? $"#{Context.Guild.GetChannel(dbGuild.GoodbyeChannelId)}"
             : "Channel not exist or not set";
 
         var embedBuilder = Context.User.CreateEmbedWithUserData()
             .WithAuthor("All configurations", null, Context.Client.CurrentUser.GetAvatarUrl())
-            .AddField("Welcome message",
-                string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage) ? "None" : dbGuild.WelcomeMessage, true)
+            .AddField("Welcome message", string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage) ? "None" : dbGuild.WelcomeMessage, true)
             .AddField("Welcome channel", welcomeChnMention, true)
             .AddField("Welcome message allowed", $"{dbGuild.IsWelcomeEnabled}", true)
-            .AddField("Goodbye message",
-                string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage) ? "None" : dbGuild.GoodbyeMessage, true)
+            .AddField("Goodbye message", string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage) ? "None" : dbGuild.GoodbyeMessage, true)
             .AddField("Goodbye channel", goodbyeChnMention, true)
             .AddField("Goodbye message allowed", $"{dbGuild.IsGoodbyeEnabled}", true);
 

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
+using Fergun.Interactive;
 
 namespace Lilia.Commons;
 
@@ -82,5 +84,28 @@ public static class LiliaUtilities
         return !string.IsNullOrWhiteSpace(str) &&
                new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(\.gg|(app)?\.com\/invite|\.me)\/([^ ]+)\/?")
                    .IsMatch(str);
+    }
+
+    public static IEnumerable<PageBuilder> CreatePagesFromString(string content, int fixedPageSplit = 15, int threshold = 2000)
+    {
+        var lines = content.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var idx = 0;
+        List<PageBuilder> pages = new();
+        StringBuilder text = new();
+
+        foreach (var line in lines)
+        {
+            if ((idx != 0 && idx % fixedPageSplit == 0) || text.Length + line.Length > threshold)
+            {
+                pages.Add(new PageBuilder().WithText($"{text}"));
+                text.Clear();
+            }
+            
+            text.AppendLine(line);
+            ++idx;
+        }
+        
+        pages.Add(new PageBuilder().WithText($"{text}"));
+        return pages;
     }
 }

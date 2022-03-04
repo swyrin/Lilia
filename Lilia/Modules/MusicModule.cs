@@ -397,22 +397,12 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             StringBuilder text = new();
             var idx = 0;
-            List<PageBuilder> pages = new();
-            var page = new PageBuilder();
 
             foreach (var track in lavalinkTracks)
             {
                 var testStr = track.IsLiveStream
                     ? $"Livestream skipped: {Format.Url($"{Format.Bold(track.Title)} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}"
                     : $"{idx + 1} - {Format.Url($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}";
-                
-                if (idx != 0 && idx % 10 == 0 || text.Length > 2000 || text.Length + testStr.Length > 2000)
-                {
-                    page.WithText($"{text}");
-                    text.Clear();
-                    pages.Add(page);
-                    page = new PageBuilder();   
-                }
                 
                 text.AppendLine(testStr);
                 
@@ -424,6 +414,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             player.Queue.AddRange(postProcessedTracks);
 
+            var pages = LiliaUtilities.CreatePagesFromString($"{text}");
             var paginator = new StaticPaginatorBuilder()
                 .AddUser(Context.User)
                 .WithPages(pages)
@@ -542,24 +533,15 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             var idx = 0;
 
             StringBuilder text = new();
-            PageBuilder page = new();
-            List<PageBuilder> pages = new();
-            
+
             foreach (var track in queue)
             {
                 var testStr = $"{idx + 1} - {Format.Url($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}";
-                
-                if (idx != 0 && idx % 10 == 0 || text.Length > 2000 || text.Length + testStr.Length > 2000)
-                {
-                    page.WithText($"{text}");
-                    text.Clear();
-                    pages.Add(page);
-                    page = new PageBuilder();   
-                }
-                
                 text.AppendLine(testStr);
                 ++idx;
             }
+            
+            var pages = LiliaUtilities.CreatePagesFromString($"{text}");
             
             var paginator = new StaticPaginatorBuilder()
                 .AddUser(Context.User)
