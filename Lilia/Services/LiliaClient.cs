@@ -122,10 +122,16 @@ public class LiliaClient
         {
             GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
             LogLevel = LogSeverity.Debug,
-            LogGatewayIntentWarnings = true
+            LogGatewayIntentWarnings = true,
+            UseInteractionSnowflakeDate = false
         });
 
-        _interactionService = new InteractionService(_client.Rest);
+        _interactionService = new InteractionService(_client.Rest, new InteractionServiceConfig
+        {
+            LogLevel = LogSeverity.Debug,
+            DefaultRunMode = RunMode.Async
+        });
+        
         InteractiveService = new InteractiveService(_client, new InteractiveConfig
         {
             DefaultTimeout = TimeSpan.FromMinutes(2),
