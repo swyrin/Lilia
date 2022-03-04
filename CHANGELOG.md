@@ -1,5 +1,6 @@
 ## Additions
 
+- Added `change_player` in `music playback`
 - Added `add_playlist`, `clear`, `remove`, `remove_range` and `remove_dupe` in `music queue` command group
 - Added `mute` and `unmute` in `mod general`
 - Added `music playback change_player` to change the player
@@ -12,8 +13,9 @@
 
 ## Changes
 
-- Now using `Discord.Net.Labs` as dependency
+- Now using `Discord.Net` as dependency
 - Fixed descriptions of `music playback` commands
+- Renamed `mod message` to `mod ticket`
 - Renamed `music playback play` to `music playback play_queue` to comply with the addition of `music playback play_stream`
 - Corrected the behavior of `music playback play_queue` command [because of my dumb moment](https://github.com/angelobreuer/Lavalink4NET/issues/91)
 - Renamed `music queue check` to `music queue view` and made the index starting from 0 to comply with `remove` and `remove_range` commands

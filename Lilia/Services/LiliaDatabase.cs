@@ -1,6 +1,6 @@
-﻿using Lilia.Database;
+﻿using System.Linq;
+using Lilia.Database;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace Lilia.Services;
 
@@ -9,7 +9,7 @@ public class LiliaDatabase
     public LiliaDatabase()
     {
         using var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
-        
+
         while (context.Database.GetPendingMigrations().Any())
         {
             var migrationContext = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);

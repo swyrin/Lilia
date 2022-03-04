@@ -1,12 +1,12 @@
-﻿using Lilia.Commons;
-using Lilia.Services;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Lilia.Commons;
+using Lilia.Services;
 
 namespace Lilia.Modules;
 
@@ -40,11 +40,13 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     {
         await Context.Interaction.DeferAsync(true);
 
-        ulong memberCount = Context.Client.Guilds.Aggregate<SocketGuild, ulong>(0, (current, guild) => current + Convert.ToUInt64(guild.MemberCount));
+        var memberCount = Context.Client.Guilds.Aggregate<SocketGuild, ulong>(0,
+            (current, guild) => current + Convert.ToUInt64(guild.MemberCount));
 
         var botId = Context.Client.CurrentUser.Id;
         const GuildPermission perms = LiliaClient.RequiredPermissions;
-        var botInv = $"https://discord.com/api/oauth2/authorize?client_id={botId}&permissions={perms}&scope=bot%20applications.commands";
+        var botInv =
+            $"https://discord.com/api/oauth2/authorize?client_id={botId}&permissions={perms}&scope=bot%20applications.commands";
         var guildInv = LiliaClient.BotConfiguration.Client.SupportGuildInviteLink;
 
         // dodge 400
@@ -88,15 +90,15 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         SocketGuildUser member)
     {
         await Context.Interaction.DeferAsync(true);
-        
+
         if (member.Id == Context.Client.CurrentUser.Id)
         {
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = $"If you want to know about me, there is a {Format.Bold("/bot")} command for it");
-            
+
             return;
         }
-        
+
         var creationDate = member.CreatedAt.DateTime;
         var joinDate = member.JoinedAt.GetValueOrDefault().DateTime;
         var accountAge = DateTimeOffset.Now.Subtract(creationDate);
@@ -118,16 +120,16 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
             x.Embed = embedBuilder.Build());
     }
-    
+
     [SlashCommand("guild", "What I know about this guild")]
     public async Task GeneralGuildCommand()
     {
         await Context.Interaction.DeferAsync(true);
 
         var guild = Context.Guild;
-        await Context.Client.DownloadUsersAsync(new [] { guild });
+        await Context.Client.DownloadUsersAsync(new[] {guild});
         var members = Context.Guild.Users.ToList();
-        
+
         var creationDate = guild.CreatedAt.DateTime;
         var guildAge = DateTimeOffset.Now.Subtract(creationDate);
         var memberCount = members.Count;
@@ -146,7 +148,9 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             .AddField("Humans", $"{humanCount}", true)
             .AddField("Bots", $"{botCount}", true)
             .AddField("Total", $"{memberCount}", true)
-            .AddField("Channels count", $"{guild.Channels.Count} with {guild.ThreadChannels.Count(x => !x.IsPrivateThread)} public threads", true)
+            .AddField("Channels count",
+                $"{guild.Channels.Count} with {guild.ThreadChannels.Count(x => !x.IsPrivateThread)} public threads",
+                true)
             .AddField("Roles", $"{guild.Roles.Count}", true)
             .AddField("Events", $"{guild.Events.Count} pending", true)
             .AddField("Boosts",

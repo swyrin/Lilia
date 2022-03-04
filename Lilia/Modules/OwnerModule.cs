@@ -1,7 +1,7 @@
-﻿using Lilia.Services;
-using Serilog;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord.Interactions;
+using Lilia.Services;
+using Serilog;
 
 namespace Lilia.Modules;
 
@@ -19,5 +19,5 @@ public class OwnerModule : InteractionModuleBase<SocketInteractionContext>
             x.Content = "Goodbye");
 
         LiliaClient.Cts.Cancel();
-    }     
+    }
 }

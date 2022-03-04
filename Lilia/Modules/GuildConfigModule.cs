@@ -5,7 +5,6 @@ using Discord.WebSocket;
 using Lilia.Commons;
 using Lilia.Database;
 using Lilia.Database.Interactors;
-using Lilia.Database.Models;
 using Lilia.Modules.Utils;
 using Lilia.Services;
 
@@ -106,7 +105,7 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
     {
         await Context.Interaction.DeferAsync(true);
 
-        DbGuild dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
+        var dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
 
         if (!GuildConfigModuleUtils.IsChannelExist(Context, dbGuild.WelcomeChannelId))
         {
@@ -153,7 +152,8 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
         await _dbCtx.SaveChangesAsync();
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
-            x.Content = $"{(dbGuild.IsWelcomeEnabled ? "Allowed" : "Blocked")} the delivery of welcome message in this guild");
+            x.Content =
+                $"{(dbGuild.IsWelcomeEnabled ? "Allowed" : "Blocked")} the delivery of welcome message in this guild");
     }
 
     [SlashCommand("toggle_goodbye", "Toggle goodbye message allowance in this guild")]
@@ -186,9 +186,10 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
         await _dbCtx.SaveChangesAsync();
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
-            x.Content = $"{(dbGuild.IsGoodbyeEnabled ? "Allowed" : "Blocked")} the delivery of goodbye message in this guild");
+            x.Content =
+                $"{(dbGuild.IsGoodbyeEnabled ? "Allowed" : "Blocked")} the delivery of goodbye message in this guild");
     }
-    
+
     [SlashCommand("placeholders", "Get all available configuration placeholders")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public async Task ConfigPlaceholdersCommand()
@@ -228,10 +229,12 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
 
         var embedBuilder = Context.User.CreateEmbedWithUserData()
             .WithAuthor("All configurations", null, Context.Client.CurrentUser.GetAvatarUrl())
-            .AddField("Welcome message", string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage) ? "None" : dbGuild.WelcomeMessage, true)
+            .AddField("Welcome message",
+                string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage) ? "None" : dbGuild.WelcomeMessage, true)
             .AddField("Welcome channel", welcomeChnMention, true)
             .AddField("Welcome message allowed", $"{dbGuild.IsWelcomeEnabled}", true)
-            .AddField("Goodbye message", string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage) ? "None" : dbGuild.GoodbyeMessage, true)
+            .AddField("Goodbye message",
+                string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage) ? "None" : dbGuild.GoodbyeMessage, true)
             .AddField("Goodbye channel", goodbyeChnMention, true)
             .AddField("Goodbye message allowed", $"{dbGuild.IsGoodbyeEnabled}", true);
 

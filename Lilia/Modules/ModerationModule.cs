@@ -1,6 +1,4 @@
-﻿using Lilia.Database;
-using Lilia.Services;
-using System;
+﻿using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,8 +7,10 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Fergun.Interactive.Pagination;
 using Lilia.Commons;
+using Lilia.Database;
 using Lilia.Database.Interactors;
 using Lilia.Modules.Utils;
+using Lilia.Services;
 
 namespace Lilia.Modules;
 
@@ -20,9 +20,9 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
     [Group("general", "General command for moderating members")]
     public class ModerationGeneralModule : InteractionModuleBase<SocketInteractionContext>
     {
-        private readonly LiliaDatabaseContext _dbContext;
-        private readonly LiliaClient _client;
         private const string MuteRoleName = "Lilia-mute";
+        private readonly LiliaClient _client;
+        private readonly LiliaDatabaseContext _dbContext;
 
         public ModerationGeneralModule(LiliaClient client, LiliaDatabase database)
         {
@@ -38,11 +38,13 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             string reason = "Rule violation")
         {
             await Context.Interaction.DeferAsync();
-            
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
-                x.Content = $"{Format.Bold("Mention")} all the users you want to ban with reason {Format.Bold(reason)}");
 
-            var mentionedUsers = await ModerationModuleUtils.GetMentionedUsersAsync(Context, _client.InteractiveService);
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                x.Content =
+                    $"{Format.Bold("Mention")} all the users you want to ban with reason {Format.Bold(reason)}");
+
+            var mentionedUsers =
+                await ModerationModuleUtils.GetMentionedUsersAsync(Context, _client.InteractiveService);
 
             StringBuilder stringBuilder = new();
 
@@ -55,7 +57,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                     stringBuilder.AppendLine("Skipped because it is either you or me");
                     continue;
                 }
-                
+
                 var execLine = $"Banning {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}";
                 stringBuilder.AppendLine(execLine);
 
@@ -65,32 +67,36 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                 }
                 catch
                 {
-                    stringBuilder.AppendLine($"Missing permission to ban {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}");             
+                    stringBuilder.AppendLine(
+                        $"Missing permission to ban {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}");
                 }
-                
+
                 var now = DateTime.Now;
-                
+
                 var embedBuilder = new EmbedBuilder()
                     .WithAuthor(null, Context.Client.CurrentUser.GetAvatarUrl())
                     .WithTitle($"You have been banned from guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
                     .WithThumbnailUrl(Context.Guild.IconUrl)
                     .AddField("Reason", reason, true)
-                    .AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator} (ID: {Context.User.Id})", true)
+                    .AddField("Moderator",
+                        $"{Context.User.Username}#{Context.User.Discriminator} (ID: {Context.User.Id})", true)
                     .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
-                    .AddField("What to do now?",$"If you believe this was a mistake, you can try sending an appeal using {Format.Code("mod message appeal")} with provided IDs");
-                
+                    .AddField("What to do now?",
+                        $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("mod message appeal")} with provided IDs");
+
                 if (!mentionedMember.IsBot)
-                    await mentionedMember.SendMessageAsync(embed: embedBuilder.Build());                
+                    await mentionedMember.SendMessageAsync(embed: embedBuilder.Build());
             }
 
             var pages = LiliaUtilities.CreatePagesFromString($"{stringBuilder}");
-            
+
             var paginator = new StaticPaginatorBuilder()
                 .AddUser(Context.User)
                 .WithPages(pages)
                 .Build();
-            
-            await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction, responseType: InteractionResponseType.DeferredChannelMessageWithSource);
+
+            await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction,
+                responseType: InteractionResponseType.DeferredChannelMessageWithSource);
         }
 
         [SlashCommand("kick", "Kick members in batch")]
@@ -130,9 +136,10 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                 }
                 catch
                 {
-                    stringBuilder.AppendLine($"Missing permission to kick {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}");             
+                    stringBuilder.AppendLine(
+                        $"Missing permission to kick {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}");
                 }
-                
+
                 var now = DateTime.Now;
 
                 var embedBuilder = new EmbedBuilder()
@@ -140,7 +147,8 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                     .WithTitle($"You have been kicked from guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
                     .WithThumbnailUrl(Context.Guild.IconUrl)
                     .AddField("Reason", reason, true)
-                    .AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})", true)
+                    .AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})",
+                        true)
                     .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
                     .AddField("What to do now?",
                         $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("mod message appeal")} with provided IDs");
@@ -156,7 +164,8 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                 .WithPages(pages)
                 .Build();
 
-            await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction, responseType: InteractionResponseType.DeferredChannelMessageWithSource);
+            await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction,
+                responseType: InteractionResponseType.DeferredChannelMessageWithSource);
         }
 
         [SlashCommand("warn_add", "Add a warn to an user")]
@@ -167,10 +176,10 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             string reason = "Rule violation")
         {
             await Context.Interaction.DeferAsync();
-            
+
             if (user == Context.User || user.Id == Context.Client.CurrentUser.Id)
             {
-                await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Skipped because it is either you or me");
 
                 return;
@@ -180,29 +189,28 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 
             if (dbUser.WarnCount == 3)
             {
-                await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = $"{user.Mention} has been warned and muted earlier");
-                
+
                 return;
             }
 
             dbUser.WarnCount += 1;
 
-            var (isExistedInPast, discordRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
+            var (isExistedInPast, discordRole) =
+                await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None,
+                    Color.Default);
 
             if (!isExistedInPast)
-            {
                 foreach (var channel in Context.Guild.Channels)
-                {
-                    await channel.AddPermissionOverwriteAsync(discordRole, new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
-                }    
-            }
-            
+                    await channel.AddPermissionOverwriteAsync(discordRole,
+                        new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
+
             if (dbUser.WarnCount == 3) await user.AddRoleAsync(discordRole);
-            
+
             var now = DateTime.Now;
-            
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = $"Added a warn to {user.Mention}\nNow they have {dbUser.WarnCount} warn(s)");
 
             var embedBuilder = new EmbedBuilder()
@@ -218,10 +226,10 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 
             if (!user.IsBot)
                 await user.SendMessageAsync(embed: embedBuilder.Build());
-            
+
             await _dbContext.SaveChangesAsync();
         }
-        
+
         [SlashCommand("warn_remove", "Remove a warn from an user")]
         public async Task ModerationGeneralWarnRemoveCommand(
             [Summary("user", "The user to remove a warn")]
@@ -233,7 +241,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 
             if (user == Context.User || user.Id == Context.Client.CurrentUser.Id)
             {
-                await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Skipped because it is either you or me");
 
                 return;
@@ -245,21 +253,21 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             {
                 case 3:
                 {
-                    var (isExistedInPast, discordRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
+                    var (isExistedInPast, discordRole) =
+                        await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None,
+                            Color.Default);
 
                     if (!isExistedInPast)
-                    {
                         foreach (var channel in Context.Guild.Channels)
-                        {
-                            await channel.AddPermissionOverwriteAsync(discordRole, new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
-                        }    
-                    }
+                            await channel.AddPermissionOverwriteAsync(discordRole,
+                                new OverwritePermissions(sendMessages: PermValue.Deny,
+                                    sendMessagesInThreads: PermValue.Deny));
 
                     await user.RemoveRoleAsync(discordRole);
                     break;
                 }
                 case 0:
-                    await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                    await Context.Interaction.ModifyOriginalResponseAsync(x =>
                         x.Content = "No warn to remove");
 
                     return;
@@ -268,8 +276,8 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             dbUser.WarnCount -= 1;
 
             var now = DateTime.Now;
-            
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = $"Removed a warn of {user.Mention}\nNow they have {dbUser.WarnCount} warn(s)");
 
             var embedBuilder = new EmbedBuilder()
@@ -283,51 +291,48 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 
             if (!user.IsBot)
                 await user.SendMessageAsync(embed: embedBuilder.Build());
-            
+
             await _dbContext.SaveChangesAsync();
         }
 
         [SlashCommand("mute", "Mute an user, like Timeout but infinite duration")]
         public async Task ModerationGeneralMuteCommand(
-            [Summary("user", "The user to mute")]
-            SocketGuildUser user,
-            [Summary("reason", "The reason")]
-            string reason = "Excessive rule violation")
+            [Summary("user", "The user to mute")] SocketGuildUser user,
+            [Summary("reason", "The reason")] string reason = "Excessive rule violation")
         {
             await Context.Interaction.DeferAsync();
 
             if (user == Context.User || user.Id == Context.Client.CurrentUser.Id)
             {
-                await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Skipped because it is either you or me");
 
                 return;
             }
-            
-            var (isExistedInPast, discordRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
+
+            var (isExistedInPast, discordRole) =
+                await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None,
+                    Color.Default);
 
             if (!isExistedInPast)
-            {
                 foreach (var channel in Context.Guild.Channels)
-                {
-                    await channel.AddPermissionOverwriteAsync(discordRole, new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
-                }    
-            }
+                    await channel.AddPermissionOverwriteAsync(discordRole,
+                        new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
 
             // no equivalent like Has?
             if (user.Roles.Count(x => x == discordRole) == 1)
             {
-                await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Already muted");
-                
+
                 return;
             }
-            
-            await user.AddRoleAsync(discordRole);           
-            
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+
+            await user.AddRoleAsync(discordRole);
+
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = $"Muted {user.Mention} because of reason: {Format.Bold(reason)}");
-            
+
             var now = DateTime.Now;
             var embedBuilder = new EmbedBuilder()
                 .WithAuthor(null, Context.Client.CurrentUser.GetAvatarUrl())
@@ -343,48 +348,45 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             if (!user.IsBot)
                 await user.SendMessageAsync(embed: embedBuilder.Build());
         }
-        
+
         [SlashCommand("unmute", "Unmute an user, like Remove Timeout")]
         public async Task ModerationGeneralUnmuteCommand(
-            [Summary("user", "The user to mute")]
-            SocketGuildUser user,
-            [Summary("reason", "The reason")]
-            string reason = "Good behavior")
+            [Summary("user", "The user to mute")] SocketGuildUser user,
+            [Summary("reason", "The reason")] string reason = "Good behavior")
         {
             await Context.Interaction.DeferAsync();
 
             if (user == Context.User || user.Id == Context.Client.CurrentUser.Id)
             {
-                await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Skipped because it is either you or me");
 
                 return;
             }
-            
-            var (isExistedInPast, discordRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
+
+            var (isExistedInPast, discordRole) =
+                await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None,
+                    Color.Default);
 
             if (!isExistedInPast)
-            {
                 foreach (var channel in Context.Guild.Channels)
-                {
-                    await channel.AddPermissionOverwriteAsync(discordRole, new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
-                }    
-            }
+                    await channel.AddPermissionOverwriteAsync(discordRole,
+                        new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
 
             // no equivalent like Has?
             if (user.Roles.Any(x => x == discordRole))
             {
-                await Context.Interaction.ModifyOriginalResponseAsync(x => 
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Already unmuted");
-                
+
                 return;
             }
-            
-            await user.RemoveRoleAsync(discordRole);           
-            
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+
+            await user.RemoveRoleAsync(discordRole);
+
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = $"Unmuted {user.Mention} because of reason: {Format.Bold(reason)}");
-            
+
             var now = DateTime.Now;
             var embedBuilder = new EmbedBuilder()
                 .WithAuthor(null, Context.Client.CurrentUser.GetAvatarUrl())
@@ -425,36 +427,43 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                 var guildId = components.First(x => x.CustomId == "guild-id").Value;
                 var receiverId = components.First(x => x.CustomId == "receiver-id").Value;
                 var appealText = components.First(x => x.CustomId == "appeal-text").Value;
-                
-                var guildIdLong = Convert.ToUInt64(guildId);
-                var receiverIdLong = Convert.ToUInt64(receiverId);
 
-                var guild = Context.Client.GetGuild(guildIdLong);
-                await Context.Client.DownloadUsersAsync(new[] {guild});
-                
-                if (guild == null)
+                try
                 {
-                    await modal.RespondAsync("The guild you entered does not exist");
-                    return;
-                }
-            
-                var receiver = guild.GetUser(receiverIdLong);
+                    var guildIdLong = Convert.ToUInt64(guildId);
+                    var receiverIdLong = Convert.ToUInt64(receiverId);
 
-                if (receiver == null)
+                    var guild = Context.Client.GetGuild(guildIdLong);
+                    await Context.Client.DownloadUsersAsync(new[] {guild});
+
+                    if (guild == null)
+                    {
+                        await modal.RespondAsync("The guild you entered does not exist");
+                        return;
+                    }
+
+                    var receiver = guild.GetUser(receiverIdLong);
+
+                    if (receiver == null)
+                    {
+                        await modal.RespondAsync("The user you entered does not belong to the guild");
+                        return;
+                    }
+
+                    await receiver.SendMessageAsync(embed: Context.User.CreateEmbedWithUserData()
+                        .WithTitle("An appeal has been sent to you, content below")
+                        .WithDescription(appealText)
+                        .WithAuthor(Format.UsernameAndDiscriminator(Context.User), Context.User.GetAvatarUrl())
+                        .AddField("Sender", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})")
+                        .AddField("Guild to appeal", $"{guild.Name} (ID: {guild.Id}")
+                        .Build());
+
+                    await modal.RespondAsync("Sent the appeal");
+                }
+                catch
                 {
-                    await modal.RespondAsync("The user you entered does not belong to the guild");
-                    return;
+                    await modal.RespondAsync("Looks like you provided invalid IDs");
                 }
-            
-                await receiver.SendMessageAsync(embed: Context.User.CreateEmbedWithUserData()
-                    .WithTitle("An appeal has been sent to you, content below")
-                    .WithDescription(appealText)
-                    .WithAuthor(Format.UsernameAndDiscriminator(Context.User), Context.User.GetAvatarUrl())
-                    .AddField("Sender", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})")
-                    .AddField("Guild to appeal", $"{guild.Name} (ID: {guild.Id}")
-                    .Build());
-
-                await modal.RespondAsync("Sent the appeal");
             };
         }
     }

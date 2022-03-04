@@ -21,7 +21,8 @@ public static class ModerationModuleUtils
         return (false, testRole);
     }
 
-    public static async Task<IReadOnlyCollection<SocketUser>> GetMentionedUsersAsync(SocketInteractionContext ctx, InteractiveService interactive)
+    public static async Task<IReadOnlyCollection<SocketUser>> GetMentionedUsersAsync(SocketInteractionContext ctx,
+        InteractiveService interactive)
     {
         var result = await interactive.NextMessageAsync(x => x.Channel.Id == ctx.Channel.Id && x.Author == ctx.User);
         return result.IsSuccess ? result.Value?.MentionedUsers : new List<SocketUser>();

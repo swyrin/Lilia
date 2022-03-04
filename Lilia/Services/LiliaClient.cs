@@ -1,10 +1,4 @@
-﻿using Lilia.Commons;
-using Lilia.Json;
-using Microsoft.Extensions.DependencyInjection;
-using OsuSharp;
-using OsuSharp.Extensions;
-using Serilog;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -18,10 +12,16 @@ using Lavalink4NET;
 using Lavalink4NET.Artwork;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Tracking;
+using Lilia.Commons;
 using Lilia.Database;
 using Lilia.Database.Interactors;
+using Lilia.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using OsuSharp;
+using OsuSharp.Extensions;
+using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 
@@ -29,21 +29,6 @@ namespace Lilia.Services;
 
 public class LiliaClient
 {
-    private DiscordSocketClient _client;
-    private InteractionService _interactionService;
-    private ServiceProvider _serviceProvider;
-    
-    public InteractiveService InteractiveService;
-    public ArtworkService ArtworkService;
-    public InactivityTrackingService InactivityTracker;
-    public LavalinkNode Lavalink;
-    public LiliaDatabase Database;
-    public DateTime StartTime;
-
-    public static readonly BotConfiguration BotConfiguration;
-    public static readonly CancellationTokenSource Cts;
-    public static readonly DbContextOptionsBuilder<LiliaDatabaseContext> OptionsBuilder = new();
-
     public const GuildPermission RequiredPermissions =
         GuildPermission.ManageRoles | GuildPermission.ManageChannels | GuildPermission.KickMembers |
         GuildPermission.BanMembers | GuildPermission.ViewChannel |
@@ -57,17 +42,25 @@ public class LiliaClient
         GuildPermission.Speak | GuildPermission.Connect |
         GuildPermission.StartEmbeddedActivities;
 
-    public LiliaClient()
-    {
-        Log.Logger.Information("Setting up databases");
-        Database = new LiliaDatabase();
-    }
-    
+    public static readonly BotConfiguration BotConfiguration;
+    public static readonly CancellationTokenSource Cts;
+    public static readonly DbContextOptionsBuilder<LiliaDatabaseContext> OptionsBuilder = new();
+    private DiscordSocketClient _client;
+    private InteractionService _interactionService;
+    private ServiceProvider _serviceProvider;
+    public ArtworkService ArtworkService;
+    public LiliaDatabase Database;
+    public InactivityTrackingService InactivityTracker;
+
+    public InteractiveService InteractiveService;
+    public LavalinkNode Lavalink;
+    public DateTime StartTime;
+
     static LiliaClient()
     {
         BotConfiguration = JsonManager<BotConfiguration>.Read();
         Cts = new CancellationTokenSource();
-        
+
         var sqlConfig = BotConfiguration.Credentials.PostgreSql;
         var connStrBuilder = new NpgsqlConnectionStringBuilder
         {
@@ -88,16 +81,23 @@ public class LiliaClient
             .UseNpgsql(connStrBuilder.ToString());
     }
 
+    public LiliaClient()
+    {
+        Log.Logger.Information("Setting up databases");
+        Database = new LiliaDatabase();
+    }
+
     private static async Task CheckForUpdateAsync()
     {
         Log.Logger.Information("Checking for updates");
-        
+
         using HttpClient client = new();
 
         var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-        var sourceVersionStr = await client.GetStringAsync("https://raw.githubusercontent.com/Lilia-Workshop/Lilia/master/version.txt");
+        var sourceVersionStr =
+            await client.GetStringAsync("https://raw.githubusercontent.com/Lilia-Workshop/Lilia/master/version.txt");
         var sourceVersion = Version.Parse(sourceVersionStr);
-        
+
         Log.Logger.Debug($"Current version: {currentVersion}  - Latest version: {sourceVersion}");
 
         if (currentVersion < sourceVersion)
@@ -111,11 +111,11 @@ public class LiliaClient
             Log.Logger.Information("You are using latest version, hooray");
         }
     }
-    
+
     public async Task RunAsync()
     {
         await CheckForUpdateAsync();
-        
+
         Log.Logger.Information("Setting up client");
 
         _client = new DiscordSocketClient(new DiscordSocketConfig
@@ -132,7 +132,7 @@ public class LiliaClient
             LogLevel = LogSeverity.Debug,
             DefaultRunMode = RunMode.Async
         });
-        
+
         InteractiveService = new InteractiveService(_client, new InteractiveConfig
         {
             DefaultTimeout = TimeSpan.FromMinutes(2),
@@ -165,7 +165,7 @@ public class LiliaClient
             })
             .AddSingleton(this)
             .BuildServiceProvider();
-        
+
         await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
 
         Log.Logger.Information("Registering event handlers");
@@ -204,12 +204,10 @@ public class LiliaClient
         catch (Exception e)
         {
             Console.WriteLine(e.ToString());
-        
-            if(interaction.Type == InteractionType.ApplicationCommand)
-            {
+
+            if (interaction.Type == InteractionType.ApplicationCommand)
                 await interaction.GetOriginalResponseAsync()
                     .ContinueWith(async message => await message.Result.DeleteAsync());
-            }
         }
     }
 
@@ -229,7 +227,7 @@ public class LiliaClient
         Log
             .ForContext("SourceContext", message.Source)
             .Write(severity, message.Exception, "{Message:l}", message.Message);
-        
+
         return Task.CompletedTask;
     }
 
@@ -240,13 +238,11 @@ public class LiliaClient
         Log.Logger.Information("Registering commands");
 
         if (BotConfiguration.Client.PrivateGuildIds.Count > 0)
-        {
             foreach (var guildId in BotConfiguration.Client.PrivateGuildIds)
             {
                 Log.Logger.Warning($"Registering slash commands for guild with ID \"{guildId}\"");
                 await _interactionService.RegisterCommandsToGuildAsync(guildId);
             }
-        }
 
         if (BotConfiguration.Client.SlashCommandsForGlobal)
         {
@@ -264,14 +260,16 @@ public class LiliaClient
 
         if (!Enum.TryParse(clientActivityConfig.Type, out ActivityType activityType))
         {
-            Log.Logger.Warning($"Can not convert \"{clientActivityConfig.Type}\" to a valid activity type, using \"Playing\"");
+            Log.Logger.Warning(
+                $"Can not convert \"{clientActivityConfig.Type}\" to a valid activity type, using \"Playing\"");
             Log.Logger.Information("Valid options are: ListeningTo, Competing, Playing, Watching");
             activityType = ActivityType.Playing;
         }
 
         if (!Enum.TryParse(clientActivityConfig.Status, out UserStatus userStatus))
         {
-            Log.Logger.Warning($"Can not convert \"{clientActivityConfig.Status}\" to a valid status, using \"Online\"");
+            Log.Logger.Warning(
+                $"Can not convert \"{clientActivityConfig.Status}\" to a valid status, using \"Online\"");
             Log.Logger.Information("Valid options are: Online, Invisible, Idle, DoNotDisturb");
             userStatus = UserStatus.Online;
         }
@@ -284,12 +282,13 @@ public class LiliaClient
         Log.Logger.Information("Initializing Lavalink connection");
         await Lavalink.InitializeAsync();
         ArtworkService = new ArtworkService();
-        InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(_client), new InactivityTrackingOptions
-        {
-            PollInterval = TimeSpan.FromMinutes(2),
-            DisconnectDelay = TimeSpan.Zero,
-            TrackInactivity = true
-        }, new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("InteractivityTracker")));
+        InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(_client),
+            new InactivityTrackingOptions
+            {
+                PollInterval = TimeSpan.FromMinutes(2),
+                DisconnectDelay = TimeSpan.Zero,
+                TrackInactivity = true
+            }, new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("InteractivityTracker")));
 
         Log.Logger.Information($"Client is ready to serve as {Format.UsernameAndDiscriminator(_client.CurrentUser)}");
         StartTime = DateTime.Now;

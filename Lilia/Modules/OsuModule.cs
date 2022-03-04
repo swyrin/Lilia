@@ -15,15 +15,16 @@ using Lilia.Services;
 using OsuSharp.Domain;
 using OsuSharp.Exceptions;
 using OsuSharp.Interfaces;
+using IUser = OsuSharp.Interfaces.IUser;
 
 namespace Lilia.Modules;
 
 [Group("osu", "osu! related commands")]
 public class OsuModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly IOsuClient _osuClient;
-    private readonly LiliaClient _liliaClient;
     private readonly LiliaDatabaseContext _dbCtx;
+    private readonly LiliaClient _liliaClient;
+    private readonly IOsuClient _osuClient;
 
     public OsuModule(LiliaClient liliaClient, LiliaDatabase database, IOsuClient osuClient)
     {
@@ -40,7 +41,7 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         OsuUserProfileSearchMode searchMode = OsuUserProfileSearchMode.Default)
     {
         await Context.Interaction.DeferAsync();
-        
+
         if (searchMode == OsuUserProfileSearchMode.Default) searchMode = OsuUserProfileSearchMode.Osu;
 
         var dbUser = _dbCtx.GetUserRecord(Context.User);
@@ -51,7 +52,8 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         await _dbCtx.SaveChangesAsync();
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
-            x.Content = $"Set your osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
+            x.Content =
+                $"Set your osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
     }
 
     [SlashCommand("force_update", "Update a member's osu! profile information in my database", runMode: RunMode.Async)]
@@ -59,10 +61,8 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
     public async Task OsuForceUpdateCommand(
         [Summary(description: "Member to update")]
         SocketGuildUser member,
-        [Summary("username", "osu! username")]
-        string username,
-        [Summary("mode", "Mode")]
-        OsuUserProfileSearchMode searchMode = OsuUserProfileSearchMode.Osu)
+        [Summary("username", "osu! username")] string username,
+        [Summary("mode", "Mode")] OsuUserProfileSearchMode searchMode = OsuUserProfileSearchMode.Osu)
     {
         await Context.Interaction.DeferAsync(true);
 
@@ -76,7 +76,8 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         await _dbCtx.SaveChangesAsync();
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
-            x.Content = $"Set the member's osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
+            x.Content =
+                $"Set the member's osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
     }
 
     [SlashCommand("info", "Get your linked data with me")]
@@ -86,7 +87,8 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         var dbUser = _dbCtx.GetUserRecord(Context.Interaction.User);
 
         var embedBuilder = Context.Interaction.User.CreateEmbedWithUserData()
-            .AddField("Username", !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
+            .AddField("Username",
+                !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
             .AddField("Mode", !string.IsNullOrWhiteSpace(dbUser.OsuMode) ? dbUser.OsuMode : "Not linked yet", true);
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
@@ -100,10 +102,9 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
     public async Task OsuLookupCommand(
         [Summary("user", "Someone in this Discord server")]
         SocketUser user,
-        [Summary("type", "Search type")]
-        OsuUserProfileSearchType profileSearchType = OsuUserProfileSearchType.Profile,
-        [Summary("mode", "Search mode")]
-        OsuUserProfileSearchMode osuUserProfileSearchMode = OsuUserProfileSearchMode.Default)
+        [Summary("type", "Search type")] OsuUserProfileSearchType profileSearchType = OsuUserProfileSearchType.Profile,
+        [Summary("mode", "Search mode")] OsuUserProfileSearchMode osuUserProfileSearchMode =
+            OsuUserProfileSearchMode.Default)
     {
         await Context.Interaction.DeferAsync();
 
@@ -111,14 +112,14 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
 
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "The requested user doesn't exist in my database");
 
             return;
         }
 
         GameMode omode;
-        
+
         if (osuUserProfileSearchMode == OsuUserProfileSearchMode.Default) Enum.TryParse(dbUser.OsuMode, out omode);
         else omode = ToGameMode(osuUserProfileSearchMode);
 
@@ -127,17 +128,15 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
 
     [SlashCommand("profile", "Get osu! profile from username")]
     public async Task OsuProfileCommand(
-        [Summary("username", "osu! username")]
-        string username,
-        [Summary("type", "Search type")]
-        OsuUserProfileSearchType profileSearchType = OsuUserProfileSearchType.Profile,
-        [Summary("mode", "Search mode")]
-        OsuUserProfileSearchMode osuUserProfileSearchMode = OsuUserProfileSearchMode.Default)
+        [Summary("username", "osu! username")] string username,
+        [Summary("type", "Search type")] OsuUserProfileSearchType profileSearchType = OsuUserProfileSearchType.Profile,
+        [Summary("mode", "Search mode")] OsuUserProfileSearchMode osuUserProfileSearchMode =
+            OsuUserProfileSearchMode.Default)
     {
         await Context.Interaction.DeferAsync();
         await GenericOsuProcessing(username, profileSearchType, osuUserProfileSearchMode);
     }
-    
+
     [UserCommand("osu! - Get profile")]
     public async Task OsuProfileContextMenu(SocketUser user)
     {
@@ -149,7 +148,8 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
-                x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+                x.Content =
+                    $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
 
             return;
         }
@@ -169,11 +169,12 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
-                x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+                x.Content =
+                    $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
 
             return;
         }
-        
+
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
         await GenericOsuProcessing(dbUser.OsuUsername, OsuUserProfileSearchType.Recent, FromGameMode(omode), true);
     }
@@ -189,7 +190,8 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
         {
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
-                x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+                x.Content =
+                    $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
 
             return;
         }
@@ -197,7 +199,7 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         Enum.TryParse(dbUser.OsuMode, out GameMode omode);
         await GenericOsuProcessing(dbUser.OsuUsername, OsuUserProfileSearchType.Best, FromGameMode(omode), true);
     }
-    
+
     private static GameMode ToGameMode(OsuUserProfileSearchMode choice)
     {
         return choice switch
@@ -253,7 +255,7 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         return scores;
     }
 
-    private async Task OsuProfileProcessAsync(OsuSharp.Interfaces.IUser osuUser, GameMode omode)
+    private async Task OsuProfileProcessAsync(IUser osuUser, GameMode omode)
     {
         var embedBuilder = Context.Interaction.User.CreateEmbedWithUserData()
             .WithAuthor(
@@ -273,7 +275,7 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
                 $"{osuUser.Statistics.UserLevel.Current} (at {osuUser.Statistics.UserLevel.Progress}%)", true)
             .AddField("Max combo", $"{osuUser.Statistics.MaximumCombo}", true);
 
-        await Context.Interaction.ModifyOriginalResponseAsync(x => 
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
             x.Embed = embedBuilder.Build());
     }
 
@@ -284,10 +286,10 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         var testRun = await GetOsuScoresAsync(username, omode, profileSearchType, true, 2);
         if (!testRun.Any())
         {
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "No scores found. Possible reasons:\n" +
-                             $"1. The user {Format.Bold(username)} does not play the mode {Format.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
-                             "2. Internal issue, contact the owner(s) if the issue persists");
+                            $"1. The user {Format.Bold(username)} does not play the mode {Format.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
+                            "2. Internal issue, contact the owner(s) if the issue persists");
             return;
         }
 
@@ -295,7 +297,7 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         var includeFails = false;
 
         #region Fail inclusion prompt
-        
+
         var componentBuilder = new ComponentBuilder()
             .WithButton("Yes, please!", "yesBtn", ButtonStyle.Success)
             .WithButton("Probably not!", "noBtn", ButtonStyle.Danger);
@@ -308,13 +310,14 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
                 x.Components = componentBuilder.Build();
             });
 
-            var res = await InteractionUtility.WaitForMessageComponentAsync(Context.Client, failAsk, TimeSpan.FromMinutes(1));
+            var res = await InteractionUtility.WaitForMessageComponentAsync(Context.Client, failAsk,
+                TimeSpan.FromMinutes(1));
             var selectedBtnId = ((SocketMessageComponentData) res.Data).CustomId;
 
             if (res.HasResponded)
             {
                 includeFails = selectedBtnId == "yesBtn";
-                await res.RespondAsync("Please wait...");    
+                await res.RespondAsync("Please wait...");
             }
             else
             {
@@ -324,12 +327,12 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         #endregion
-        
+
         #region Score count prompt (command only)
-        
+
         if (!isContextMenu)
         {
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "How many scores do you want to get? (1 to 100)");
 
             var nextMessage =
@@ -355,29 +358,30 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
                 return;
             }
         }
-        
+
         #endregion
 
-        await Context.Interaction.ModifyOriginalResponseAsync(x => 
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
             x.Content = "Processing, please wait (this might take a while)");
 
         var pages = new List<PageBuilder>();
 
         var scores = await GetOsuScoresAsync(username, omode, profileSearchType, includeFails, r);
         var defEmbed = Context.User.CreateEmbedWithUserData();
-        
+
         var pos = 0;
         foreach (var score in scores)
         {
             ++pos;
             var map = await _osuClient.GetBeatmapAsync(score.Beatmap.Id);
             var isPpExists = score.PerformancePoints != null && score.Weight != null;
-            
+
             pages.Add(new PageBuilder()
                 .WithColor(defEmbed.Color ?? Color.Red)
                 .WithFooter(defEmbed.Footer)
                 .WithTimestamp(defEmbed.Timestamp)
-                .WithAuthor($"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{map.Version}]{(score.Mods.Any() ? $" +{string.Join(string.Empty, score.Mods)}" : string.Empty)}",
+                .WithAuthor(
+                    $"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{map.Version}]{(score.Mods.Any() ? $" +{string.Join(string.Empty, score.Mods)}" : string.Empty)}",
                     map.Url)
                 .WithThumbnailUrl(score.Beatmapset.Covers.Card2x)
                 .WithDescription($"Score position: {pos}\n")
@@ -402,15 +406,17 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
             .AddUser(Context.User)
             .WithPages(pages)
             .Build();
-        
-        await _liliaClient.InteractiveService.SendPaginatorAsync(staticPageBuilder, Context.Channel, resetTimeoutOnInput: true);
+
+        await _liliaClient.InteractiveService.SendPaginatorAsync(staticPageBuilder, Context.Channel,
+            resetTimeoutOnInput: true);
     }
 
-    private async Task GenericOsuProcessing(string username, OsuUserProfileSearchType profileSearchType, OsuUserProfileSearchMode profileSearchMode, bool isContextMenu = false)
+    private async Task GenericOsuProcessing(string username, OsuUserProfileSearchType profileSearchType,
+        OsuUserProfileSearchMode profileSearchMode, bool isContextMenu = false)
     {
         try
         {
-            OsuSharp.Interfaces.IUser osuUser;
+            IUser osuUser;
             GameMode omode;
 
             if (profileSearchMode == OsuUserProfileSearchMode.Default)
@@ -425,22 +431,18 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
             }
 
             if (profileSearchType == OsuUserProfileSearchType.Profile)
-            {
                 await OsuProfileProcessAsync(osuUser, omode);
-            }
             else
-            {
                 await OsuScoresProcessAsync(username, omode, profileSearchType, profileSearchMode, isContextMenu);
-            }
         }
         catch (ApiException)
         {
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "Something went wrong when sending a request");
         }
         catch (OsuDeserializationException)
         {
-            await Context.Interaction.ModifyOriginalResponseAsync(x => 
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "No scores found. Possible reasons:\n" +
                             $"1. The user {Format.Bold(username)} does not play the mode {Format.Bold(profileSearchMode.ToString())}, or the old plays are ignored by the server\n" +
                             "2. Internal issue, contact the owner(s) if the issue persists");

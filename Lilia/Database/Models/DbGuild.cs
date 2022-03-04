@@ -3,7 +3,7 @@
 public class DbGuild
 {
     public ulong Id { get; set; }
-    
+
     public bool IsWelcomeEnabled { get; set; }
     public ulong WelcomeChannelId { get; set; }
     public string WelcomeMessage { get; set; }

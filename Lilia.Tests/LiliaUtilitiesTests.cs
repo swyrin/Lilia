@@ -44,7 +44,7 @@ public class LiliaUtilitiesTests
     public void IsValidDiscordBotInviteFailTest()
     {
         var res1 = string.Empty.IsDiscordValidBotInvite();
-        
+
         string? test = null;
         var res2 = test.IsDiscordValidBotInvite();
 

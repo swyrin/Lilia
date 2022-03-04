@@ -12,7 +12,7 @@ namespace Lilia.Commons;
 public static class LiliaUtilities
 {
     private static readonly CultureInfo EnglishCulture = new("en-GB");
-    
+
     public static EmbedBuilder CreateEmbedWithUserData(this SocketUser user)
     {
         return new EmbedBuilder()
@@ -20,7 +20,7 @@ public static class LiliaUtilities
             .WithColor(Color.DarkRed)
             .WithFooter($"Requested by: {user.Username}#{user.Discriminator}", user.GetAvatarUrl());
     }
-    
+
     public static Tuple<ulong, ulong, ulong> ResolveDiscordMessageJumpLink(this string str)
     {
         // https://discord.com/channels/guild_id/channel_id/message_id
@@ -29,26 +29,31 @@ public static class LiliaUtilities
         var guildId = Convert.ToUInt64(segments[2].Replace('/', '\0'));
         var channelId = Convert.ToUInt64(segments[3].Replace('/', '\0'));
         var messageId = Convert.ToUInt64(segments[4].Replace('/', '\0'));
-        
+
         return new Tuple<ulong, ulong, ulong>(guildId, channelId, messageId);
     }
-    
+
     public static string ToLongReadableTimeSpan(this TimeSpan timeSpan)
     {
         StringBuilder timeStr = new();
-        
-        if (timeSpan.Days > 0) timeStr.Append(timeSpan.Days).Append(" day").Append(timeSpan.Days >= 2 ? 's' : string.Empty).Append(' ');
-        if (timeSpan.Hours > 0) timeStr.Append(timeSpan.Hours).Append(" hour").Append(timeSpan.Hours >= 2 ? 's' : string.Empty).Append(' ');
-        if (timeSpan.Minutes > 0) timeStr.Append(timeSpan.Minutes).Append(" minute").Append(timeSpan.Minutes >= 2 ? 's' : string.Empty).Append(' ');
-        if (timeSpan.Seconds > 0) timeStr.Append(timeSpan.Seconds).Append(" second").Append(timeSpan.Seconds >= 2 ? 's' : string.Empty);
+
+        if (timeSpan.Days > 0)
+            timeStr.Append(timeSpan.Days).Append(" day").Append(timeSpan.Days >= 2 ? 's' : string.Empty).Append(' ');
+        if (timeSpan.Hours > 0)
+            timeStr.Append(timeSpan.Hours).Append(" hour").Append(timeSpan.Hours >= 2 ? 's' : string.Empty).Append(' ');
+        if (timeSpan.Minutes > 0)
+            timeStr.Append(timeSpan.Minutes).Append(" minute").Append(timeSpan.Minutes >= 2 ? 's' : string.Empty)
+                .Append(' ');
+        if (timeSpan.Seconds > 0)
+            timeStr.Append(timeSpan.Seconds).Append(" second").Append(timeSpan.Seconds >= 2 ? 's' : string.Empty);
 
         return timeStr.ToString();
     }
-    
+
     public static string ToShortReadableTimeSpan(this TimeSpan timeSpan)
     {
         StringBuilder timeStr = new();
-        
+
         if (timeSpan.Days > 0) timeStr.Append(timeSpan.Days).Append('d').Append(' ');
         if (timeSpan.Hours > 0) timeStr.Append(timeSpan.Hours).Append('h').Append(' ');
         if (timeSpan.Minutes > 0) timeStr.Append(timeSpan.Minutes).Append('m').Append(' ');
@@ -61,12 +66,12 @@ public static class LiliaUtilities
     {
         return $"{dateTime.ToString("G", EnglishCulture)}";
     }
-    
+
     public static string ToShortDateTime(this DateTime dateTime)
     {
         return $"{dateTime.ToString("g", EnglishCulture)}";
     }
-    
+
 #nullable enable
     public static bool IsDiscordValidBotInvite(this string? str)
 #nullable disable
@@ -86,7 +91,8 @@ public static class LiliaUtilities
                    .IsMatch(str);
     }
 
-    public static IEnumerable<PageBuilder> CreatePagesFromString(string content, int fixedPageSplit = 15, int threshold = 2000)
+    public static IEnumerable<PageBuilder> CreatePagesFromString(string content, int fixedPageSplit = 15,
+        int threshold = 2000)
     {
         var lines = content.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var idx = 0;
@@ -95,16 +101,16 @@ public static class LiliaUtilities
 
         foreach (var line in lines)
         {
-            if ((idx != 0 && idx % fixedPageSplit == 0) || text.Length + line.Length > threshold)
+            if (idx != 0 && idx % fixedPageSplit == 0 || text.Length + line.Length > threshold)
             {
                 pages.Add(new PageBuilder().WithText($"{text}"));
                 text.Clear();
             }
-            
+
             text.AppendLine(line);
             ++idx;
         }
-        
+
         pages.Add(new PageBuilder().WithText($"{text}"));
         return pages;
     }

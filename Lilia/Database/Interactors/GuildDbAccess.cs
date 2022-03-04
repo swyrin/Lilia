@@ -12,7 +12,7 @@ public static class GuildDbInteractor
         var guild = guilds.FirstOrDefault(entity => entity.Id == discordGuild.Id);
 
         if (guild != default) return guild;
-        
+
         guild = new DbGuild
         {
             Id = discordGuild.Id,

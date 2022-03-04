@@ -1,9 +1,9 @@
-﻿using Lilia.Json;
-using Newtonsoft.Json;
-using Serilog;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
+using Lilia.Json;
+using Newtonsoft.Json;
+using Serilog;
 
 namespace Lilia.Commons;
 
@@ -39,7 +39,8 @@ public static class JsonManager<T> where T : BaseJson
         }
         catch (NullReferenceException)
         {
-            Log.Logger.Fatal("Error in reading JSON, maybe you did not set a constructor with FilePath field overridden");
+            Log.Logger.Fatal(
+                "Error in reading JSON, maybe you did not set a constructor with FilePath field overridden");
             throw;
         }
     }

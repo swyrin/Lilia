@@ -12,7 +12,7 @@ public static class UserDbInteractor
         var user = users.FirstOrDefault(entity => entity.Id == discordUser.Id);
 
         if (user != default) return user;
-        
+
         user = new DbUser
         {
             Id = discordUser.Id,
