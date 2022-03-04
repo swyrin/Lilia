@@ -363,7 +363,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
         [SlashCommand("add_playlist", "Add tracks from a playlist to queue")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task MusicQueueAddPlaylistCommand(
-            [Summary("playlist_url", "Playlist URl")]
+            [Summary("playlist_url", "Playlist URL")]
             string playlistUrl)
         {
             await Context.Interaction.DeferAsync();
@@ -396,20 +396,27 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             List<LavalinkTrack> postProcessedTracks = new();
 
             StringBuilder text = new();
-            var idx = 1;
+            var idx = 0;
             List<PageBuilder> pages = new();
+            var page = new PageBuilder();
 
             foreach (var track in lavalinkTracks)
             {
-                if (track.IsLiveStream)
+                var testStr = track.IsLiveStream
+                    ? $"Livestream skipped: {Format.Url($"{Format.Bold(track.Title)} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}"
+                    : $"{idx + 1} - {Format.Url($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}";
+                
+                if (idx != 0 && idx % 10 == 0 || text.Length > 2000 || text.Length + testStr.Length > 2000)
                 {
-                    text.AppendLine($"Livestream skipped - {Format.Url($"{Format.Bold(track.Title)} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}");
-                    continue;
+                    page.WithText($"{text}");
+                    text.Clear();
+                    pages.Add(page);
+                    page = new PageBuilder();   
                 }
-
-                var page = new PageBuilder();
-                page.WithText($"{idx} - {Format.Url($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}");
-                pages.Add(page);
+                
+                text.AppendLine(testStr);
+                
+                if (track.IsLiveStream) continue;
                 
                 ++idx;
                 postProcessedTracks.Add(track);
@@ -422,14 +429,16 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
                 .WithPages(pages)
                 .Build();
 
-            await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Channel);
+            await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction, responseType: InteractionResponseType.DeferredChannelMessageWithSource);
         }
 
-        [SlashCommand("add_track", "Add tracks to queue")]
+        [SlashCommand("add_tracks", "Add tracks to queue")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task MusicQueueAddCommand(
-            [Summary("query", "Music query")] string query,
-            [Summary("source", "Music source")] MusicSource source = MusicSource.YouTube)
+            [Summary("query", "Music query")]
+            string query,
+            [Summary("source", "Music source")]
+            MusicSource source = MusicSource.YouTube)
         {
             await Context.Interaction.DeferAsync();
             
@@ -461,12 +470,12 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             var idx = 0;
             var options = new List<string>();
-            
-            foreach (var track in lavalinkTracks)
+
+            foreach (var track in lavalinkTracks.Take(24))
             {
                 if (track.IsLiveStream) continue;
                 var title = $"{track.Title} - {track.Author}";
-                menuBuilder.AddOption(string.Join("", title.Take(97)) + "...", $"{idx}", track.Source);
+                menuBuilder.AddOption(title.Length <= 100 ? title : string.Join("", title.Take(97)) + "...", $"{idx}", track.Source);
                 options.Add(track.Source);
                 ++idx;
             }
@@ -499,16 +508,20 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
                     var track = await _client.Lavalink.GetTrackAsync(options[iidx]);
                     tracksList.Add(track);
-                    text.AppendLine($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)})");
+                    text.AppendLine($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}");
                 }
                 
                 player.Queue.AddRange(tracksList);
-                
-                await Context.Interaction.ModifyOriginalResponseAsync(x =>
+
+                await e.UpdateAsync(x =>
+                {
+                    x.Content = "Tracks added";
+                    x.Components = new ComponentBuilder().Build();
                     x.Embed = Context.User.CreateEmbedWithUserData()
-                        .WithAuthor("Added tracks to queue", null, Context.Client.CurrentUser.GetAvatarUrl())
+                        .WithAuthor("Added tracks to queue", Context.Client.CurrentUser.GetAvatarUrl())
                         .WithDescription(string.IsNullOrWhiteSpace($"{text}") ? "Nothing" : $"{text}")
-                        .Build());  
+                        .Build();
+                });
             };
         }
 
@@ -516,7 +529,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
         public async Task MusicQueueCheckCommand()
         {
             await Context.Interaction.DeferAsync();
-         
+            
             var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
             if (!await mmu.EnsureUserInVoiceAsync()) return;
             if (!await mmu.EnsureClientInVoiceAsync()) return;
@@ -528,13 +541,23 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             
             var idx = 0;
 
+            StringBuilder text = new();
+            PageBuilder page = new();
             List<PageBuilder> pages = new();
             
             foreach (var track in queue)
             {
-                var page = new PageBuilder();
-                page.WithText($"{idx} - {Format.Url($"{Format.Bold(track.Title)} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}");
-                pages.Add(page);
+                var testStr = $"{idx + 1} - {Format.Url($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}";
+                
+                if (idx != 0 && idx % 10 == 0 || text.Length > 2000 || text.Length + testStr.Length > 2000)
+                {
+                    page.WithText($"{text}");
+                    text.Clear();
+                    pages.Add(page);
+                    page = new PageBuilder();   
+                }
+                
+                text.AppendLine(testStr);
                 ++idx;
             }
             
@@ -542,8 +565,8 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
                 .AddUser(Context.User)
                 .WithPages(pages)
                 .Build();
-
-            await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Channel);
+            
+            await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction, responseType: InteractionResponseType.DeferredChannelMessageWithSource);
         }
 
         [SlashCommand("shuffle", "Shuffle the queue")]
@@ -589,7 +612,8 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
         [SlashCommand("remove", "Remove a track from the queue")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task MusicQueueRemoveCommand(
-            [Summary("index", "Index to remove from 0 (first track)")] long index)
+            [Summary("index", "Index to remove from 0 (first track)")]
+            long index)
         {
             await Context.Interaction.DeferAsync();
             
@@ -621,8 +645,10 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
         [SlashCommand("remove_range", "Remove a range of tracks from the queue")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task MusicQueueRemoveRangeCommand(
-            [Summary("start_index", "Starting index to remove from 0 (first track)")] long startIndex,
-            [Summary("end_index", "Ending index to remove from 0 (first track)")] long endIndex)
+            [Summary("start_index", "Starting index to remove from 0 (first track)")]
+            long startIndex,
+            [Summary("end_index", "Ending index to remove from 0 (first track)")]
+            long endIndex)
         {
             await Context.Interaction.DeferAsync();
             
