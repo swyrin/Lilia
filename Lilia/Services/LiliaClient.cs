@@ -45,16 +45,17 @@ public class LiliaClient
     public static readonly BotConfiguration BotConfiguration;
     public static readonly CancellationTokenSource Cts;
     public static readonly DbContextOptionsBuilder<LiliaDatabaseContext> OptionsBuilder = new();
-    private DiscordSocketClient _client;
-    private InteractionService _interactionService;
-    private ServiceProvider _serviceProvider;
+    
     public ArtworkService ArtworkService;
-    public LiliaDatabase Database;
-    public InactivityTrackingService InactivityTracker;
-
     public InteractiveService InteractiveService;
     public LavalinkNode Lavalink;
     public DateTime StartTime;
+    
+    private LiliaDatabase _database;
+    private InactivityTrackingService _inactivityTracker;
+    private DiscordSocketClient _client;
+    private InteractionService _interactionService;
+    private ServiceProvider _serviceProvider;
 
     static LiliaClient()
     {
@@ -84,7 +85,7 @@ public class LiliaClient
     public LiliaClient()
     {
         Log.Logger.Information("Setting up databases");
-        Database = new LiliaDatabase();
+        _database = new LiliaDatabase();
     }
 
     private static async Task CheckForUpdateAsync()
@@ -124,7 +125,8 @@ public class LiliaClient
             LogLevel = LogSeverity.Debug,
             LogGatewayIntentWarnings = true,
             UseInteractionSnowflakeDate = false,
-            AlwaysDownloadUsers = true
+            AlwaysDownloadUsers = true,
+            UseSystemClock = false
         });
 
         _interactionService = new InteractionService(_client.Rest, new InteractionServiceConfig
@@ -145,9 +147,7 @@ public class LiliaClient
                 RestUri = $"http://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
                 WebSocketUri = $"ws://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
                 Password = lavalinkConfig.Password,
-#if DEBUG
                 DebugPayloads = true,
-#endif
                 DisconnectOnStop = false
             }, new DiscordClientWrapper(_client),
             new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("Lavalink")));
@@ -156,7 +156,7 @@ public class LiliaClient
             .AddLogging(x => x.AddSerilog())
             .AddDefaultSerializer()
             .AddDefaultRequestHandler()
-            .AddSingleton(Database)
+            .AddSingleton(_database)
             .AddOsuSharp(x => x.Configuration = new OsuClientConfiguration
             {
                 ModFormatSeparator = string.Empty,
@@ -170,7 +170,9 @@ public class LiliaClient
 
         Log.Logger.Information("Registering event handlers");
         InteractiveService.Log += OnLog;
+
         _interactionService.Log += OnLog;
+        
         _client.Log += OnLog;
         _client.InteractionCreated += OnClientInteractionCreated;
         _client.GuildAvailable += OnClientGuildAvailable;
@@ -191,7 +193,7 @@ public class LiliaClient
         await Lavalink.DisposeAsync();
         await _client.StopAsync();
         await _client.LogoutAsync();
-        await Database.GetContext().DisposeAsync();
+        await _database.GetContext().DisposeAsync();
     }
 
     private async Task OnClientInteractionCreated(SocketInteraction interaction)
@@ -211,7 +213,7 @@ public class LiliaClient
         }
     }
 
-    private Task OnLog(LogMessage message)
+    private static Task OnLog(LogMessage message)
     {
         var severity = message.Severity switch
         {
@@ -282,7 +284,7 @@ public class LiliaClient
         Log.Logger.Information("Initializing Lavalink connection");
         await Lavalink.InitializeAsync();
         ArtworkService = new ArtworkService();
-        InactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(_client),
+        _inactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(_client),
             new InactivityTrackingOptions
             {
                 PollInterval = TimeSpan.FromMinutes(2),
@@ -294,13 +296,13 @@ public class LiliaClient
         StartTime = DateTime.Now;
     }
 
-    private Task OnClientGuildAvailable(SocketGuild guild)
+    private static Task OnClientGuildAvailable(SocketGuild guild)
     {
         Log.Logger.Debug($"Guild cache added: {guild.Name} (ID: {guild.Id})");
         return Task.CompletedTask;
     }
 
-    private Task OnClientGuildUnavailable(SocketGuild guild)
+    private static Task OnClientGuildUnavailable(SocketGuild guild)
     {
         Log.Logger.Debug($"Guild cache removed: {guild.Name} (ID: {guild.Id})");
         return Task.CompletedTask;
@@ -308,7 +310,7 @@ public class LiliaClient
 
     private async Task OnClientUserJoined(SocketGuildUser user)
     {
-        var dbGuild = Database.GetContext().GetGuildRecord(user.Guild);
+        var dbGuild = _database.GetContext().GetGuildRecord(user.Guild);
 
         if (!dbGuild.IsWelcomeEnabled) return;
         if (dbGuild.WelcomeChannelId == 0 || user.Guild.GetChannel(dbGuild.WelcomeChannelId) == null) return;
@@ -319,7 +321,7 @@ public class LiliaClient
         var postProcessedMessage = dbGuild.WelcomeMessage
             .Replace("{name}", user.Username)
             .Replace("{tag}", user.Discriminator)
-            .Replace("{@user}", $"<@{user.Id}>")
+            .Replace("{@user}", user.Mention)
             .Replace("{guild}", user.Guild.Name);
 
         await ((SocketTextChannel) chn).SendMessageAsync(postProcessedMessage);
@@ -327,7 +329,7 @@ public class LiliaClient
 
     private async Task OnClientUserLeft(SocketGuild guild, SocketUser user)
     {
-        var dbGuild = Database.GetContext().GetGuildRecord(guild);
+        var dbGuild = _database.GetContext().GetGuildRecord(guild);
 
         if (!dbGuild.IsGoodbyeEnabled) return;
         if (dbGuild.GoodbyeChannelId == 0 || guild.GetChannel(dbGuild.GoodbyeChannelId) == null) return;

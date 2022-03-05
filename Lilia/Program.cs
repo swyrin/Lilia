@@ -24,7 +24,7 @@ internal static class Program
 
 #if DEBUG
         Log.Logger.Warning("Unless you are testing the code, you should NOT see this on production");
-        Log.Logger.Warning("Consider using \"-c Release\" when running/building the code");
+        Log.Logger.Warning("Consider appending \"-c Release\" when running/building the code");
 #endif
 
         Log.Logger.Debug("Starting");
