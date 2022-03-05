@@ -310,20 +310,25 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
                 x.Components = componentBuilder.Build();
             });
 
-            var res = await InteractionUtility.WaitForMessageComponentAsync(Context.Client, failAsk,
-                TimeSpan.FromMinutes(1));
-            var selectedBtnId = ((SocketMessageComponentData) res.Data).CustomId;
+            var res = (SocketMessageComponent) await InteractionUtility.WaitForMessageComponentAsync(Context.Client, failAsk, TimeSpan.FromMinutes(1));
 
-            if (res.HasResponded)
+            if (res == null)
             {
-                includeFails = selectedBtnId == "yesBtn";
-                await res.RespondAsync("Please wait...");
-            }
-            else
-            {
-                await res.RespondAsync("Timed out");
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                {
+                    x.Content = "Timed out";
+                    x.Components = new ComponentBuilder().Build();
+                });
                 return;
             }
+
+            var selectedBtnId = res.Data;
+            includeFails = selectedBtnId.CustomId == "yesBtn";
+            await res.UpdateAsync(x =>
+            {
+                x.Content = "Please wait...";
+                x.Components = new ComponentBuilder().Build();
+            });
         }
 
         #endregion
@@ -351,6 +356,7 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
             if (nextMessage.IsSuccess)
             {
                 r = Convert.ToInt32(nextMessage.Value?.Content ?? "1");
+                await nextMessage.Value!.DeleteAsync();
             }
             else
             {
@@ -362,7 +368,7 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
         #endregion
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
-            x.Content = "Processing, please wait (this might take a while)");
+            x.Content = $"Processing {r} records, please wait (this might take a while)");
 
         var pages = new List<PageBuilder>();
 
@@ -382,12 +388,13 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
                 .WithTimestamp(defEmbed.Timestamp)
                 .WithAuthor(
                     $"{score.Beatmapset.Artist} - {score.Beatmapset.Title} [{map.Version}]{(score.Mods.Any() ? $" +{string.Join(string.Empty, score.Mods)}" : string.Empty)}",
+                    $"{score.User.AvatarUrl}",
                     map.Url)
-                .WithThumbnailUrl(score.Beatmapset.Covers.Card2x)
-                .WithDescription($"Score position: {pos}\n")
+                .WithThumbnailUrl(score.Beatmapset.Covers.Cover2x)
+                .WithDescription($"Score position: {pos}")
                 .AddField("Known issue", "If you see 2 0's at the score part, it's fine")
                 .AddField("Total score",
-                    $"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank} - GLB: #{score.GlobalRank})")
+                    $"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank.GetValueOrDefault()} - GLB: #{score.GlobalRank.GetValueOrDefault()})")
                 .AddField("Ranking", $"{score.Rank}", true)
                 .AddField("Accuracy", $"{Math.Round(score.Accuracy * 100, 2)}%", true)
                 .AddField("Max combo", $"{score.MaxCombo}x/{map.MaxCombo}x", true)
