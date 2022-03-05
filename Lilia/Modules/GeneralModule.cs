@@ -46,7 +46,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var botId = Context.Client.CurrentUser.Id;
         const GuildPermission perms = LiliaClient.RequiredPermissions;
         var botInv =
-            $"https://discord.com/api/oauth2/authorize?client_id={botId}&permissions={perms}&scope=bot%20applications.commands";
+            $"https://discord.com/api/oauth2/authorize?client_id={botId}&permissions={(ulong) perms}&scope=bot%20applications.commands";
         var guildInv = LiliaClient.BotConfiguration.Client.SupportGuildInviteLink;
 
         // dodge 400
@@ -54,11 +54,11 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 
         var componentBuilder = new ComponentBuilder()
-            .WithButton("Interested in me?", "inviteBtn", ButtonStyle.Link, url: botInv,
+            .WithButton("Interested in me?", style: ButtonStyle.Link, url: botInv,
                 disabled: !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic)
-            .WithButton("Need supports?", "supportGuildBtn", ButtonStyle.Link, url: guildInv,
+            .WithButton("Need supports?", style: ButtonStyle.Link, url: guildInv,
                 disabled: !isValidGuildInviteLink)
-            .WithButton("Want to self host?", "selfHostBtn", ButtonStyle.Link,
+            .WithButton("Want to self host?", style: ButtonStyle.Link,
                 url: "https://github.com/Lilia-Workshop/Lilia");
 
         var timeDiff = DateTime.Now.Subtract(_client.StartTime);
@@ -86,36 +86,27 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 
     [SlashCommand("user", "What I know about an user in this guild")]
     public async Task GeneralUserCommand(
-        [Summary("member", "A member in this guild")]
-        SocketGuildUser member)
+        [Summary("user", "An user of this guild")]
+        SocketGuildUser user)
     {
         await Context.Interaction.DeferAsync(true);
 
-        if (member.Id == Context.Client.CurrentUser.Id)
-        {
-            await Context.Interaction.ModifyOriginalResponseAsync(x =>
-                x.Content = $"If you want to know about me, there is a {Format.Bold("/bot")} command for it");
-
-            return;
-        }
-
-        var creationDate = member.CreatedAt.DateTime;
-        var joinDate = member.JoinedAt.GetValueOrDefault().DateTime;
+        var creationDate = user.CreatedAt.DateTime;
+        var joinDate = user.JoinedAt.GetValueOrDefault().DateTime;
         var accountAge = DateTimeOffset.Now.Subtract(creationDate);
         var membershipAge = DateTimeOffset.Now.Subtract(joinDate);
 
         var embedBuilder = Context.User.CreateEmbedWithUserData()
-            .WithAuthor($"What I know about {member.Username}#{member.Discriminator} :D", null,
-                Context.Client.CurrentUser.GetDefaultAvatarUrl())
-            .WithThumbnailUrl(member.GetGuildAvatarUrl())
-            .WithDescription($"User ID: {member.Id}")
+            .WithAuthor(Format.UsernameAndDiscriminator(user), Context.Client.CurrentUser.GetAvatarUrl())
+            .WithThumbnailUrl(user.GetDisplayAvatarUrl())
+            .WithDescription($"User ID: {user.Id}")
             .AddField("Account age", $"{accountAge.ToShortReadableTimeSpan()} (since {creationDate.ToShortDateTime()})")
             .AddField("Membership age",
                 $"{membershipAge.ToShortReadableTimeSpan()} (since {joinDate.ToShortDateTime()})")
-            .AddField("Is guild owner?", Context.Guild.Owner == member, true)
-            .AddField("Is a bot?", member.IsBot ? "Hello fellow bot :D" : "Probably not", true)
-            .AddField("Badge list", $"{member.PublicFlags}", true)
-            .AddField("Mutual server count with me", member.MutualGuilds);
+            .AddField("Is guild owner?", Context.Guild.Owner == user, true)
+            .AddField("Is a bot?", user.IsBot ? "Hello fellow bot :D" : "Probably not", true)
+            .AddField("Badge list", $"{user.PublicFlags}", true)
+            .AddField("Mutual guilds with me", string.Join(", ", user.MutualGuilds));
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
             x.Embed = embedBuilder.Build());
@@ -141,9 +132,9 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var boosters = members.Where(x => x.PremiumSince != null);
 
         var embedBuilder = Context.User.CreateEmbedWithUserData()
-            .WithAuthor(guild.Name, null, guild.IconUrl)
+            .WithAuthor(guild.Name, guild.IconUrl)
             .WithThumbnailUrl(guild.BannerUrl)
-            .WithDescription($"Guild ID: {guild.Id} - Owner: <@{guild.Owner.Id}>")
+            .WithDescription($"Guild ID: {guild.Id} - Owner: {guild.Owner.Mention}")
             .AddField("Guild age", $"{guildAge.ToShortReadableTimeSpan()} (since {creationDate.ToShortDateTime()})")
             .AddField("Humans", $"{humanCount}", true)
             .AddField("Bots", $"{botCount}", true)

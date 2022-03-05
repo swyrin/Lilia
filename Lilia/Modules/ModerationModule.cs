@@ -82,7 +82,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                         $"{Context.User.Username}#{Context.User.Discriminator} (ID: {Context.User.Id})", true)
                     .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
                     .AddField("What to do now?",
-                        $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("mod message appeal")} with provided IDs");
+                        $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
 
                 if (!mentionedMember.IsBot)
                     await mentionedMember.SendMessageAsync(embed: embedBuilder.Build());
@@ -151,7 +151,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                         true)
                     .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
                     .AddField("What to do now?",
-                        $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("mod message appeal")} with provided IDs");
+                        $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
 
                 if (!mentionedMember.IsBot)
                     await mentionedMember.SendMessageAsync(embed: embedBuilder.Build());
@@ -222,7 +222,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                     true)
                 .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
                 .AddField("What to do now?",
-                    $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("mod message appeal")} with provided IDs");
+                    $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
 
             if (!user.IsBot)
                 await user.SendMessageAsync(embed: embedBuilder.Build());
@@ -345,7 +345,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                     true)
                 .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
                 .AddField("What to do now?",
-                    $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("mod message appeal")} with provided IDs");
+                    $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
 
             if (!user.IsBot)
                 await user.SendMessageAsync(embed: embedBuilder.Build());
