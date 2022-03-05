@@ -170,7 +170,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Embed = Context.User.CreateEmbedWithUserData()
-                    .WithAuthor("Currently playing track", null, Context.Client.CurrentUser.GetAvatarUrl())
+                    .WithAuthor("Currently playing track", Context.Client.CurrentUser.GetAvatarUrl())
                     .WithThumbnailUrl(art?.OriginalString ?? "")
                     .AddField("Title", Format.Sanitize(track.Title))
                     .AddField("Author", Format.Sanitize(track.Author), true)
@@ -481,7 +481,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
                 ++idx;
             }
 
-            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            var message = await Context.Interaction.ModifyOriginalResponseAsync(x =>
             {
                 x.Content = "Choose your tracks";
                 x.Components = new ComponentBuilder()
@@ -489,41 +489,40 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
                     .Build();
             });
 
-            Context.Client.SelectMenuExecuted += async e =>
+            var res = (SocketMessageComponent) await InteractionUtility.WaitForMessageComponentAsync(Context.Client, message, TimeSpan.FromMinutes(2));
+            
+            List<LavalinkTrack> tracksList = new();
+            StringBuilder text = new();
+
+            foreach (var value in res.Data.Values)
             {
-                List<LavalinkTrack> tracksList = new();
-                StringBuilder text = new();
+                var iidx = Convert.ToInt32(value);
 
-                foreach (var value in e.Data.Values)
+                if (iidx == -1)
                 {
-                    var iidx = Convert.ToInt32(value);
+                    await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                        x.Content = "No tracks added");
 
-                    if (iidx == -1)
-                    {
-                        await Context.Interaction.ModifyOriginalResponseAsync(x =>
-                            x.Content = "No tracks added");
-
-                        text.Clear();
-                        break;
-                    }
-
-                    var track = await _client.Lavalink.GetTrackAsync(options[iidx]);
-                    tracksList.Add(track);
-                    text.AppendLine($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}");
+                    text.Clear();
+                    break;
                 }
 
-                player.Queue.AddRange(tracksList);
+                var track = await _client.Lavalink.GetTrackAsync(options[iidx]);
+                tracksList.Add(track);
+                text.AppendLine($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}");
+            }
 
-                await e.UpdateAsync(x =>
-                {
-                    x.Content = "Tracks added";
-                    x.Components = new ComponentBuilder().Build();
-                    x.Embed = Context.User.CreateEmbedWithUserData()
-                        .WithAuthor("Added tracks to queue", Context.Client.CurrentUser.GetAvatarUrl())
-                        .WithDescription(string.IsNullOrWhiteSpace($"{text}") ? "Nothing" : $"{text}")
-                        .Build();
-                });
-            };
+            player.Queue.AddRange(tracksList);
+
+            await res.UpdateAsync(x =>
+            {
+                x.Content = "Tracks added";
+                x.Components = new ComponentBuilder().Build();
+                x.Embed = Context.User.CreateEmbedWithUserData()
+                    .WithAuthor("Added tracks to queue", Context.Client.CurrentUser.GetAvatarUrl())
+                    .WithDescription(string.IsNullOrWhiteSpace($"{text}") ? "Nothing" : $"{text}")
+                    .Build();
+            });
         }
 
         [SlashCommand("view", "Check the queue of current playing session")]

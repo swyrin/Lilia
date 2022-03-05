@@ -297,8 +297,10 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 
         [SlashCommand("mute", "Mute an user, like Timeout but infinite duration")]
         public async Task ModerationGeneralMuteCommand(
-            [Summary("user", "The user to mute")] SocketGuildUser user,
-            [Summary("reason", "The reason")] string reason = "Excessive rule violation")
+            [Summary("user", "The user to mute")]
+            SocketGuildUser user,
+            [Summary("reason", "The reason")]
+            string reason = "Excessive rule violation")
         {
             await Context.Interaction.DeferAsync();
 
@@ -351,8 +353,10 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 
         [SlashCommand("unmute", "Unmute an user, like Remove Timeout")]
         public async Task ModerationGeneralUnmuteCommand(
-            [Summary("user", "The user to mute")] SocketGuildUser user,
-            [Summary("reason", "The reason")] string reason = "Good behavior")
+            [Summary("user", "The user to mute")]
+            SocketGuildUser user,
+            [Summary("reason", "The reason")]
+            string reason = "Good behavior")
         {
             await Context.Interaction.DeferAsync();
 
@@ -407,7 +411,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
     public class ModerationMessageModule : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("appeal", "Send an appeal")]
-        [RequireContext(ContextType.DM | ContextType.Group)]
+        [RequireContext(ContextType.DM)]
         public async Task ModerationModuleMessageAppealCommand()
         {
             var modalBuilder = new ModalBuilder();
@@ -420,51 +424,63 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                 .AddTextInput("Your appeal", "appeal-text", TextInputStyle.Paragraph, "Your appeal");
 
             await Context.Interaction.RespondWithModalAsync(modalBuilder.Build());
+            var res = (SocketModal) await InteractionUtility.WaitForInteractionAsync(Context.Client,
+                TimeSpan.FromMinutes(10), interaction => interaction.Type == InteractionType.ModalSubmit);
 
-            Context.Client.ModalSubmitted += async modal =>
+            var components = res.Data.Components.ToList();
+            var guildId = components.First(x => x.CustomId == "guild-id").Value;
+            var receiverId = components.First(x => x.CustomId == "receiver-id").Value;
+            var appealText = components.First(x => x.CustomId == "appeal-text").Value;
+
+            try
             {
-                var components = modal.Data.Components.ToList();
-                var guildId = components.First(x => x.CustomId == "guild-id").Value;
-                var receiverId = components.First(x => x.CustomId == "receiver-id").Value;
-                var appealText = components.First(x => x.CustomId == "appeal-text").Value;
+                var guildIdLong = Convert.ToUInt64(guildId);
+                var receiverIdLong = Convert.ToUInt64(receiverId);
 
-                try
+                var guild = Context.Client.GetGuild(guildIdLong);
+                await Context.Client.DownloadUsersAsync(new[] {guild});
+
+                if (guild == null)
                 {
-                    var guildIdLong = Convert.ToUInt64(guildId);
-                    var receiverIdLong = Convert.ToUInt64(receiverId);
-
-                    var guild = Context.Client.GetGuild(guildIdLong);
-                    await Context.Client.DownloadUsersAsync(new[] {guild});
-
-                    if (guild == null)
-                    {
-                        await modal.RespondAsync("The guild you entered does not exist");
-                        return;
-                    }
-
-                    var receiver = guild.GetUser(receiverIdLong);
-
-                    if (receiver == null)
-                    {
-                        await modal.RespondAsync("The user you entered does not belong to the guild");
-                        return;
-                    }
-
-                    await receiver.SendMessageAsync(embed: Context.User.CreateEmbedWithUserData()
-                        .WithTitle("An appeal has been sent to you, content below")
-                        .WithDescription(appealText)
-                        .WithAuthor(Format.UsernameAndDiscriminator(Context.User), Context.User.GetAvatarUrl())
-                        .AddField("Sender", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})")
-                        .AddField("Guild to appeal", $"{guild.Name} (ID: {guild.Id}")
-                        .Build());
-
-                    await modal.RespondAsync("Sent the appeal");
+                    await res.RespondAsync("I am not in the guild you specified");
+                    return;
                 }
-                catch
+
+                var receiver = guild.GetUser(receiverIdLong);
+
+                if (receiver == null)
                 {
-                    await modal.RespondAsync("Looks like you provided invalid IDs");
+                    await res.RespondAsync("The user you entered does not belong to the guild");
+                    return;
                 }
-            };
+
+                if (receiver.Id == Context.User.Id || receiver.Id == Context.Client.CurrentUser.Id)
+                {
+                    await res.RespondAsync("You can not send to either yourself or me");
+                    return;
+                }
+
+                if (receiver.IsBot)
+                {
+                    await res.RespondAsync("I can not send messages to a bot, please specify a human user");
+                    return;
+                }
+
+                await receiver.SendMessageAsync(embed: Context.User.CreateEmbedWithUserData()
+                    .WithTitle("An appeal has been sent to you")
+                    .WithDescription(appealText)
+                    .WithThumbnailUrl(guild.IconUrl)
+                    .WithAuthor(Format.UsernameAndDiscriminator(Context.User), Context.User.GetAvatarUrl())
+                    .AddField("Sender", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})")
+                    .AddField("Guild to appeal", $"{guild.Name} (ID: {guild.Id}")
+                    .Build());
+
+                await res.RespondAsync("Sent the appeal");
+            }
+            catch
+            {
+                await res.RespondAsync("Looks like you provided invalid IDs");
+            }
         }
     }
 }
