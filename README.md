@@ -4,14 +4,13 @@
 
 Lilia is a Discord bot created as my pet project for learning, aiming to be a good bot like most popular bots.
 
-- ✅ Key features:
+- ✅ Features:
   - [x] osu! commands (user profile related)
   - [x] Music commands
   - [x] Guild-specific configuration commands (welcome/goodbye message delivery)
   - [x] General purposes commands (bot/user/guild info)
   - [x] Command for bot owner(s)
-  - [x] Moderation commands (batch ban/kick)
-  - [x] Images
+  - [x] Moderation commands (batch ban/kick, mute/unmute, sending tickets)
 
 > 📖 Most of the things you need are on [the wiki](https://github.com/Swyreee/Helya/wiki), especially for self hosting guide.
 > 
