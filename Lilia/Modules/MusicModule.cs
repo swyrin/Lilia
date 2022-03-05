@@ -54,10 +54,10 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             if (connectionType == MusicConnectionType.Queued)
                 await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id,
-                    ((SocketGuildUser) Context.User).VoiceState.Value.VoiceChannel.Id, true);
+                    ((SocketGuildUser) Context.User).VoiceState!.Value.VoiceChannel.Id, true);
             else
                 await _client.Lavalink.JoinAsync(Context.Guild.Id,
-                    ((SocketGuildUser) Context.User).VoiceState.Value.VoiceChannel.Id, true);
+                    ((SocketGuildUser) Context.User).VoiceState!.Value.VoiceChannel.Id, true);
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = $"Done establishing the connection as {newPlayerType}");
@@ -69,7 +69,6 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             await Context.Interaction.DeferAsync();
 
             var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-            ;
             if (!await mmu.EnsureUserInVoiceAsync()) return;
 
             var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
@@ -78,7 +77,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             _client.Lavalink.TrackEnd -= mmu.OnTrackEnd;
             _client.Lavalink.TrackException -= mmu.OnTrackException;
 
-            await player.DisconnectAsync();
+            await player!.DisconnectAsync();
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "Left the voice channel");
@@ -91,7 +90,6 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             await Context.Interaction.DeferAsync();
 
             var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-            ;
             var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
 
             if (!await mmu.EnsureUserInVoiceAsync()) return;
@@ -116,7 +114,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
                 return;
             }
 
-            await player.PlayAsync(track);
+            await player!.PlayAsync(track);
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = $"Now streaming from {streamUrl}");
@@ -134,10 +132,10 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             if (!await mmu.EnsureQueuedPlayerAsync()) return;
             if (!await mmu.EnsureQueueIsNotEmptyAsync()) return;
 
-            var qplayer = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
-            var track = qplayer.Queue.Dequeue();
+            var queuedPlayer = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
+            var track = queuedPlayer!.Queue.Dequeue();
 
-            await qplayer.PlayAsync(track, false);
+            await queuedPlayer.PlayAsync(track, false);
 
             _client.Lavalink.TrackStarted += mmu.OnTrackStarted;
             _client.Lavalink.TrackStuck += mmu.OnTrackStuck;
@@ -155,7 +153,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             if (!await mmu.EnsureClientInVoiceAsync()) return;
 
             var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-            var track = player.CurrentTrack;
+            var track = player!.CurrentTrack;
 
             if (track == null)
             {
@@ -198,7 +196,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             if (!await mmu.EnsureQueuedPlayerAsync()) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
-            var track = player.CurrentTrack;
+            var track = player!.CurrentTrack;
 
             if (track == null)
             {
@@ -225,7 +223,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             if (!await mmu.EnsureClientInVoiceAsync()) return;
 
             var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-            await player.StopAsync();
+            await player!.StopAsync();
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "Stopped this session, the queue will be cleaned");
@@ -242,7 +240,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
 
-            if (player.State == PlayerState.Paused)
+            if (player!.State == PlayerState.Paused)
             {
                 await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Paused earlier");
@@ -267,7 +265,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
 
-            if (player.State != PlayerState.Paused)
+            if (player!.State != PlayerState.Paused)
             {
                 await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Resumed earlier");
@@ -293,7 +291,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             if (!await mmu.EnsureQueuedPlayerAsync()) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
-            var track = player.CurrentTrack;
+            var track = player!.CurrentTrack;
 
             if (track == null)
             {
@@ -335,22 +333,22 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
                     await oldPlayer.DisconnectAsync();
                     await oldPlayer.DestroyAsync();
                     await _client.Lavalink.JoinAsync(Context.Guild.Id,
-                        ((SocketGuildUser) Context.User).VoiceState.Value.VoiceChannel.Id, true);
+                        ((SocketGuildUser) Context.User).VoiceState!.Value.VoiceChannel.Id, true);
 
                     await Context.Interaction.ModifyOriginalResponseAsync(x =>
                         x.Content = "Switched to normal player");
                     break;
 
-                case LavalinkPlayer when connectionType == MusicConnectionType.Normal:
+                case not null when connectionType == MusicConnectionType.Normal:
                     await Context.Interaction.ModifyOriginalResponseAsync(x =>
                         x.Content = "Already connected as normal player");
 
                     return;
-                case LavalinkPlayer:
+                case not null:
                     await oldPlayer.DisconnectAsync();
                     await oldPlayer.DestroyAsync();
                     await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id,
-                        ((SocketGuildUser) Context.User).VoiceState.Value.VoiceChannel.Id, true);
+                        ((SocketGuildUser) Context.User).VoiceState!.Value.VoiceChannel.Id, true);
 
                     await Context.Interaction.ModifyOriginalResponseAsync(x =>
                         x.Content = "Switched to queued player");
@@ -421,7 +419,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
                 postProcessedTracks.Add(track);
             }
 
-            player.Queue.AddRange(postProcessedTracks);
+            player!.Queue.AddRange(postProcessedTracks);
 
             var pages = LiliaUtilities.CreatePagesFromString($"{text}");
             var paginator = new StaticPaginatorBuilder()
@@ -509,10 +507,10 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
                 var track = await _client.Lavalink.GetTrackAsync(options[iidx]);
                 tracksList.Add(track);
-                text.AppendLine($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}");
+                text.AppendLine($"{Format.Bold(Format.Sanitize(track!.Title))} by {Format.Bold(track.Author)}");
             }
 
-            player.Queue.AddRange(tracksList);
+            player!.Queue.AddRange(tracksList);
 
             await res.UpdateAsync(x =>
             {
@@ -537,7 +535,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
             if (!await mmu.EnsureQueueIsNotEmptyAsync()) return;
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
-            var queue = player.Queue;
+            var queue = player!.Queue;
 
             var idx = 0;
 
@@ -576,7 +574,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
 
-            player.Queue.Shuffle();
+            player!.Queue.Shuffle();
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "Shuffled the queue");
@@ -596,7 +594,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
 
-            player.Queue.Clear();
+            player!.Queue.Clear();
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "Cleared all tracks of the queue");
@@ -618,7 +616,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
 
-            if (index < 0 || index >= player.Queue.Count)
+            if (index < 0 || index >= player!.Queue.Count)
             {
                 await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Invalid index");
@@ -657,7 +655,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
 
-            if (startIndexInt < 0 || endIndexInt >= player.Queue.Count || startIndexInt > endIndexInt)
+            if (startIndexInt < 0 || endIndexInt >= player!.Queue.Count || startIndexInt > endIndexInt)
             {
                 await Context.Interaction.ModifyOriginalResponseAsync(x =>
                     x.Content = "Invalid index");
@@ -700,7 +698,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 
             var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
 
-            player.Queue.Distinct();
+            player!.Queue.Distinct();
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "Removed duplicating tracks with same source from the queue");
