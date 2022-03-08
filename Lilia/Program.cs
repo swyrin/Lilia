@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Lilia.Services;
 using Serilog;
 
@@ -8,7 +9,7 @@ namespace Lilia;
 
 internal static class Program
 {
-	private static void Main()
+	private static async Task Main()
 	{
 		var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
 		Console.Title = $"Lilia v{currentVersion}";
@@ -28,6 +29,6 @@ internal static class Program
 #endif
 
 		Log.Logger.Debug("Starting");
-		new LiliaClient().RunAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+		await new LiliaClient().RunAsync();
 	}
 }
