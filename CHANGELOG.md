@@ -1,6 +1,6 @@
 ## Additions
 
-None
+- Add `activity` command to create Embedded Activity
 
 ## Removals
 
