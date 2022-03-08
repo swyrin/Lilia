@@ -42,8 +42,7 @@ public static class LiliaUtilities
         if (timeSpan.Hours > 0)
             timeStr.Append(timeSpan.Hours).Append(" hour").Append(timeSpan.Hours >= 2 ? 's' : string.Empty).Append(' ');
         if (timeSpan.Minutes > 0)
-            timeStr.Append(timeSpan.Minutes).Append(" minute").Append(timeSpan.Minutes >= 2 ? 's' : string.Empty)
-                .Append(' ');
+            timeStr.Append(timeSpan.Minutes).Append(" minute").Append(timeSpan.Minutes >= 2 ? 's' : string.Empty).Append(' ');
         if (timeSpan.Seconds > 0)
             timeStr.Append(timeSpan.Seconds).Append(" second").Append(timeSpan.Seconds >= 2 ? 's' : string.Empty);
 
@@ -76,23 +75,17 @@ public static class LiliaUtilities
     public static bool IsDiscordValidBotInvite(this string? str)
 #nullable disable
     {
-        return !string.IsNullOrWhiteSpace(str) &&
-               new Regex(
-                       @"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(app)?\.com\/(api\/)?oauth2\/authorize\?([^ ]+)\/?")
-                   .IsMatch(str);
+        return !string.IsNullOrWhiteSpace(str) && new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(app)?\.com\/(api\/)?oauth2\/authorize\?([^ ]+)\/?").IsMatch(str);
     }
 
 #nullable enable
     public static bool IsDiscordValidGuildInvite(this string? str)
 #nullable disable
     {
-        return !string.IsNullOrWhiteSpace(str) &&
-               new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(\.gg|(app)?\.com\/invite|\.me)\/([^ ]+)\/?")
-                   .IsMatch(str);
+        return !string.IsNullOrWhiteSpace(str) && new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(\.gg|(app)?\.com\/invite|\.me)\/([^ ]+)\/?").IsMatch(str);
     }
 
-    public static IEnumerable<PageBuilder> CreatePagesFromString(string content, int fixedPageSplit = 15,
-        int threshold = 2000)
+    public static IEnumerable<PageBuilder> CreatePagesFromString(string content, int fixedPageSplit = 15, int threshold = 2000)
     {
         var lines = content.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var idx = 0;

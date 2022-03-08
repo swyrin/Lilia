@@ -186,8 +186,7 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
         await _dbCtx.SaveChangesAsync();
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
-            x.Content =
-                $"{(dbGuild.IsGoodbyeEnabled ? "Allowed" : "Blocked")} the delivery of goodbye message in this guild");
+            x.Content = $"{(dbGuild.IsGoodbyeEnabled ? "Allowed" : "Blocked")} the delivery of goodbye message in this guild");
     }
 
     [SlashCommand("placeholders", "Get all available configuration placeholders")]
@@ -197,16 +196,15 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.DeferAsync(true);
 
         var embedBuilder = Context.User.CreateEmbedWithUserData()
-            .WithAuthor("Available placeholders", null, Context.Client.CurrentUser.GetAvatarUrl())
-            .AddField("{name} - The user's username", "Example: Swyrin#7193 -> {name} = Swyrin\n" +
-                                                      "Restrictions: None")
-            .AddField("{tag} - The user's username", "Example: Swyrin#7193 -> {tag} = 7193\n" +
-                                                     "Restrictions: None")
-            .AddField("{guild} - The guild's name", $"Example: {{guild}} = {Context.Guild.Name}\n" +
-                                                    "Restrictions: None")
-            .AddField("{@user} - User mention",
-                $"Example: Swyrin#7193 -> {{@user}} = {Context.User.Mention}\n" +
-                "Restrictions: Welcome message only");
+	        .WithAuthor("Available placeholders", null, Context.Client.CurrentUser.GetAvatarUrl())
+	        .AddField("{name} - The user's username", "Example: Swyrin#7193 -> {name} = Swyrin\n" +
+	                                                  "Restrictions: None")
+	        .AddField("{tag} - The user's discriminator", "Example: Swyrin#7193 -> {tag} = 7193\n" +
+	                                                 "Restrictions: None")
+	        .AddField("{guild} - The guild's name", $"Example: {{guild}} = {Context.Guild.Name}\n" +
+	                                                "Restrictions: None")
+	        .AddField("{@user} - User mention", $"Example: Swyrin#7193 -> {{@user}} = {Context.User.Mention}\n" +
+	                                            "Restrictions: Welcome message only");
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
             x.Embed = embedBuilder.Build());
@@ -229,12 +227,10 @@ public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
 
         var embedBuilder = Context.User.CreateEmbedWithUserData()
             .WithAuthor("All configurations", null, Context.Client.CurrentUser.GetAvatarUrl())
-            .AddField("Welcome message",
-                string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage) ? "None" : dbGuild.WelcomeMessage, true)
+            .AddField("Welcome message", string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage) ? "None" : dbGuild.WelcomeMessage, true)
             .AddField("Welcome channel", welcomeChnMention, true)
             .AddField("Welcome message allowed", $"{dbGuild.IsWelcomeEnabled}", true)
-            .AddField("Goodbye message",
-                string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage) ? "None" : dbGuild.GoodbyeMessage, true)
+            .AddField("Goodbye message", string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage) ? "None" : dbGuild.GoodbyeMessage, true)
             .AddField("Goodbye channel", goodbyeChnMention, true)
             .AddField("Goodbye message allowed", $"{dbGuild.IsGoodbyeEnabled}", true);
 

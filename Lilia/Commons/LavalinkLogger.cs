@@ -34,6 +34,8 @@ public class LavalinkLogger : ILogger
             case LogLevel.Warning:
                 _logger.LogWarning(message);
                 break;
+            default:
+	            throw new ArgumentOutOfRangeException(nameof(level), level, null);
         }
     }
 }

@@ -72,9 +72,8 @@ public class MusicModuleUtils
         var currentTrack = e.Player.CurrentTrack;
 
         await _interaction.ModifyOriginalResponseAsync(x =>
-            x.Content =
-                $"Now playing: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}\n" +
-                "You should pin this message for playing status");
+            x.Content = $"Now playing: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}\n" +
+                        "You should pin this message for playing status");
     }
 
     public async Task OnTrackStuck(object _, TrackStuckEventArgs e)
@@ -82,8 +81,7 @@ public class MusicModuleUtils
         var currentTrack = e.Player.CurrentTrack;
 
         await _interaction.ModifyOriginalResponseAsync(x =>
-            x.Content =
-                $"Track stuck: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}\n");
+            x.Content = $"Track stuck: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}");
     }
 
     public async Task OnTrackEnd(object _, TrackEventArgs e)
@@ -91,9 +89,7 @@ public class MusicModuleUtils
         var currentTrack = e.Player.CurrentTrack;
 
         await _interaction.ModifyOriginalResponseAsync(x =>
-            x.Content =
-                $"Finished playing: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}\n" +
-                "You should pin this message for playing status");
+            x.Content = $"Finished playing: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}");
     }
 
     public async Task OnTrackException(object _, TrackExceptionEventArgs e)
@@ -102,8 +98,7 @@ public class MusicModuleUtils
 
         await _interaction.ModifyOriginalResponseAsync(x =>
             {
-                x.Content =
-                    $"There was an error playing: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}";
+                x.Content = $"Error playing: {Format.Bold(Format.Sanitize(currentTrack?.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(currentTrack?.Author ?? "Unknown"))}";
                 x.Embed = new EmbedBuilder()
                     .WithTitle("Error message")
                     .WithDescription(e.ErrorMessage)

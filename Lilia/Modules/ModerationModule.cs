@@ -40,11 +40,9 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             await Context.Interaction.DeferAsync();
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
-                x.Content =
-                    $"{Format.Bold("Mention")} all the users you want to ban with reason {Format.Bold(reason)}");
+                x.Content = $"{Format.Bold("Mention")} all the users you want to ban with reason {Format.Bold(reason)}");
 
-            var mentionedUsers =
-                await ModerationModuleUtils.GetMentionedUsersAsync(Context, _client.InteractiveService);
+            var mentionedUsers = await ModerationModuleUtils.GetMentionedUsersAsync(Context, _client.InteractiveService);
 
             StringBuilder stringBuilder = new();
 
@@ -78,11 +76,9 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                     .WithTitle($"You have been banned from guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
                     .WithThumbnailUrl(Context.Guild.IconUrl)
                     .AddField("Reason", reason, true)
-                    .AddField("Moderator",
-                        $"{Context.User.Username}#{Context.User.Discriminator} (ID: {Context.User.Id})", true)
+                    .AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator} (ID: {Context.User.Id})", true)
                     .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
-                    .AddField("What to do now?",
-                        $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
+                    .AddField("What to do now?", $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
 
                 if (!mentionedMember.IsBot)
                     await mentionedMember.SendMessageAsync(embed: embedBuilder.Build());
@@ -109,8 +105,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             await Context.Interaction.DeferAsync();
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
-                x.Content =
-                    $"{Format.Bold("Mention")} all the users you want to kick with reason {Format.Bold(reason)}");
+                x.Content = $"{Format.Bold("Mention")} all the users you want to kick with reason {Format.Bold(reason)}");
 
             var mentionedUsers =
                 await ModerationModuleUtils.GetMentionedUsersAsync(Context, _client.InteractiveService);
@@ -147,11 +142,9 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                     .WithTitle($"You have been kicked from guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
                     .WithThumbnailUrl(Context.Guild.IconUrl)
                     .AddField("Reason", reason, true)
-                    .AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})",
-                        true)
+                    .AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})", true)
                     .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
-                    .AddField("What to do now?",
-                        $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
+                    .AddField("What to do now?", $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
 
                 if (!mentionedMember.IsBot)
                     await mentionedMember.SendMessageAsync(embed: embedBuilder.Build());
@@ -198,13 +191,11 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             dbUser.WarnCount += 1;
 
             var (isExistedInPast, discordRole) =
-                await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None,
-                    Color.Default);
+                await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
 
             if (!isExistedInPast)
                 foreach (var channel in Context.Guild.Channels)
-                    await channel.AddPermissionOverwriteAsync(discordRole,
-                        new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
+                    await channel.AddPermissionOverwriteAsync(discordRole, new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
 
             if (dbUser.WarnCount == 3) await user.AddRoleAsync(discordRole);
 
@@ -218,11 +209,9 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                 .WithTitle($"You were warned in guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
                 .WithThumbnailUrl(Context.Guild.IconUrl)
                 .AddField("Reason", reason, true)
-                .AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})",
-                    true)
+                .AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})", true)
                 .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
-                .AddField("What to do now?",
-                    $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
+                .AddField("What to do now?", $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
 
             if (!user.IsBot)
                 await user.SendMessageAsync(embed: embedBuilder.Build());
@@ -254,14 +243,11 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                 case 3:
                 {
                     var (isExistedInPast, discordRole) =
-                        await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None,
-                            Color.Default);
+                        await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
 
                     if (!isExistedInPast)
                         foreach (var channel in Context.Guild.Channels)
-                            await channel.AddPermissionOverwriteAsync(discordRole,
-                                new OverwritePermissions(sendMessages: PermValue.Deny,
-                                    sendMessagesInThreads: PermValue.Deny));
+                            await channel.AddPermissionOverwriteAsync(discordRole, new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
 
                     await user.RemoveRoleAsync(discordRole);
                     break;
@@ -313,13 +299,11 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             }
 
             var (isExistedInPast, discordRole) =
-                await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None,
-                    Color.Default);
+                await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
 
             if (!isExistedInPast)
                 foreach (var channel in Context.Guild.Channels)
-                    await channel.AddPermissionOverwriteAsync(discordRole,
-                        new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
+                    await channel.AddPermissionOverwriteAsync(discordRole, new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
 
             // no equivalent like Has?
             if (user.Roles.Count(x => x == discordRole) == 1)
@@ -341,11 +325,9 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                 .WithTitle($"You have been muted in guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
                 .WithThumbnailUrl(Context.Guild.IconUrl)
                 .AddField("Reason", reason, true)
-                .AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})",
-                    true)
+                .AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})", true)
                 .AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
-                .AddField("What to do now?",
-                    $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
+                .AddField("What to do now?", $"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod message appeal")} with provided IDs");
 
             if (!user.IsBot)
                 await user.SendMessageAsync(embed: embedBuilder.Build());
@@ -369,13 +351,11 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
             }
 
             var (isExistedInPast, discordRole) =
-                await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None,
-                    Color.Default);
+                await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
 
             if (!isExistedInPast)
                 foreach (var channel in Context.Guild.Channels)
-                    await channel.AddPermissionOverwriteAsync(discordRole,
-                        new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
+                    await channel.AddPermissionOverwriteAsync(discordRole, new OverwritePermissions(sendMessages: PermValue.Deny, sendMessagesInThreads: PermValue.Deny));
 
             // no equivalent like Has?
             if (user.Roles.Any(x => x == discordRole))
@@ -424,8 +404,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
                 .AddTextInput("Your appeal", "appeal-text", TextInputStyle.Paragraph, "Your appeal");
 
             await Context.Interaction.RespondWithModalAsync(modalBuilder.Build());
-            var res = (SocketModal) await InteractionUtility.WaitForInteractionAsync(Context.Client,
-                TimeSpan.FromMinutes(10), interaction => interaction.Type == InteractionType.ModalSubmit);
+            var res = (SocketModal) await InteractionUtility.WaitForInteractionAsync(Context.Client, TimeSpan.FromMinutes(10), interaction => interaction.Type == InteractionType.ModalSubmit);
 
             var components = res.Data.Components.ToList();
             var guildId = components.First(x => x.CustomId == "guild-id").Value;

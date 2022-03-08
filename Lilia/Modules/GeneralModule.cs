@@ -40,13 +40,11 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     {
         await Context.Interaction.DeferAsync(true);
 
-        var memberCount = Context.Client.Guilds.Aggregate<SocketGuild, ulong>(0,
-            (current, guild) => current + Convert.ToUInt64(guild.MemberCount));
+        var memberCount = Context.Client.Guilds.Aggregate<SocketGuild, ulong>(0, (current, guild) => current + Convert.ToUInt64(guild.MemberCount));
 
         var botId = Context.Client.CurrentUser.Id;
         const GuildPermission perms = LiliaClient.RequiredPermissions;
-        var botInv =
-            $"https://discord.com/api/oauth2/authorize?client_id={botId}&permissions={(ulong) perms}&scope=bot%20applications.commands";
+        var botInv = $"https://discord.com/api/oauth2/authorize?client_id={botId}&permissions={(ulong) perms}&scope=bot%20applications.commands";
         var guildInv = LiliaClient.BotConfiguration.Client.SupportGuildInviteLink;
 
         // dodge 400
@@ -54,28 +52,23 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 
         var componentBuilder = new ComponentBuilder()
-            .WithButton("Interested in me?", style: ButtonStyle.Link, url: botInv,
-                disabled: !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic)
-            .WithButton("Need supports?", style: ButtonStyle.Link, url: guildInv,
-                disabled: !isValidGuildInviteLink)
-            .WithButton("Want to self host?", style: ButtonStyle.Link,
-                url: "https://github.com/Lilia-Workshop/Lilia");
+            .WithButton("Interested in me?", style: ButtonStyle.Link, url: botInv, disabled: !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic)
+            .WithButton("Need supports?", style: ButtonStyle.Link, url: guildInv, disabled: !isValidGuildInviteLink)
+            .WithButton("Want to self host?", style: ButtonStyle.Link, url: "https://github.com/Lilia-Workshop/Lilia");
 
         var timeDiff = DateTime.Now.Subtract(_client.StartTime);
 
         var embedBuilder = Context.User.CreateEmbedWithUserData()
             .WithTitle("Something about me :D")
             .WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl())
-            .WithDescription(
-                $"Hi, I am {Format.Bold(Format.UsernameAndDiscriminator(Context.Client.CurrentUser))}, a bot running on the source code of {Format.Bold("Lilia")} written by {Format.Bold("Swyrin#7193")}")
+            .WithDescription($"Hi, I am {Format.Bold(Format.UsernameAndDiscriminator(Context.Client.CurrentUser))}, a bot running on the source code of {Format.Bold("Lilia")} written by {Format.Bold("Swyrin#7193")}")
             .AddField("Server count", $"{Context.Client.Guilds.Count}", true)
             .AddField("Member count", $"{memberCount}", true)
-            .AddField("Uptime",
-                $"{Format.Bold(timeDiff.ToLongReadableTimeSpan())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
+            .AddField("Uptime", $"{Format.Bold(timeDiff.ToLongReadableTimeSpan())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
             .AddField("Version", $"{Assembly.GetExecutingAssembly().GetName().Version}", true)
             .AddField("Command count", $"{(await Context.Client.GetGlobalApplicationCommandsAsync()).Count}", true)
-            .AddField("How to invite me?",
-                $"Either click the {Format.Bold("Interested in me?")} button below or click on me, choose {Format.Bold("Add to Server")} if it exists");
+            .AddField("How to invite me?", $"- Click the {Format.Bold("Interested in me?")} button below\n" +
+                                           $"- Click on me then choose {Format.Bold("Add to Server")} if it exists");
 
         await Context.Interaction.ModifyOriginalResponseAsync(x =>
         {
@@ -101,10 +94,9 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             .WithThumbnailUrl(user.GetDisplayAvatarUrl())
             .WithDescription($"User ID: {user.Id}")
             .AddField("Account age", $"{accountAge.ToShortReadableTimeSpan()} (since {creationDate.ToShortDateTime()})")
-            .AddField("Membership age",
-                $"{membershipAge.ToShortReadableTimeSpan()} (since {joinDate.ToShortDateTime()})")
-            .AddField("Is guild owner?", Context.Guild.Owner == user, true)
-            .AddField("Is a bot?", user.IsBot ? "Hello fellow bot :D" : "Probably not", true)
+            .AddField("Membership age", $"{membershipAge.ToShortReadableTimeSpan()} (since {joinDate.ToShortDateTime()})")
+            .AddField("Is guild owner", Context.Guild.Owner == user, true)
+            .AddField("Is bot", user.IsBot, true)
             .AddField("Badge list", $"{user.PublicFlags}", true)
             .AddField("Mutual guilds with me", string.Join(", ", user.MutualGuilds));
 
@@ -139,13 +131,10 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             .AddField("Humans", $"{humanCount}", true)
             .AddField("Bots", $"{botCount}", true)
             .AddField("Total", $"{memberCount}", true)
-            .AddField("Channels count",
-                $"{guild.Channels.Count} with {guild.ThreadChannels.Count(x => !x.IsPrivateThread)} public threads",
-                true)
+            .AddField("Channels count", $"{guild.Channels.Count} with {guild.ThreadChannels.Count(x => !x.IsPrivateThread)} public threads", true)
             .AddField("Roles", $"{guild.Roles.Count}", true)
             .AddField("Events", $"{guild.Events.Count} pending", true)
-            .AddField("Boosts",
-                isBoosted
+            .AddField("Boosts", isBoosted
                     ? $"{guild.PremiumSubscriptionCount} boost(s) (lvl. {(int) guild.PremiumTier}) from {boosters.Count()} booster(s)"
                     : "Not having any boosts");
 

@@ -340,8 +340,7 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
                 x.Content = "How many scores do you want to get? (1 to 100)");
 
-            var nextMessage =
-                await _liliaClient.InteractiveService.NextMessageAsync(x =>
+            var nextMessage = await _liliaClient.InteractiveService.NextMessageAsync(x =>
                     x.Channel.Id == Context.Channel.Id &&
                     x.Author.Id == Context.User.Id &&
                     int.TryParse(x.Content, out var v) &&
@@ -393,19 +392,14 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
                 .WithThumbnailUrl(score.Beatmapset.Covers.Cover2x)
                 .WithDescription($"Score position: {pos}")
                 .AddField("Known issue", "If you see 2 0's at the score part, it's fine")
-                .AddField("Total score",
-                    $"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank.GetValueOrDefault()} - GLB: #{score.GlobalRank.GetValueOrDefault()})")
+                .AddField("Total score", $"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank.GetValueOrDefault()} - GLB: #{score.GlobalRank.GetValueOrDefault()})")
                 .AddField("Ranking", $"{score.Rank}", true)
                 .AddField("Accuracy", $"{Math.Round(score.Accuracy * 100, 2)}%", true)
                 .AddField("Max combo", $"{score.MaxCombo}x/{map.MaxCombo}x", true)
-                .AddField("Hit count",
-                    $"{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}",
-                    true)
-                .AddField("PP",
-                    isPpExists
+                .AddField("Hit count", $"{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}", true)
+                .AddField("PP", isPpExists
                         ? $"{score.PerformancePoints} * {Math.Round(score.Weight.Percentage, 2)}% -> {Math.Round(score.Weight.PerformancePoints, 2)}"
-                        : "0",
-                    true)
+                        : "0", true)
                 .AddField("Submission time", $"{score.CreatedAt:g}", true));
         }
 
@@ -414,8 +408,7 @@ public class OsuModule : InteractionModuleBase<SocketInteractionContext>
             .WithPages(pages)
             .Build();
 
-        await _liliaClient.InteractiveService.SendPaginatorAsync(staticPageBuilder, Context.Channel,
-            resetTimeoutOnInput: true);
+        await _liliaClient.InteractiveService.SendPaginatorAsync(staticPageBuilder, Context.Channel, resetTimeoutOnInput: true);
     }
 
     private async Task GenericOsuProcessing(string username, OsuUserProfileSearchType profileSearchType,

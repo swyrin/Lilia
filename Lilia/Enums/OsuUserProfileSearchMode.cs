@@ -4,13 +4,18 @@ namespace Lilia.Enums;
 
 public enum OsuUserProfileSearchMode
 {
-    [ChoiceDisplay("default")] Default,
+    [ChoiceDisplay("default")]
+    Default,
 
-    [ChoiceDisplay("osu")] Osu,
+    [ChoiceDisplay("osu")]
+    Osu,
 
-    [ChoiceDisplay("mania")] Mania,
+    [ChoiceDisplay("mania")]
+    Mania,
 
-    [ChoiceDisplay("catch_the_beat")] Fruits,
+    [ChoiceDisplay("catch_the_beat")]
+    Fruits,
 
-    [ChoiceDisplay("taiko")] Taiko
+    [ChoiceDisplay("taiko")]
+    Taiko
 }
