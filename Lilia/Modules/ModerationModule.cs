@@ -65,8 +65,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 				}
 				catch
 				{
-					stringBuilder.AppendLine(
-						$"Missing permission to ban {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}");
+					stringBuilder.AppendLine($"Missing permission to ban {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}");
 				}
 
 				var now = DateTime.Now;
@@ -91,8 +90,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 				.WithPages(pages)
 				.Build();
 
-			await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction,
-				responseType: InteractionResponseType.DeferredChannelMessageWithSource);
+			await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction, responseType: InteractionResponseType.DeferredChannelMessageWithSource);
 		}
 
 		[SlashCommand("kick", "Kick members in batch")]
@@ -107,8 +105,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
 				x.Content = $"{Format.Bold("Mention")} all the users you want to kick with reason {Format.Bold(reason)}");
 
-			var mentionedUsers =
-				await ModerationModuleUtils.GetMentionedUsersAsync(Context, _client.InteractiveService);
+			var mentionedUsers = await ModerationModuleUtils.GetMentionedUsersAsync(Context, _client.InteractiveService);
 
 			StringBuilder stringBuilder = new();
 
@@ -190,8 +187,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 
 			dbUser.WarnCount += 1;
 
-			var (isExistedInPast, discordRole) =
-				await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
+			var (isExistedInPast, discordRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
 
 			if (!isExistedInPast)
 				foreach (var channel in Context.Guild.Channels)
@@ -242,8 +238,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 			{
 				case 3:
 				{
-					var (isExistedInPast, discordRole) =
-						await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
+					var (isExistedInPast, discordRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
 
 					if (!isExistedInPast)
 						foreach (var channel in Context.Guild.Channels)
@@ -296,8 +291,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 				return;
 			}
 
-			var (isExistedInPast, discordRole) =
-				await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
+			var (isExistedInPast, discordRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
 
 			if (!isExistedInPast)
 				foreach (var channel in Context.Guild.Channels)
@@ -346,8 +340,7 @@ public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
 				return;
 			}
 
-			var (isExistedInPast, discordRole) =
-				await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
+			var (isExistedInPast, discordRole) = await ModerationModuleUtils.GetOrCreateRoleAsync(Context, MuteRoleName, GuildPermissions.None, Color.Default);
 
 			if (!isExistedInPast)
 				foreach (var channel in Context.Guild.Channels)
