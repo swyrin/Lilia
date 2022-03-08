@@ -29,319 +29,301 @@ namespace Lilia.Services;
 
 public class LiliaClient
 {
-    public const GuildPermission RequiredPermissions =
-        GuildPermission.ManageRoles | GuildPermission.ManageChannels | GuildPermission.KickMembers |
-        GuildPermission.BanMembers | GuildPermission.ViewChannel |
-        GuildPermission.ModerateMembers | GuildPermission.SendMessages |
-        GuildPermission.SendMessagesInThreads |
-        GuildPermission.EmbedLinks |
-        GuildPermission.ReadMessageHistory |
-        GuildPermission.UseExternalEmojis |
-        GuildPermission.UseExternalStickers |
-        GuildPermission.AddReactions |
-        GuildPermission.Speak | GuildPermission.Connect |
-        GuildPermission.StartEmbeddedActivities;
+	public const GuildPermission RequiredPermissions =
+		GuildPermission.ManageRoles | GuildPermission.ManageChannels | GuildPermission.KickMembers |
+		GuildPermission.BanMembers | GuildPermission.ViewChannel |
+		GuildPermission.ModerateMembers | GuildPermission.SendMessages |
+		GuildPermission.SendMessagesInThreads |
+		GuildPermission.EmbedLinks |
+		GuildPermission.ReadMessageHistory |
+		GuildPermission.UseExternalEmojis |
+		GuildPermission.UseExternalStickers |
+		GuildPermission.AddReactions |
+		GuildPermission.Speak | GuildPermission.Connect |
+		GuildPermission.StartEmbeddedActivities;
 
-    public static readonly BotConfiguration BotConfiguration;
-    public static readonly CancellationTokenSource Cts;
-    public static readonly DbContextOptionsBuilder<LiliaDatabaseContext> OptionsBuilder = new();
-    
-    public ArtworkService ArtworkService;
-    public InteractiveService InteractiveService;
-    public LavalinkNode Lavalink;
-    public DateTime StartTime;
-    
-    private LiliaDatabase _database;
-    private InactivityTrackingService _inactivityTracker;
-    private DiscordSocketClient _client;
-    private InteractionService _interactionService;
-    private ServiceProvider _serviceProvider;
+	public static readonly BotConfiguration BotConfiguration;
+	public static readonly CancellationTokenSource Cts;
+	public static readonly DbContextOptionsBuilder<LiliaDatabaseContext> OptionsBuilder = new();
+	private DiscordSocketClient _client;
 
-    static LiliaClient()
-    {
-        BotConfiguration = JsonManager<BotConfiguration>.Read();
-        Cts = new CancellationTokenSource();
+	private readonly LiliaDatabase _database;
+	private InactivityTrackingService _inactivityTracker;
+	private InteractionService _interactionService;
+	private ServiceProvider _serviceProvider;
 
-        var sqlConfig = BotConfiguration.Credentials.PostgreSql;
-        var connStrBuilder = new NpgsqlConnectionStringBuilder
-        {
-            Password = sqlConfig.Password,
-            Username = sqlConfig.Username,
-            Database = sqlConfig.DatabaseName,
-            Host = sqlConfig.Host,
-            Port = sqlConfig.Port,
-            IncludeErrorDetail = true
-        };
+	public ArtworkService ArtworkService;
+	public InteractiveService InteractiveService;
+	public LavalinkNode Lavalink;
+	public DateTime StartTime;
 
-        OptionsBuilder
+	static LiliaClient()
+	{
+		BotConfiguration = JsonManager<BotConfiguration>.Read();
+		Cts = new CancellationTokenSource();
+
+		var sqlConfig = BotConfiguration.Credentials.PostgreSql;
+		var connStrBuilder = new NpgsqlConnectionStringBuilder
+		{
+			Password = sqlConfig.Password,
+			Username = sqlConfig.Username,
+			Database = sqlConfig.DatabaseName,
+			Host = sqlConfig.Host,
+			Port = sqlConfig.Port,
+			IncludeErrorDetail = true
+		};
+
+		OptionsBuilder
 #if DEBUG
-            .EnableSensitiveDataLogging()
+			.EnableSensitiveDataLogging()
 #endif
-            .EnableDetailedErrors()
-            .UseLoggerFactory(new SerilogLoggerFactory(Log.Logger))
-            .UseNpgsql(connStrBuilder.ToString());
-    }
+			.EnableDetailedErrors()
+			.UseLoggerFactory(new SerilogLoggerFactory(Log.Logger))
+			.UseNpgsql(connStrBuilder.ToString());
+	}
 
-    public LiliaClient()
-    {
-        Log.Logger.Information("Setting up databases");
-        _database = new LiliaDatabase();
-    }
+	public LiliaClient()
+	{
+		Log.Logger.Information("Setting up databases");
+		_database = new LiliaDatabase();
+	}
 
-    private static async Task CheckForUpdateAsync()
-    {
-        Log.Logger.Information("Checking for updates");
+	private static async Task CheckForUpdateAsync()
+	{
+		Log.Logger.Information("Checking for updates");
 
-        using HttpClient client = new();
+		using HttpClient client = new();
 
-        var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-        var sourceVersionStr =
-            await client.GetStringAsync("https://raw.githubusercontent.com/Lilia-Workshop/Lilia/master/version.txt");
-        var sourceVersion = Version.Parse(sourceVersionStr);
+		var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+		var sourceVersionStr =
+			await client.GetStringAsync("https://raw.githubusercontent.com/Lilia-Workshop/Lilia/master/version.txt");
+		var sourceVersion = Version.Parse(sourceVersionStr);
 
-        Log.Logger.Debug($"Current version: {currentVersion}  - Latest version: {sourceVersion}");
+		Log.Logger.Debug($"Current version: {currentVersion}  - Latest version: {sourceVersion}");
 
-        if (currentVersion < sourceVersion)
-        {
-            Log.Logger.Warning("You need to update your bot because there are changes in the code");
-            Log.Logger.Warning("Source code can be seen here: https://github.com/Lilia-Workshop/Lilia");
-            Log.Logger.Warning("Changelogs in case you miss: https://github.com/Lilia-Workshop/Lilia/releases");
-        }
-        else
-        {
-            Log.Logger.Information("You are using latest version, hooray");
-        }
-    }
+		if (currentVersion < sourceVersion)
+		{
+			Log.Logger.Warning("You need to update your bot because there are changes in the code");
+			Log.Logger.Warning("Source code can be seen here: https://github.com/Lilia-Workshop/Lilia");
+			Log.Logger.Warning("Changelogs in case you miss: https://github.com/Lilia-Workshop/Lilia/releases");
+		}
+		else
+		{
+			Log.Logger.Information("You are using latest version, hooray");
+		}
+	}
 
-    public async Task RunAsync()
-    {
-        await CheckForUpdateAsync();
+	public async Task RunAsync()
+	{
+		await CheckForUpdateAsync();
 
-        Log.Logger.Information("Setting up client");
+		Log.Logger.Information("Setting up client");
 
-        _client = new DiscordSocketClient(new DiscordSocketConfig
-        {
-            GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
-            LogLevel = LogSeverity.Debug,
-            LogGatewayIntentWarnings = true,
-            UseInteractionSnowflakeDate = false,
-            AlwaysDownloadUsers = true,
-            UseSystemClock = false
-        });
+		_client = new DiscordSocketClient(new DiscordSocketConfig
+		{
+			GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
+			LogLevel = LogSeverity.Debug,
+			LogGatewayIntentWarnings = true,
+			UseInteractionSnowflakeDate = false,
+			AlwaysDownloadUsers = true,
+			UseSystemClock = false
+		});
 
-        _interactionService = new InteractionService(_client.Rest, new InteractionServiceConfig
-        {
-            LogLevel = LogSeverity.Debug,
-            DefaultRunMode = RunMode.Async
-        });
+		_interactionService = new InteractionService(_client.Rest, new InteractionServiceConfig {LogLevel = LogSeverity.Debug, DefaultRunMode = RunMode.Async});
 
-        InteractiveService = new InteractiveService(_client, new InteractiveConfig
-        {
-            DefaultTimeout = TimeSpan.FromMinutes(2),
-            LogLevel = LogSeverity.Debug
-        });
+		InteractiveService = new InteractiveService(_client, new InteractiveConfig {DefaultTimeout = TimeSpan.FromMinutes(2), LogLevel = LogSeverity.Debug});
 
-        var lavalinkConfig = BotConfiguration.Credentials.Lavalink;
-        Lavalink = new LavalinkNode(new LavalinkNodeOptions
-            {
-                RestUri = $"http://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
-                WebSocketUri = $"ws://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
-                Password = lavalinkConfig.Password,
-                DebugPayloads = true,
-                DisconnectOnStop = false
-            }, new DiscordClientWrapper(_client),
-            new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("Lavalink")));
+		var lavalinkConfig = BotConfiguration.Credentials.Lavalink;
+		Lavalink = new LavalinkNode(new LavalinkNodeOptions
+			{
+				RestUri = $"http://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
+				WebSocketUri = $"ws://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
+				Password = lavalinkConfig.Password,
+				DebugPayloads = true,
+				DisconnectOnStop = false
+			}, new DiscordClientWrapper(_client),
+			new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("Lavalink")));
 
-        _serviceProvider = new ServiceCollection()
-            .AddLogging(x => x.AddSerilog())
-            .AddDefaultSerializer()
-            .AddDefaultRequestHandler()
-            .AddSingleton(_database)
-            .AddOsuSharp(x => x.Configuration = new OsuClientConfiguration
-            {
-                ModFormatSeparator = string.Empty,
-                ClientId = BotConfiguration.Credentials.Osu.ClientId,
-                ClientSecret = BotConfiguration.Credentials.Osu.ClientSecret
-            })
-            .AddSingleton(this)
-            .BuildServiceProvider();
+		_serviceProvider = new ServiceCollection()
+			.AddLogging(x => x.AddSerilog())
+			.AddDefaultSerializer()
+			.AddDefaultRequestHandler()
+			.AddSingleton(_database)
+			.AddOsuSharp(x => x.Configuration = new OsuClientConfiguration {ModFormatSeparator = string.Empty, ClientId = BotConfiguration.Credentials.Osu.ClientId, ClientSecret = BotConfiguration.Credentials.Osu.ClientSecret})
+			.AddSingleton(this)
+			.BuildServiceProvider();
 
-        await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
+		await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
 
-        Log.Logger.Information("Registering event handlers");
-        InteractiveService.Log += OnLog;
+		Log.Logger.Information("Registering event handlers");
+		InteractiveService.Log += OnLog;
 
-        _interactionService.Log += OnLog;
-        
-        _client.Log += OnLog;
-        _client.InteractionCreated += OnClientInteractionCreated;
-        _client.GuildAvailable += OnClientGuildAvailable;
-        _client.GuildUnavailable += OnClientGuildUnavailable;
-        _client.JoinedGuild += OnClientGuildAvailable;
-        _client.LeftGuild += OnClientGuildUnavailable;
-        _client.UserJoined += OnClientUserJoined;
-        _client.UserLeft += OnClientUserLeft;
-        _client.Ready += OnClientReady;
+		_interactionService.Log += OnLog;
 
-        Log.Logger.Information("Connecting and waiting for shutdown");
-        await _client.LoginAsync(TokenType.Bot, BotConfiguration.Client.Token);
-        await _client.StartAsync();
+		_client.Log += OnLog;
+		_client.InteractionCreated += OnClientInteractionCreated;
+		_client.GuildAvailable += OnClientGuildAvailable;
+		_client.GuildUnavailable += OnClientGuildUnavailable;
+		_client.JoinedGuild += OnClientGuildAvailable;
+		_client.LeftGuild += OnClientGuildUnavailable;
+		_client.UserJoined += OnClientUserJoined;
+		_client.UserLeft += OnClientUserLeft;
+		_client.Ready += OnClientReady;
 
-        while (!Cts.IsCancellationRequested) await Task.Delay(200);
+		Log.Logger.Information("Connecting and waiting for shutdown");
+		await _client.LoginAsync(TokenType.Bot, BotConfiguration.Client.Token);
+		await _client.StartAsync();
 
-        await Lavalink.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client shutdown");
-        await Lavalink.DisposeAsync();
-        await _client.StopAsync();
-        await _client.LogoutAsync();
-        await _database.GetContext().DisposeAsync();
-    }
+		while (!Cts.IsCancellationRequested) await Task.Delay(200);
 
-    private async Task OnClientInteractionCreated(SocketInteraction interaction)
-    {
-        try
-        {
-            var context = new SocketInteractionContext(_client, interaction);
-            await _interactionService.ExecuteCommandAsync(context, _serviceProvider);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.ToString());
+		await Lavalink.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client shutdown");
+		await Lavalink.DisposeAsync();
+		await _client.StopAsync();
+		await _client.LogoutAsync();
+		await _database.GetContext().DisposeAsync();
+	}
 
-            if (interaction.Type == InteractionType.ApplicationCommand)
-                await interaction.GetOriginalResponseAsync()
-                    .ContinueWith(async message => await message.Result.DeleteAsync());
-        }
-    }
+	private async Task OnClientInteractionCreated(SocketInteraction interaction)
+	{
+		try
+		{
+			var context = new SocketInteractionContext(_client, interaction);
+			await _interactionService.ExecuteCommandAsync(context, _serviceProvider);
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.ToString());
 
-    private static Task OnLog(LogMessage message)
-    {
-        var severity = message.Severity switch
-        {
-            LogSeverity.Critical => LogEventLevel.Fatal,
-            LogSeverity.Error => LogEventLevel.Error,
-            LogSeverity.Warning => LogEventLevel.Warning,
-            LogSeverity.Info => LogEventLevel.Information,
-            LogSeverity.Verbose => LogEventLevel.Verbose,
-            LogSeverity.Debug => LogEventLevel.Debug,
-            _ => LogEventLevel.Information
-        };
+			if (interaction.Type == InteractionType.ApplicationCommand)
+				await interaction.GetOriginalResponseAsync()
+					.ContinueWith(async message => await message.Result.DeleteAsync());
+		}
+	}
 
-        Log
-            .ForContext("SourceContext", message.Source)
-            .Write(severity, message.Exception, "{Message:l}", message.Message);
+	private static Task OnLog(LogMessage message)
+	{
+		var severity = message.Severity switch
+		{
+			LogSeverity.Critical => LogEventLevel.Fatal,
+			LogSeverity.Error => LogEventLevel.Error,
+			LogSeverity.Warning => LogEventLevel.Warning,
+			LogSeverity.Info => LogEventLevel.Information,
+			LogSeverity.Verbose => LogEventLevel.Verbose,
+			LogSeverity.Debug => LogEventLevel.Debug,
+			_ => LogEventLevel.Information
+		};
 
-        return Task.CompletedTask;
-    }
+		Log
+			.ForContext("SourceContext", message.Source)
+			.Write(severity, message.Exception, "{Message:l}", message.Message);
 
-    private async Task OnClientReady()
-    {
-        #region Register commands
+		return Task.CompletedTask;
+	}
 
-        Log.Logger.Information("Registering commands");
+	private async Task OnClientReady()
+	{
+		#region Register commands
 
-        if (BotConfiguration.Client.PrivateGuildIds.Count > 0)
-            foreach (var guildId in BotConfiguration.Client.PrivateGuildIds)
-            {
-                Log.Logger.Warning($"Registering slash commands for guild with ID \"{guildId}\"");
-                await _interactionService.RegisterCommandsToGuildAsync(guildId);
-            }
+		Log.Logger.Information("Registering commands");
 
-        if (BotConfiguration.Client.SlashCommandsForGlobal)
-        {
-            Log.Logger.Warning("Registering slash commands in global scope");
-            await _interactionService.RegisterCommandsGloballyAsync();
-        }
+		if (BotConfiguration.Client.PrivateGuildIds.Count > 0)
+			foreach (var guildId in BotConfiguration.Client.PrivateGuildIds)
+			{
+				Log.Logger.Warning($"Registering slash commands for guild with ID \"{guildId}\"");
+				await _interactionService.RegisterCommandsToGuildAsync(guildId);
+			}
 
-        #endregion
+		if (BotConfiguration.Client.SlashCommandsForGlobal)
+		{
+			Log.Logger.Warning("Registering slash commands in global scope");
+			await _interactionService.RegisterCommandsGloballyAsync();
+		}
 
-        #region Activity Setup
+		#endregion
 
-        Log.Logger.Information("Setting client activity");
+		#region Activity Setup
 
-        var clientActivityConfig = BotConfiguration.Client.Activity;
+		Log.Logger.Information("Setting client activity");
 
-        if (!Enum.TryParse(clientActivityConfig.Type, out ActivityType activityType))
-        {
-            Log.Logger.Warning(
-                $"Can not convert \"{clientActivityConfig.Type}\" to a valid activity type, using \"Playing\"");
-            Log.Logger.Information("Valid options are: ListeningTo, Competing, Playing, Watching");
-            activityType = ActivityType.Playing;
-        }
+		var clientActivityConfig = BotConfiguration.Client.Activity;
 
-        if (!Enum.TryParse(clientActivityConfig.Status, out UserStatus userStatus))
-        {
-            Log.Logger.Warning(
-                $"Can not convert \"{clientActivityConfig.Status}\" to a valid status, using \"Online\"");
-            Log.Logger.Information("Valid options are: Online, Invisible, Idle, DoNotDisturb");
-            userStatus = UserStatus.Online;
-        }
+		if (!Enum.TryParse(clientActivityConfig.Type, out ActivityType activityType))
+		{
+			Log.Logger.Warning(
+				$"Can not convert \"{clientActivityConfig.Type}\" to a valid activity type, using \"Playing\"");
+			Log.Logger.Information("Valid options are: ListeningTo, Competing, Playing, Watching");
+			activityType = ActivityType.Playing;
+		}
 
-        await _client.SetActivityAsync(new Game(BotConfiguration.Client.Activity.Name, activityType));
-        await _client.SetStatusAsync(userStatus);
+		if (!Enum.TryParse(clientActivityConfig.Status, out UserStatus userStatus))
+		{
+			Log.Logger.Warning(
+				$"Can not convert \"{clientActivityConfig.Status}\" to a valid status, using \"Online\"");
+			Log.Logger.Information("Valid options are: Online, Invisible, Idle, DoNotDisturb");
+			userStatus = UserStatus.Online;
+		}
 
-        #endregion Activity Setup
+		await _client.SetActivityAsync(new Game(BotConfiguration.Client.Activity.Name, activityType));
+		await _client.SetStatusAsync(userStatus);
 
-        Log.Logger.Information("Initializing Lavalink connection");
-        await Lavalink.InitializeAsync();
-        ArtworkService = new ArtworkService();
-        _inactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(_client),
-            new InactivityTrackingOptions
-            {
-                PollInterval = TimeSpan.FromMinutes(2),
-                DisconnectDelay = TimeSpan.Zero,
-                TrackInactivity = true
-            }, new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("InteractivityTracker")));
+		#endregion Activity Setup
 
-        Log.Logger.Information($"Client is ready to serve as {Format.UsernameAndDiscriminator(_client.CurrentUser)}");
-        StartTime = DateTime.Now;
-    }
+		Log.Logger.Information("Initializing Lavalink connection");
+		await Lavalink.InitializeAsync();
+		ArtworkService = new ArtworkService();
+		_inactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(_client),
+			new InactivityTrackingOptions {PollInterval = TimeSpan.FromMinutes(2), DisconnectDelay = TimeSpan.Zero, TrackInactivity = true}, new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("InteractivityTracker")));
 
-    private static Task OnClientGuildAvailable(SocketGuild guild)
-    {
-        Log.Logger.Debug($"Guild cache added: {guild.Name} (ID: {guild.Id})");
-        return Task.CompletedTask;
-    }
+		Log.Logger.Information($"Client is ready to serve as {Format.UsernameAndDiscriminator(_client.CurrentUser)}");
+		StartTime = DateTime.Now;
+	}
 
-    private static Task OnClientGuildUnavailable(SocketGuild guild)
-    {
-        Log.Logger.Debug($"Guild cache removed: {guild.Name} (ID: {guild.Id})");
-        return Task.CompletedTask;
-    }
+	private static Task OnClientGuildAvailable(SocketGuild guild)
+	{
+		Log.Logger.Debug($"Guild cache added: {guild.Name} (ID: {guild.Id})");
+		return Task.CompletedTask;
+	}
 
-    private async Task OnClientUserJoined(SocketGuildUser user)
-    {
-        var dbGuild = _database.GetContext().GetGuildRecord(user.Guild);
+	private static Task OnClientGuildUnavailable(SocketGuild guild)
+	{
+		Log.Logger.Debug($"Guild cache removed: {guild.Name} (ID: {guild.Id})");
+		return Task.CompletedTask;
+	}
 
-        if (!dbGuild.IsWelcomeEnabled) return;
-        if (dbGuild.WelcomeChannelId == 0 || user.Guild.GetChannel(dbGuild.WelcomeChannelId) == null) return;
-        if (string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage)) return;
+	private async Task OnClientUserJoined(SocketGuildUser user)
+	{
+		var dbGuild = _database.GetContext().GetGuildRecord(user.Guild);
 
-        var chn = user.Guild.GetChannel(dbGuild.WelcomeChannelId);
+		if (!dbGuild.IsWelcomeEnabled) return;
+		if (dbGuild.WelcomeChannelId == 0 || user.Guild.GetChannel(dbGuild.WelcomeChannelId) == null) return;
+		if (string.IsNullOrWhiteSpace(dbGuild.WelcomeMessage)) return;
 
-        var postProcessedMessage = dbGuild.WelcomeMessage
-            .Replace("{name}", user.Username)
-            .Replace("{tag}", user.Discriminator)
-            .Replace("{@user}", user.Mention)
-            .Replace("{guild}", user.Guild.Name);
+		var chn = user.Guild.GetChannel(dbGuild.WelcomeChannelId);
 
-        await ((SocketTextChannel) chn).SendMessageAsync(postProcessedMessage);
-    }
+		var postProcessedMessage = dbGuild.WelcomeMessage
+			.Replace("{name}", user.Username)
+			.Replace("{tag}", user.Discriminator)
+			.Replace("{@user}", user.Mention)
+			.Replace("{guild}", user.Guild.Name);
 
-    private async Task OnClientUserLeft(SocketGuild guild, SocketUser user)
-    {
-        var dbGuild = _database.GetContext().GetGuildRecord(guild);
+		await ((SocketTextChannel)chn).SendMessageAsync(postProcessedMessage);
+	}
 
-        if (!dbGuild.IsGoodbyeEnabled) return;
-        if (dbGuild.GoodbyeChannelId == 0 || guild.GetChannel(dbGuild.GoodbyeChannelId) == null) return;
-        if (string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage)) return;
+	private async Task OnClientUserLeft(SocketGuild guild, SocketUser user)
+	{
+		var dbGuild = _database.GetContext().GetGuildRecord(guild);
 
-        var chn = guild.GetChannel(dbGuild.GoodbyeChannelId);
+		if (!dbGuild.IsGoodbyeEnabled) return;
+		if (dbGuild.GoodbyeChannelId == 0 || guild.GetChannel(dbGuild.GoodbyeChannelId) == null) return;
+		if (string.IsNullOrWhiteSpace(dbGuild.GoodbyeMessage)) return;
 
-        var postProcessedMessage = dbGuild.GoodbyeMessage
-            .Replace("{name}", user.Username)
-            .Replace("{tag}", user.Discriminator)
-            .Replace("{guild}", guild.Name);
+		var chn = guild.GetChannel(dbGuild.GoodbyeChannelId);
 
-        await ((SocketTextChannel) chn).SendMessageAsync(postProcessedMessage);
-    }
+		var postProcessedMessage = dbGuild.GoodbyeMessage
+			.Replace("{name}", user.Username)
+			.Replace("{tag}", user.Discriminator)
+			.Replace("{guild}", guild.Name);
+
+		await ((SocketTextChannel)chn).SendMessageAsync(postProcessedMessage);
+	}
 }

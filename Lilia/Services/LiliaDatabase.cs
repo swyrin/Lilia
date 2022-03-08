@@ -6,26 +6,26 @@ namespace Lilia.Services;
 
 public class LiliaDatabase
 {
-    public LiliaDatabase()
-    {
-        using var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
+	public LiliaDatabase()
+	{
+		using var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
 
-        while (context.Database.GetPendingMigrations().Any())
-        {
-            var migrationContext = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
-            migrationContext.Database.Migrate();
-            migrationContext.SaveChanges();
-            migrationContext.Dispose();
-        }
+		while (context.Database.GetPendingMigrations().Any())
+		{
+			var migrationContext = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
+			migrationContext.Database.Migrate();
+			migrationContext.SaveChanges();
+			migrationContext.Dispose();
+		}
 
-        context.SaveChanges();
-    }
+		context.SaveChanges();
+	}
 
-    public LiliaDatabaseContext GetContext()
-    {
-        var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
-        context.Database.SetCommandTimeout(30);
+	public LiliaDatabaseContext GetContext()
+	{
+		var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
+		context.Database.SetCommandTimeout(30);
 
-        return context;
-    }
+		return context;
+	}
 }

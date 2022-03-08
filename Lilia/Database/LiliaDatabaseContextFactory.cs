@@ -6,10 +6,10 @@ namespace Lilia.Database;
 
 public class LiliaDatabaseContextFactory : IDesignTimeDbContextFactory<LiliaDatabaseContext>
 {
-    public LiliaDatabaseContext CreateDbContext(string[] args)
-    {
-        var ctx = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
-        ctx.Database.SetCommandTimeout(30);
-        return ctx;
-    }
+	public LiliaDatabaseContext CreateDbContext(string[] args)
+	{
+		var ctx = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
+		ctx.Database.SetCommandTimeout(30);
+		return ctx;
+	}
 }
