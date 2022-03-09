@@ -15,10 +15,10 @@ using Lilia.Services;
 namespace Lilia.Modules;
 
 [Group("mod", "Moderation commands")]
-public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
+public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 {
 	[Group("general", "General command for moderating members")]
-	public class ModerationGeneralModule : InteractionModuleBase<SocketInteractionContext>
+	public class ModerationGeneralModule : InteractionModuleBase<ShardedInteractionContext>
 	{
 		private const string MuteRoleName = "Lilia-mute";
 		private readonly LiliaClient _client;

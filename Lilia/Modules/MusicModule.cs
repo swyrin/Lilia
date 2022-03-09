@@ -18,10 +18,10 @@ using Lilia.Services;
 namespace Lilia.Modules;
 
 [Group("music", "Music commands")]
-public class MusicModule : InteractionModuleBase<SocketInteractionContext>
+public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 {
 	[Group("playback", "Music playback commands")]
-	public class MusicPlaybackModule : InteractionModuleBase<SocketInteractionContext>
+	public class MusicPlaybackModule : InteractionModuleBase<ShardedInteractionContext>
 	{
 		private readonly LiliaClient _client;
 
@@ -349,7 +349,7 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 	}
 
 	[Group("queue", "Queue commands")]
-	public class MusicQueueModule : InteractionModuleBase<SocketInteractionContext>
+	public class MusicQueueModule : InteractionModuleBase<ShardedInteractionContext>
 	{
 		private readonly LiliaClient _client;
 

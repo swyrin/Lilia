@@ -11,7 +11,7 @@ using Lilia.Services;
 namespace Lilia.Modules;
 
 [Group("config", "Server configuration")]
-public class GuildConfigModule : InteractionModuleBase<SocketInteractionContext>
+public class GuildConfigModule : InteractionModuleBase<ShardedInteractionContext>
 {
 	private readonly LiliaDatabaseContext _dbCtx;
 

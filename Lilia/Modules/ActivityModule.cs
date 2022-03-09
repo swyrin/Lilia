@@ -7,7 +7,7 @@ using Lilia.Modules.Utils;
 
 namespace Lilia.Modules;
 
-public class ActivityModule : InteractionModuleBase<SocketInteractionContext>
+public class ActivityModule : InteractionModuleBase<ShardedInteractionContext>
 {
 	[SlashCommand("activity", "Create a new activity")]
 	public async Task ActivityActivityCommand(

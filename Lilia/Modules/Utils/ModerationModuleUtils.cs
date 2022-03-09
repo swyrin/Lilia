@@ -10,7 +10,7 @@ namespace Lilia.Modules.Utils;
 
 public static class ModerationModuleUtils
 {
-	public static async Task<(bool, IRole)> GetOrCreateRoleAsync(SocketInteractionContext ctx, string roleName,
+	public static async Task<(bool, IRole)> GetOrCreateRoleAsync(ShardedInteractionContext ctx, string roleName,
 		GuildPermissions perms, Color color, bool isHoisted = false, bool isMentionable = false)
 	{
 		IRole testRole = ctx.Guild.Roles.ToList().Find(x => x.Name == roleName);
@@ -21,7 +21,7 @@ public static class ModerationModuleUtils
 		return (false, testRole);
 	}
 
-	public static async Task<IEnumerable<SocketUser>> GetMentionedUsersAsync(SocketInteractionContext ctx, InteractiveService interactive)
+	public static async Task<IEnumerable<SocketUser>> GetMentionedUsersAsync(ShardedInteractionContext ctx, InteractiveService interactive)
 	{
 		var result = await interactive.NextMessageAsync(x => x.Channel.Id == ctx.Channel.Id && x.Author == ctx.User);
 		var memberList = result.IsSuccess ? result.Value?.MentionedUsers.Distinct() : new List<SocketUser>();

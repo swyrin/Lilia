@@ -52,7 +52,7 @@ public class MusicModuleUtils
 		if (_player != null) return true;
 
 		await _interaction.ModifyOriginalResponseAsync(x =>
-			x.Content = "I am not in a voice channel now");
+			x.Content = "I am not connected to a voice channel in this guild");
 
 		return false;
 	}

@@ -10,7 +10,7 @@ using Lilia.Services;
 
 namespace Lilia.Modules;
 
-public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
+public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 {
 	private readonly LiliaClient _client;
 
@@ -66,7 +66,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 			.AddField("Member count", $"{memberCount}", true)
 			.AddField("Uptime", $"{Format.Bold(timeDiff.ToLongReadableTimeSpan())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
 			.AddField("Version", $"{Assembly.GetExecutingAssembly().GetName().Version}", true)
-			.AddField("Command count", $"{(await Context.Client.GetGlobalApplicationCommandsAsync()).Count}", true)
+			.AddField("Command count", $"{(await Context.Client.GetShardFor(Context.Guild).GetGlobalApplicationCommandsAsync()).Count}", true)
 			.AddField("How to invite me?", $"- Click the {Format.Bold("Interested in me?")} button below\n" +
 			                               $"- Click on me then choose {Format.Bold("Add to Server")} if it exists");
 

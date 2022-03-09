@@ -45,9 +45,9 @@ public class LiliaClient
 	public static readonly BotConfiguration BotConfiguration;
 	public static readonly CancellationTokenSource Cts;
 	public static readonly DbContextOptionsBuilder<LiliaDatabaseContext> OptionsBuilder = new();
-	private DiscordSocketClient _client;
 
-	private readonly LiliaDatabase _database;
+	private LiliaDatabase _database;
+	private DiscordShardedClient _client;
 	private InactivityTrackingService _inactivityTracker;
 	private InteractionService _interactionService;
 	private ServiceProvider _serviceProvider;
@@ -82,12 +82,6 @@ public class LiliaClient
 			.UseNpgsql(connStrBuilder.ToString());
 	}
 
-	public LiliaClient()
-	{
-		Log.Logger.Information("Setting up databases");
-		_database = new LiliaDatabase();
-	}
-
 	private static async Task CheckForUpdateAsync()
 	{
 		Log.Logger.Information("Checking for updates");
@@ -117,10 +111,16 @@ public class LiliaClient
 	{
 		await CheckForUpdateAsync();
 
-		Log.Logger.Information("Setting up client");
+		Log.Logger.Information("Setting up databases");
+		_database = new LiliaDatabase();
 
-		_client = new DiscordSocketClient(new DiscordSocketConfig
+		Log.Logger.Information("Setting up client");
+		StartTime = DateTime.Now;
+
+		_client = new DiscordShardedClient(new DiscordSocketConfig
 		{
+			TotalShards = null,
+			ShardId = null,
 			GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
 			LogLevel = LogSeverity.Debug,
 			LogGatewayIntentWarnings = true,
@@ -157,18 +157,22 @@ public class LiliaClient
 
 		Log.Logger.Information("Registering event handlers");
 		InteractiveService.Log += OnLog;
-
 		_interactionService.Log += OnLog;
-
 		_client.Log += OnLog;
-		_client.InteractionCreated += OnClientInteractionCreated;
-		_client.GuildAvailable += OnClientGuildAvailable;
-		_client.GuildUnavailable += OnClientGuildUnavailable;
-		_client.JoinedGuild += OnClientGuildAvailable;
-		_client.LeftGuild += OnClientGuildUnavailable;
-		_client.UserJoined += OnClientUserJoined;
-		_client.UserLeft += OnClientUserLeft;
-		_client.Ready += OnClientReady;
+		_client.GuildAvailable += OnShardGuildAvailable;
+		_client.GuildUnavailable += OnShardGuildUnavailable;
+		_client.JoinedGuild += OnShardGuildAvailable;
+		_client.LeftGuild += OnShardGuildUnavailable;
+		_client.UserJoined += OnShardUserJoined;
+		_client.UserLeft += OnShardUserLeft;
+		_client.ShardReady += OnShardReady;
+		_client.InteractionCreated += OnShardInteractionCreated;
+
+		Log.Logger.Information("Initializing Lavalink connection");
+		ArtworkService = new ArtworkService();
+		_inactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(_client),
+			new InactivityTrackingOptions {PollInterval = TimeSpan.FromMinutes(2), DisconnectDelay = TimeSpan.Zero, TrackInactivity = true},
+			new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("InteractivityTracker")));
 
 		Log.Logger.Information("Connecting and waiting for shutdown");
 		await _client.LoginAsync(TokenType.Bot, BotConfiguration.Client.Token);
@@ -181,23 +185,6 @@ public class LiliaClient
 		await _client.StopAsync();
 		await _client.LogoutAsync();
 		await _database.GetContext().DisposeAsync();
-	}
-
-	private async Task OnClientInteractionCreated(SocketInteraction interaction)
-	{
-		try
-		{
-			var context = new SocketInteractionContext(_client, interaction);
-			await _interactionService.ExecuteCommandAsync(context, _serviceProvider);
-		}
-		catch (Exception e)
-		{
-			Console.WriteLine(e.ToString());
-
-			if (interaction.Type == InteractionType.ApplicationCommand)
-				await interaction.GetOriginalResponseAsync()
-					.ContinueWith(async message => await message.Result.DeleteAsync());
-		}
 	}
 
 	private static Task OnLog(LogMessage message)
@@ -220,77 +207,80 @@ public class LiliaClient
 		return Task.CompletedTask;
 	}
 
-	private async Task OnClientReady()
+	private async Task OnShardReady(DiscordSocketClient client)
 	{
-		#region Register commands
-
-		Log.Logger.Information("Registering commands");
-
-		if (BotConfiguration.Client.PrivateGuildIds.Count > 0)
-			foreach (var guildId in BotConfiguration.Client.PrivateGuildIds)
-			{
-				Log.Logger.Warning($"Registering slash commands for guild with ID \"{guildId}\"");
-				await _interactionService.RegisterCommandsToGuildAsync(guildId);
-			}
-
-		if (BotConfiguration.Client.SlashCommandsForGlobal)
-		{
-			Log.Logger.Warning("Registering slash commands in global scope");
-			await _interactionService.RegisterCommandsGloballyAsync();
-		}
-
-		#endregion
+		Log.Logger.Information("Connecting to Lavalink server");
+		await Lavalink.InitializeAsync();
 
 		#region Activity Setup
 
-		Log.Logger.Information("Setting client activity");
+		Log.Logger.Information($"Setting client activity in shard #{client.ShardId}");
 
 		var clientActivityConfig = BotConfiguration.Client.Activity;
 
 		if (!Enum.TryParse(clientActivityConfig.Type, out ActivityType activityType))
 		{
-			Log.Logger.Warning(
-				$"Can not convert \"{clientActivityConfig.Type}\" to a valid activity type, using \"Playing\"");
+			Log.Logger.Warning($"Can not convert \"{clientActivityConfig.Type}\" to a valid activity type, using \"Playing\"");
 			Log.Logger.Information("Valid options are: ListeningTo, Competing, Playing, Watching");
 			activityType = ActivityType.Playing;
 		}
 
 		if (!Enum.TryParse(clientActivityConfig.Status, out UserStatus userStatus))
 		{
-			Log.Logger.Warning(
-				$"Can not convert \"{clientActivityConfig.Status}\" to a valid status, using \"Online\"");
+			Log.Logger.Warning($"Can not convert \"{clientActivityConfig.Status}\" to a valid status, using \"Online\"");
 			Log.Logger.Information("Valid options are: Online, Invisible, Idle, DoNotDisturb");
 			userStatus = UserStatus.Online;
 		}
 
-		await _client.SetActivityAsync(new Game(BotConfiguration.Client.Activity.Name, activityType));
-		await _client.SetStatusAsync(userStatus);
-
 		#endregion Activity Setup
 
-		Log.Logger.Information("Initializing Lavalink connection");
-		await Lavalink.InitializeAsync();
-		ArtworkService = new ArtworkService();
-		_inactivityTracker = new InactivityTrackingService(Lavalink, new DiscordClientWrapper(_client),
-			new InactivityTrackingOptions {PollInterval = TimeSpan.FromMinutes(2), DisconnectDelay = TimeSpan.Zero, TrackInactivity = true}, new LavalinkLogger(new SerilogLoggerFactory(Log.Logger).CreateLogger("InteractivityTracker")));
+		await client.SetActivityAsync(new Game(BotConfiguration.Client.Activity.Name, activityType));
+		await client.SetStatusAsync(userStatus);
 
-		Log.Logger.Information($"Client is ready to serve as {Format.UsernameAndDiscriminator(_client.CurrentUser)}");
-		StartTime = DateTime.Now;
+		Log.Logger.Information($"Shard #{client.ShardId} is ready");
+		Log.Logger.Information($"Client is ready to serve on shard #{client.ShardId} as {Format.UsernameAndDiscriminator(client.CurrentUser)}");
 	}
 
-	private static Task OnClientGuildAvailable(SocketGuild guild)
+	private async Task OnShardInteractionCreated(SocketInteraction interaction)
+	{
+		try
+		{
+			var context = new ShardedInteractionContext(_client, interaction);
+			await _interactionService.ExecuteCommandAsync(context, _serviceProvider);
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.ToString());
+
+			if (interaction.Type == InteractionType.ApplicationCommand)
+				await interaction.GetOriginalResponseAsync()
+					.ContinueWith(async message => await message.Result.DeleteAsync());
+		}
+	}
+
+	private async Task OnClientReady()
+	{
+		if (BotConfiguration.Client.PrivateGuildIds.Count > 0)
+			foreach (var guildId in BotConfiguration.Client.PrivateGuildIds)
+				await _interactionService.RegisterCommandsToGuildAsync(guildId);
+
+		if (BotConfiguration.Client.SlashCommandsForGlobal)
+			await _interactionService.RegisterCommandsGloballyAsync();
+	}
+
+	private static Task OnShardGuildAvailable(SocketGuild guild)
 	{
 		Log.Logger.Debug($"Guild cache added: {guild.Name} (ID: {guild.Id})");
 		return Task.CompletedTask;
 	}
 
-	private static Task OnClientGuildUnavailable(SocketGuild guild)
+	private static Task OnShardGuildUnavailable(SocketGuild guild)
 	{
 		Log.Logger.Debug($"Guild cache removed: {guild.Name} (ID: {guild.Id})");
 		return Task.CompletedTask;
 	}
 
-	private async Task OnClientUserJoined(SocketGuildUser user)
+	private async Task OnShardUserJoined(SocketGuildUser user)
 	{
 		var dbGuild = _database.GetContext().GetGuildRecord(user.Guild);
 
@@ -309,7 +299,7 @@ public class LiliaClient
 		await ((SocketTextChannel)chn).SendMessageAsync(postProcessedMessage);
 	}
 
-	private async Task OnClientUserLeft(SocketGuild guild, SocketUser user)
+	private async Task OnShardUserLeft(SocketGuild guild, SocketUser user)
 	{
 		var dbGuild = _database.GetContext().GetGuildRecord(guild);
 

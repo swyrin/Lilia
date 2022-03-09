@@ -20,7 +20,7 @@ using IUser = OsuSharp.Interfaces.IUser;
 namespace Lilia.Modules;
 
 [Group("osu", "osu! related commands")]
-public class OsuModule : InteractionModuleBase<SocketInteractionContext>
+public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 {
 	private readonly LiliaDatabaseContext _dbCtx;
 	private readonly LiliaClient _liliaClient;

@@ -17,7 +17,7 @@ public static class LiliaUtilities
 		new EmbedBuilder()
 			.WithTimestamp(DateTime.Now)
 			.WithColor(Color.DarkRed)
-			.WithFooter($"Requested by: {user.Username}#{user.Discriminator}", user.GetAvatarUrl());
+			.WithFooter($"Requested by {user.Username}#{user.Discriminator}", user.GetAvatarUrl());
 
 	public static Tuple<ulong, ulong, ulong> ResolveDiscordMessageJumpLink(this string str)
 	{

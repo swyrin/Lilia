@@ -5,7 +5,7 @@ using Serilog;
 
 namespace Lilia.Modules;
 
-public class OwnerModule : InteractionModuleBase<SocketInteractionContext>
+public class OwnerModule : InteractionModuleBase<ShardedInteractionContext>
 {
 	[SlashCommand("shutdown", "Shutdown the bot")]
 	[RequireOwner]
