@@ -1,6 +1,7 @@
 # 🎉 Welcome to `Lilia` repository
 
 [![CodeFactor](https://www.codefactor.io/repository/github/lilia-workshop/lilia/badge)](https://www.codefactor.io/repository/github/lilia-workshop/lilia)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLilia-Workshop%2FLilia.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FLilia-Workshop%2FLilia?ref=badge_shield)
 
 Lilia is a Discord bot created as my pet project for learning, aiming to be a good bot like most popular bots.
 
@@ -27,3 +28,7 @@ Lilia is a Discord bot created as my pet project for learning, aiming to be a go
 |---------|------------------------------------------|---------------------------------------------------------------------------------------------|
 | CodeQL  | Ensure my code doesn't have any issue    | ![CodeQL](https://github.com/Swyreee/Lilia/actions/workflows/codeql-analysis.yml/badge.svg) |
 | Build   | Build and test my code                   | ![Build](https://github.com/Swyreee/Lilia/actions/workflows/dotnet.yml/badge.svg)           |
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLilia-Workshop%2FLilia.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FLilia-Workshop%2FLilia?ref=badge_large)
