@@ -56,7 +56,7 @@ public class LiliaClient
 	private InactivityTrackingService _inactivityTracker;
 	private InteractionService _interactionService;
 	private bool _isGlobalCommandRegistrationFinished;
-	private bool _isGlobalCommandRegistrationNotifLogged;
+	private bool _isGlobalCommandRegistrationNotificationLogged;
 	private bool _isLavalinkInitialized;
 	private bool _isPresenceSet;
 	private ServiceProvider _serviceProvider;
@@ -275,10 +275,10 @@ public class LiliaClient
 
 				if (isGlobalRegExists)
 				{
-					if (!_isGlobalCommandRegistrationNotifLogged)
+					if (!_isGlobalCommandRegistrationNotificationLogged)
 					{
 						Log.Logger.Information("Adding commands globally");
-						_isGlobalCommandRegistrationNotifLogged = true;
+						_isGlobalCommandRegistrationNotificationLogged = true;
 					}
 
 					var result = await _interactionService.RegisterCommandsGloballyAsync();
