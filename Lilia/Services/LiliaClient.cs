@@ -152,7 +152,9 @@ public class LiliaClient
 				LogGatewayIntentWarnings = true,
 				UseInteractionSnowflakeDate = false,
 				AlwaysDownloadUsers = true,
-				UseSystemClock = false
+				UseSystemClock = false,
+				ConnectionTimeout = 24 * 60 * 60 * 1000,
+				DefaultRetryMode = RetryMode.AlwaysRetry
 			})
 			.AddSingleton<DiscordShardedClient>()
 			.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordShardedClient>(),
