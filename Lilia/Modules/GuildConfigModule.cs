@@ -23,7 +23,8 @@ public class GuildConfigModule : InteractionModuleBase<ShardedInteractionContext
 	[SlashCommand("welcome_channel", "Set the welcome channel")]
 	[RequireUserPermission(GuildPermission.ManageGuild)]
 	public async Task ConfigWelcomeChannelCommand(
-		[Summary("channel", "Channel to dump all welcome messages")] [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
+		[Summary("channel", "Channel to dump all welcome messages")]
+		[ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store, ChannelType.NewsThread, ChannelType.PublicThread)]
 		SocketChannel channel)
 	{
 		await Context.Interaction.DeferAsync(true);
@@ -42,13 +43,14 @@ public class GuildConfigModule : InteractionModuleBase<ShardedInteractionContext
 		await _dbCtx.SaveChangesAsync();
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
-			x.Content = $"Set the welcome channel of this guild to <#{channel.Id}>");
+			x.Content = $"Set the welcome channel of this guild to {MentionUtils.MentionChannel(channel.Id)}");
 	}
 
 	[SlashCommand("goodbye_channel", "Set the goodbye channel")]
 	[RequireUserPermission(GuildPermission.ManageGuild)]
 	public async Task ConfigGoodbyeChannelCommand(
-		[Summary("channel", "Channel to dump all goodbye messages")] [ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store)]
+		[Summary("channel", "Channel to dump all goodbye messages")]
+		[ChannelTypes(ChannelType.Text, ChannelType.News, ChannelType.Store, ChannelType.NewsThread, ChannelType.PublicThread)]
 		SocketGuildChannel channel)
 	{
 		await Context.Interaction.DeferAsync(true);
@@ -67,7 +69,7 @@ public class GuildConfigModule : InteractionModuleBase<ShardedInteractionContext
 		await _dbCtx.SaveChangesAsync();
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
-			x.Content = $"Set the goodbye channel of this guild to #{channel.Name}");
+			x.Content = $"Set the goodbye channel of this guild to {MentionUtils.MentionChannel(channel.Id)}");
 	}
 
 	[SlashCommand("goodbye_message", "Set the goodbye message")]
@@ -122,9 +124,7 @@ public class GuildConfigModule : InteractionModuleBase<ShardedInteractionContext
 
 	[SlashCommand("toggle_welcome", "Toggle welcome message allowance in this guild")]
 	[RequireUserPermission(GuildPermission.ManageGuild)]
-	public async Task ConfigToggleWelcomeCommand(
-		[Summary("toggle", "Whether to allow it or not")]
-		bool toggle = true)
+	public async Task ConfigToggleWelcomeCommand()
 	{
 		await Context.Interaction.DeferAsync(true);
 
@@ -146,19 +146,16 @@ public class GuildConfigModule : InteractionModuleBase<ShardedInteractionContext
 			return;
 		}
 
-		dbGuild.IsWelcomeEnabled = toggle;
+		dbGuild.IsWelcomeEnabled = !dbGuild.IsWelcomeEnabled;
 		await _dbCtx.SaveChangesAsync();
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
-			x.Content =
-				$"{(dbGuild.IsWelcomeEnabled ? "Allowed" : "Blocked")} the delivery of welcome message in this guild");
+			x.Content = $"{(dbGuild.IsWelcomeEnabled ? "Allowed" : "Blocked")} the delivery of welcome message in this guild");
 	}
 
 	[SlashCommand("toggle_goodbye", "Toggle goodbye message allowance in this guild")]
 	[RequireUserPermission(GuildPermission.ManageGuild)]
-	public async Task ConfigToggleGoodbyeCommand(
-		[Summary("toggle", "Whether to allow it or not")]
-		bool toggle = true)
+	public async Task ConfigToggleGoodbyeCommand()
 	{
 		await Context.Interaction.DeferAsync(true);
 
@@ -180,7 +177,7 @@ public class GuildConfigModule : InteractionModuleBase<ShardedInteractionContext
 			return;
 		}
 
-		dbGuild.IsGoodbyeEnabled = toggle;
+		dbGuild.IsGoodbyeEnabled = !dbGuild.IsGoodbyeEnabled;
 		await _dbCtx.SaveChangesAsync();
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
@@ -208,19 +205,19 @@ public class GuildConfigModule : InteractionModuleBase<ShardedInteractionContext
 			x.Embed = embedBuilder.Build());
 	}
 
-	[SlashCommand("check", "Check the configurations you have made")]
-	public async Task ConfigCheckCommand()
+	[SlashCommand("view", "View the configurations of this guild")]
+	public async Task ConfigViewCommand()
 	{
 		await Context.Interaction.DeferAsync(true);
 
 		var dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
 
 		var welcomeChnMention = GuildConfigModuleUtils.IsChannelExist(Context, dbGuild.WelcomeChannelId)
-			? $"#{Context.Guild.GetChannel(dbGuild.GoodbyeChannelId)}"
+			? MentionUtils.MentionChannel(dbGuild.WelcomeChannelId)
 			: "Channel not exist or not set";
 
 		var goodbyeChnMention = GuildConfigModuleUtils.IsChannelExist(Context, dbGuild.GoodbyeChannelId)
-			? $"#{Context.Guild.GetChannel(dbGuild.GoodbyeChannelId)}"
+			? MentionUtils.MentionChannel(dbGuild.GoodbyeChannelId)
 			: "Channel not exist or not set";
 
 		var embedBuilder = Context.User.CreateEmbedWithUserData()
