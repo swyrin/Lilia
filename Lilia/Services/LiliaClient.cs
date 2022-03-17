@@ -146,7 +146,7 @@ public class LiliaClient
 			.AddSingleton(_database)
 			.AddSingleton(new DiscordSocketConfig
 			{
-				TotalShards = _totalShardCount > 0 ? _totalShardCount : _totalShardCount == 0 ? null : 1,
+				TotalShards = _totalShardCount > 0 ? _totalShardCount : null,
 				GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
 				LogLevel = LogSeverity.Debug,
 				LogGatewayIntentWarnings = true,
