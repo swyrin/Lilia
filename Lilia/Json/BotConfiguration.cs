@@ -11,11 +11,7 @@ public class BotConfiguration : BaseJson
 
 	public BotConfiguration()
 	{
-#if DEBUG
-		FilePath = "test-config.json";
-#else
-        FilePath = "config.json";
-#endif
+		FilePath = "config.json";
 	}
 }
 
@@ -66,7 +62,7 @@ public class LavalinkConfigurations
 
 public class PostgreSqlConfigurations
 {
-	[JsonProperty("database_name")] public string DatabaseName = "lilia";
+	[JsonProperty("database_name")] public string DatabaseName;
 
 	[JsonProperty("host")] public string Host = "localhost";
 
@@ -74,7 +70,7 @@ public class PostgreSqlConfigurations
 
 	[JsonProperty("port")] public int Port = 5432;
 
-	[JsonProperty("username")] public string Username = "Lilia";
+	[JsonProperty("username")] public string Username;
 }
 
 public class OsuConfigurations
