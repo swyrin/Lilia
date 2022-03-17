@@ -6,12 +6,8 @@ namespace Lilia.Tests;
 [TestClass]
 public class LiliaUtilitiesTests
 {
-	private const string JumpLinkTestString =
-		"https://discord.com/channels/708668574201544745/923884254298005525/940474669759365160";
-
-	private const string DiscordBotInvTestString =
-		"https://discord.com/oauth2/authorize?client_id=177013&scope=bot&permissions=8";
-
+	private const string JumpLinkTestString = "https://discord.com/channels/708668574201544745/923884254298005525/940474669759365160";
+	private const string DiscordBotInvTestString = "https://discord.com/oauth2/authorize?client_id=177013&scope=bot&permissions=8";
 	private const string DiscordGuildInvTestString = "https://discord.gg/discord";
 
 	[TestMethod]
