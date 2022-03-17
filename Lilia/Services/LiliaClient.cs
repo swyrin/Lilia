@@ -148,20 +148,18 @@ public class LiliaClient
 			{
 				TotalShards = _totalShardCount > 0 ? _totalShardCount : null,
 				GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
-				LogLevel = LogSeverity.Debug,
+				LogLevel = LogSeverity.Verbose,
 				LogGatewayIntentWarnings = true,
 				UseInteractionSnowflakeDate = false,
 				AlwaysDownloadUsers = true,
 				UseSystemClock = false,
-				ConnectionTimeout = 24 * 60 * 60 * 1000,
-				DefaultRetryMode = RetryMode.AlwaysRetry
+				ConnectionTimeout = 24 * 60 * 60 * 1000
 			})
 			.AddSingleton<DiscordShardedClient>()
 			.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordShardedClient>(),
 				new InteractionServiceConfig
 				{
-					LogLevel = LogSeverity.Debug,
-					DefaultRunMode = RunMode.Async
+					LogLevel = LogSeverity.Verbose
 				}))
 			.AddSingleton(x => new InteractiveService(x.GetRequiredService<DiscordShardedClient>()))
 			.AddSingleton<ILavalinkCache, LavalinkCache>()
@@ -265,30 +263,38 @@ public class LiliaClient
 		return Task.CompletedTask;
 	}
 
-	private Task OnShardReady(DiscordSocketClient client)
+	private async Task OnShardReady(DiscordSocketClient client)
 	{
-		Task.Run(async () =>
+		await Task.Run(async () =>
 		{
-			if (!_isGlobalCommandRegistrationFinished)
+			try
 			{
-				var isGlobalRegExists = BotConfiguration.Client.SlashCommandsForGlobal;
-
-				if (isGlobalRegExists)
+				if (!_isGlobalCommandRegistrationFinished)
 				{
-					if (!_isGlobalCommandRegistrationNotificationLogged)
+					var isGlobalRegExists = BotConfiguration.Client.SlashCommandsForGlobal;
+
+					if (isGlobalRegExists)
 					{
-						Log.Logger.Information("Adding commands globally");
-						_isGlobalCommandRegistrationNotificationLogged = true;
+						if (!_isGlobalCommandRegistrationNotificationLogged)
+						{
+							Log.Logger.Information("Adding commands globally");
+							_isGlobalCommandRegistrationNotificationLogged = true;
+						}
+
+						var result = await _interactionService.RegisterCommandsGloballyAsync();
+						Log.Logger.Information("Added {CommandCount} commands globally", result.Count);
 					}
 
-					var result = await _interactionService.RegisterCommandsGloballyAsync();
-					Log.Logger.Information("Added {CommandCount} commands globally", result.Count);
 					_isGlobalCommandRegistrationFinished = true;
 				}
 			}
+			catch
+			{
+				Log.Information("Command addition failed, will try again later");
+			}
 		});
 
-		Task.Run(async () =>
+		await Task.Run(async () =>
 		{
 			if (!_isLavalinkInitialized)
 			{
@@ -299,7 +305,7 @@ public class LiliaClient
 			}
 		});
 
-		Task.Run(async () =>
+		await Task.Run(async () =>
 		{
 			if (!_isPresenceSet)
 			{
@@ -328,8 +334,6 @@ public class LiliaClient
 				_isPresenceSet = true;
 			}
 		});
-
-		return Task.CompletedTask;
 	}
 
 	private Task OnShardConnected(DiscordSocketClient client)

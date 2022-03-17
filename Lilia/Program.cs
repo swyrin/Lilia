@@ -16,7 +16,7 @@ internal static class Program
 		Log.Logger = new LoggerConfiguration()
 			.Enrich.WithProperty("SourceContext", "Lilia")
 			.WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
-			.MinimumLevel.Debug()
+			.MinimumLevel.Verbose()
 			.CreateLogger();
 
 #if DEBUG
