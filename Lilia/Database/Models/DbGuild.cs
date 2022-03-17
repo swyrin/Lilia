@@ -1,4 +1,6 @@
-﻿namespace Lilia.Database.Models;
+﻿using System;
+
+namespace Lilia.Database.Models;
 
 public class DbGuild
 {
@@ -10,4 +12,5 @@ public class DbGuild
 	public bool IsGoodbyeEnabled { get; set; }
 	public ulong GoodbyeChannelId { get; set; }
 	public string GoodbyeMessage { get; set; }
+	public DateTime RadioStartTime { get; set; }
 }

@@ -11,6 +11,8 @@ using Fergun.Interactive.Pagination;
 using Lavalink4NET.Player;
 using Lavalink4NET.Rest;
 using Lilia.Commons;
+using Lilia.Database;
+using Lilia.Database.Interactors;
 using Lilia.Enums;
 using Lilia.Modules.Utils;
 using Lilia.Services;
@@ -24,10 +26,12 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 	public class MusicPlaybackModule : InteractionModuleBase<ShardedInteractionContext>
 	{
 		private readonly LiliaClient _client;
+		private readonly LiliaDatabaseContext _dbCtx;
 
-		public MusicPlaybackModule(LiliaClient client)
+		public MusicPlaybackModule(LiliaClient client, LiliaDatabase database)
 		{
 			_client = client;
+			_dbCtx = database.GetContext();
 		}
 
 		[SlashCommand("connect", "Connect to your current voice channel")]
@@ -117,6 +121,10 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
 				x.Content = $"Now streaming from {streamUrl}");
+
+			var dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
+			dbGuild.RadioStartTime = DateTime.UtcNow;
+			await _dbCtx.SaveChangesAsync();
 		}
 
 		[SlashCommand("play_queue", "Play queued tracks")]
@@ -165,6 +173,8 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 			var isStream = track.IsLiveStream;
 			var art = await _client.ArtworkService.ResolveAsync(track);
 
+			var dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
+
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
 				x.Embed = Context.User.CreateEmbedWithUserData()
 					.WithAuthor("Currently playing track", Context.Client.CurrentUser.GetAvatarUrl())
@@ -173,7 +183,7 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 					.AddField("Author", Format.Sanitize(track.Author), true)
 					.AddField("Source", Format.Sanitize(track.Source ?? "Unknown"), true)
 					.AddField(isStream ? "Playtime" : "Position", isStream
-						? (player.Position.RelativePosition - track.Position).ToLongReadableTimeSpan()
+						? DateTime.UtcNow.Subtract(dbGuild.RadioStartTime).ToLongReadableTimeSpan()
 						: $"{player.Position.RelativePosition:g}/{track.Duration:g}", true)
 					.AddField("Is looping", player is QueuedLavalinkPlayer lavalinkPlayer
 						? $"{lavalinkPlayer.IsLooping}"
@@ -316,6 +326,14 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 
 			var oldPlayer = _client.Lavalink.GetPlayer(Context.Guild.Id);
 
+			if (oldPlayer!.State is not PlayerState.NotPlaying)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+					x.Content = "Can not change the player because there is a pending track");
+
+				return;
+			}
+
 			switch (oldPlayer)
 			{
 				case QueuedLavalinkPlayer when connectionType == MusicConnectionType.Queued:
@@ -351,7 +369,7 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 		}
 
 		[SlashCommand("lyrics", "Check lyrics of current song")]
-		public async Task MusicLyricsCommand()
+		public async Task MusicPlaybackLyricsCommand()
 		{
 			await Context.Interaction.DeferAsync();
 
