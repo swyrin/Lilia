@@ -149,18 +149,18 @@ public class LiliaClient
 				TotalShards = _totalShardCount > 0 ? _totalShardCount : _totalShardCount == 0 ? null : 1,
 				GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
 				LogLevel = LogSeverity.Debug,
-				LogGatewayIntentWarnings = false,
+				LogGatewayIntentWarnings = true,
 				UseInteractionSnowflakeDate = false,
 				AlwaysDownloadUsers = true,
-				UseSystemClock = false,
-				// if you can't get your stuffs done in less than an hour
-				// you need to get a better internet and hardware
-				ConnectionTimeout = 60 * 60 * 1000,
-				DefaultRetryMode = RetryMode.AlwaysRetry
+				UseSystemClock = false
 			})
 			.AddSingleton<DiscordShardedClient>()
 			.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordShardedClient>(),
-				new InteractionServiceConfig {LogLevel = LogSeverity.Debug, DefaultRunMode = RunMode.Async}))
+				new InteractionServiceConfig
+				{
+					LogLevel = LogSeverity.Debug,
+					DefaultRunMode = RunMode.Async
+				}))
 			.AddSingleton(x => new InteractiveService(x.GetRequiredService<DiscordShardedClient>()))
 			.AddSingleton<ILavalinkCache, LavalinkCache>()
 			.AddSingleton<IAudioService, LavalinkNode>()
@@ -170,7 +170,9 @@ public class LiliaClient
 			.AddSingleton<ArtworkService>()
 			.AddSingleton(new InactivityTrackingOptions
 			{
-				PollInterval = TimeSpan.FromMinutes(2), DisconnectDelay = TimeSpan.Zero, TrackInactivity = true
+				PollInterval = TimeSpan.FromMinutes(5),
+				DisconnectDelay = TimeSpan.Zero,
+				TrackInactivity = true
 			})
 			.AddSingleton<InactivityTrackingService>()
 			.AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>(x => new DiscordClientWrapper(x.GetRequiredService<DiscordShardedClient>()))
