@@ -25,7 +25,8 @@ public class ActivityModule : InteractionModuleBase<ShardedInteractionContext>
 
 		await new MusicModuleUtils(Context.Interaction, null).EnsureUserInVoiceAsync();
 
-		var invite = await ((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.CreateInviteToApplicationAsync(applications, maxUses: null, isTemporary: true, isUnique: true);
+		var invite = await ((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.CreateInviteToApplicationAsync(applications, maxUses: null,
+			isTemporary: true, isUnique: true);
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
 		{
 			x.Embed = Context.User.CreateEmbedWithUserData()

@@ -24,9 +24,9 @@ public static class LiliaUtilities
 		// https://discord.com/channels/guild_id/channel_id/message_id
 		var segments = new Uri(str).Segments;
 
-		var guildId = Convert.ToUInt64(segments[2].Replace('/', '\0'));
-		var channelId = Convert.ToUInt64(segments[3].Replace('/', '\0'));
-		var messageId = Convert.ToUInt64(segments[4].Replace('/', '\0'));
+		var guildId = Convert.ToUInt64(segments[2].Replace("/", string.Empty));
+		var channelId = Convert.ToUInt64(segments[3].Replace("/", string.Empty));
+		var messageId = Convert.ToUInt64(segments[4].Replace("/", string.Empty));
 
 		return new Tuple<ulong, ulong, ulong>(guildId, channelId, messageId);
 	}
@@ -67,14 +67,16 @@ public static class LiliaUtilities
 	public static bool IsDiscordValidBotInvite(this string? str)
 #nullable disable
 	{
-		return !string.IsNullOrWhiteSpace(str) && new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(app)?\.com\/(api\/)?oauth2\/authorize\?([^ ]+)\/?").IsMatch(str);
+		return !string.IsNullOrWhiteSpace(str) &&
+		       new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(app)?\.com\/(api\/)?oauth2\/authorize\?([^ ]+)\/?").IsMatch(str);
 	}
 
 #nullable enable
 	public static bool IsDiscordValidGuildInvite(this string? str)
 #nullable disable
 	{
-		return !string.IsNullOrWhiteSpace(str) && new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(\.gg|(app)?\.com\/invite|\.me)\/([^ ]+)\/?").IsMatch(str);
+		return !string.IsNullOrWhiteSpace(str) &&
+		       new Regex(@"(https?:\/\/)?(www\.|canary\.|ptb\.)?discord(\.gg|(app)?\.com\/invite|\.me)\/([^ ]+)\/?").IsMatch(str);
 	}
 
 	public static IEnumerable<PageBuilder> CreatePagesFromString(string content, int fixedPageSplit = 15, int threshold = 2000)

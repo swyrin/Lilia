@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Lilia.Database;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Lilia.Services;
 
@@ -8,6 +9,7 @@ public class LiliaDatabase
 {
 	public LiliaDatabase()
 	{
+		Log.Logger.Information("Setting up databases");
 		using var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
 
 		while (context.Database.GetPendingMigrations().Any())

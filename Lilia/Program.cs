@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Lilia.Services;
 using Serilog;
@@ -13,13 +12,10 @@ internal static class Program
 	{
 		var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
 		Console.Title = $"Lilia v{currentVersion}";
-		Console.OutputEncoding = Encoding.Unicode;
 
 		Log.Logger = new LoggerConfiguration()
 			.Enrich.WithProperty("SourceContext", "Lilia")
-			.WriteTo.Console(
-				outputTemplate:
-				"{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
+			.WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
 			.MinimumLevel.Debug()
 			.CreateLogger();
 

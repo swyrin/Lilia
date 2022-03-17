@@ -52,7 +52,8 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 
 		var componentBuilder = new ComponentBuilder()
-			.WithButton("Interested in me?", style: ButtonStyle.Link, url: botInv, disabled: !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic)
+			.WithButton("Interested in me?", style: ButtonStyle.Link, url: botInv,
+				disabled: !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic)
 			.WithButton("Need supports?", style: ButtonStyle.Link, url: guildInv, disabled: !isValidGuildInviteLink)
 			.WithButton("Want to self host?", style: ButtonStyle.Link, url: "https://github.com/Lilia-Workshop/Lilia");
 
@@ -61,10 +62,12 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		var embedBuilder = Context.User.CreateEmbedWithUserData()
 			.WithTitle("Something about me :D")
 			.WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl())
-			.WithDescription($"Hi, I am {Format.Bold(Format.UsernameAndDiscriminator(Context.Client.CurrentUser))}, a bot running on the source code of {Format.Bold("Lilia")} written by {Format.Bold("Swyrin#7193")}")
+			.WithDescription(
+				$"Hi, I am {Format.Bold(Format.UsernameAndDiscriminator(Context.Client.CurrentUser))}, a bot running on the source code of {Format.Bold("Lilia")} written by {Format.Bold("Swyrin#7193")}")
 			.AddField("Server count", $"{Context.Client.Guilds.Count}", true)
 			.AddField("Member count", $"{memberCount}", true)
-			.AddField("Uptime", $"{Format.Bold(timeDiff.ToLongReadableTimeSpan())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
+			.AddField("Uptime",
+				$"{Format.Bold(timeDiff.ToLongReadableTimeSpan())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
 			.AddField("Version", $"{Assembly.GetExecutingAssembly().GetName().Version}", true)
 			.AddField("Command count", $"{(await Context.Client.GetShardFor(Context.Guild).GetGlobalApplicationCommandsAsync()).Count}", true)
 			.AddField("How to invite me?", $"- Click the {Format.Bold("Interested in me?")} button below\n" +
@@ -126,7 +129,7 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		var embedBuilder = Context.User.CreateEmbedWithUserData()
 			.WithAuthor(guild.Name, guild.IconUrl)
 			.WithThumbnailUrl(guild.BannerUrl)
-			.WithDescription($"Guild ID: {guild.Id} - Owner: {guild.Owner.Mention}")
+			.WithDescription($"Guild ID: {guild.Id} - Owner: {guild.Owner.Mention} - Shard #{Context.Client.GetShardIdFor(Context.Guild)}")
 			.AddField("Guild age", $"{guildAge.ToShortReadableTimeSpan()} (since {creationDate.ToShortDateTime()})")
 			.AddField("Humans", $"{humanCount}", true)
 			.AddField("Bots", $"{botCount}", true)
