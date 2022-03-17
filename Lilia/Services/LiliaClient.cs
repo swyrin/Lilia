@@ -34,17 +34,11 @@ namespace Lilia.Services;
 public class LiliaClient
 {
 	public const GuildPermission RequiredPermissions =
-		GuildPermission.ManageRoles | GuildPermission.ManageChannels | GuildPermission.KickMembers |
-		GuildPermission.BanMembers | GuildPermission.ViewChannel |
-		GuildPermission.ModerateMembers | GuildPermission.SendMessages |
-		GuildPermission.SendMessagesInThreads |
-		GuildPermission.EmbedLinks |
-		GuildPermission.ReadMessageHistory |
-		GuildPermission.UseExternalEmojis |
-		GuildPermission.UseExternalStickers |
-		GuildPermission.AddReactions |
-		GuildPermission.Speak | GuildPermission.Connect |
-		GuildPermission.StartEmbeddedActivities;
+		GuildPermission.ManageRoles | GuildPermission.ManageChannels | GuildPermission.KickMembers | GuildPermission.BanMembers |
+		GuildPermission.ViewChannel | GuildPermission.ModerateMembers | GuildPermission.SendMessages | GuildPermission.SendMessagesInThreads |
+		GuildPermission.EmbedLinks | GuildPermission.ReadMessageHistory | GuildPermission.UseExternalEmojis | GuildPermission.UseExternalStickers |
+		GuildPermission.AddReactions | GuildPermission.Speak | GuildPermission.Connect | GuildPermission.StartEmbeddedActivities |
+		GuildPermission.AttachFiles | GuildPermission.ManageMessages | GuildPermission.ViewGuildInsights;
 
 	public static readonly BotConfiguration BotConfiguration;
 	public static readonly CancellationTokenSource Cts;
