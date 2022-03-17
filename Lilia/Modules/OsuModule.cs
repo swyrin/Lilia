@@ -33,7 +33,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		_osuClient = osuClient;
 	}
 
-	[SlashCommand("self_update", "Update your osu! profile information in my database", runMode: RunMode.Async)]
+	[SlashCommand("self_update", "Update your osu! profile information in my database")]
 	public async Task OsuSelfUpdateCommand(
 		[Summary(description: "Your osu! username")]
 		string username,
@@ -52,8 +52,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		await _dbCtx.SaveChangesAsync();
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
-			x.Content =
-				$"Set your osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
+			x.Content = $"Set your osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
 	}
 
 	[SlashCommand("force_update", "Update a member's osu! profile information in my database", runMode: RunMode.Async)]
@@ -76,8 +75,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		await _dbCtx.SaveChangesAsync();
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
-			x.Content =
-				$"Set the member's osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
+			x.Content = $"Set the member's osu! username to {Format.Bold(username)} and mode to {Format.Bold($"{searchMode}")}");
 	}
 
 	[SlashCommand("info", "Get your linked data with me")]
@@ -87,8 +85,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		var dbUser = _dbCtx.GetUserRecord(Context.Interaction.User);
 
 		var embedBuilder = Context.Interaction.User.CreateEmbedWithUserData()
-			.AddField("Username",
-				!string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
+			.AddField("Username", !string.IsNullOrWhiteSpace(dbUser.OsuUsername) ? dbUser.OsuUsername : "Not linked yet", true)
 			.AddField("Mode", !string.IsNullOrWhiteSpace(dbUser.OsuMode) ? dbUser.OsuMode : "Not linked yet", true);
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
@@ -148,8 +145,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
 		{
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content =
-					$"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+				x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
 
 			return;
 		}
@@ -169,8 +165,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
 		{
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content =
-					$"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+				x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
 
 			return;
 		}
@@ -190,8 +185,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
 		{
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content =
-					$"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+				x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
 
 			return;
 		}
@@ -363,7 +357,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		#endregion
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
-			x.Content = $"Processing {r} records, please wait (this might take a while)");
+			x.Content = $"Processing {r} requests, please wait.");
 
 		var pages = new List<PageBuilder>();
 
@@ -388,11 +382,13 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 				.WithThumbnailUrl(score.Beatmapset.Covers.Cover2x)
 				.WithDescription($"Score position: {pos}")
 				.AddField("Known issue", "If you see 2 0's at the score part, it's fine")
-				.AddField("Total score", $"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank.GetValueOrDefault()} - GLB: #{score.GlobalRank.GetValueOrDefault()})")
+				.AddField("Total score",
+					$"{score.TotalScore} ({score.User.CountryCode}: #{score.CountryRank.GetValueOrDefault()} - GLB: #{score.GlobalRank.GetValueOrDefault()})")
 				.AddField("Ranking", $"{score.Rank}", true)
 				.AddField("Accuracy", $"{Math.Round(score.Accuracy * 100, 2)}%", true)
 				.AddField("Max combo", $"{score.MaxCombo}x/{map.MaxCombo}x", true)
-				.AddField("Hit count", $"{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}", true)
+				.AddField("Hit count",
+					$"{score.Statistics.Count300}/{score.Statistics.Count100}/{score.Statistics.Count50}/{score.Statistics.CountMiss}", true)
 				.AddField("PP", isPpExists
 					? $"{score.PerformancePoints} * {Math.Round(score.Weight.Percentage, 2)}% -> {Math.Round(score.Weight.PerformancePoints, 2)}"
 					: "0", true)
@@ -404,7 +400,8 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 			.WithPages(pages)
 			.Build();
 
-		await _liliaClient.InteractiveService.SendPaginatorAsync(staticPageBuilder, Context.Channel, resetTimeoutOnInput: true);
+		await _liliaClient.InteractiveService.SendPaginatorAsync(staticPageBuilder, Context.Interaction,
+			responseType: InteractionResponseType.DeferredChannelMessageWithSource);
 	}
 
 	private async Task GenericOsuProcessing(string username, OsuUserProfileSearchType profileSearchType,

@@ -53,7 +53,8 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 			}
 
 			if (connectionType == MusicConnectionType.Queued)
-				await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id, ((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
+				await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id,
+					((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
 			else
 				await _client.Lavalink.JoinAsync(Context.Guild.Id, ((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
 
@@ -298,7 +299,8 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 			player.IsLooping = !player.IsLooping;
 
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = $"{(player.IsLooping ? "Looping" : "Removed the loop of")} the track: {Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(Format.Sanitize(track.Author))}");
+				x.Content =
+					$"{(player.IsLooping ? "Looping" : "Removed the loop of")} the track: {Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(Format.Sanitize(track.Author))}");
 		}
 
 		[SlashCommand("change_player", "Change current player")]
@@ -339,12 +341,61 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 				case not null:
 					await oldPlayer.DisconnectAsync();
 					await oldPlayer.DestroyAsync();
-					await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id, ((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
+					await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id,
+						((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
 
 					await Context.Interaction.ModifyOriginalResponseAsync(x =>
 						x.Content = "Switched to queued player");
 					break;
 			}
+		}
+
+		[SlashCommand("lyrics", "Check lyrics of current song")]
+		public async Task MusicLyricsCommand()
+		{
+			await Context.Interaction.DeferAsync();
+
+			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+			if (!await mmu.EnsureUserInVoiceAsync()) return;
+			if (!await mmu.EnsureClientInVoiceAsync()) return;
+
+			var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
+
+			if (player!.CurrentTrack == null)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+					x.Content = "No track is played right now");
+
+				return;
+			}
+
+			if (player!.CurrentTrack.IsLiveStream)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+					x.Content = "Streams can't have lyrics");
+
+				return;
+			}
+
+			var track = player.CurrentTrack;
+			var lyrics = await _client.Lyrics.GetLyricsAsync(track.Author, track.Title);
+
+			if (string.IsNullOrWhiteSpace(lyrics))
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+					x.Content =
+						$"No lyrics found for track: {Format.Bold(Format.Sanitize(track.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(track.Author ?? "Unknown"))}");
+
+				return;
+			}
+
+			var paginator = new StaticPaginatorBuilder()
+				.AddUser(Context.User)
+				.WithPages(LiliaUtilities.CreatePagesFromString(lyrics))
+				.Build();
+
+			await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction,
+				responseType: InteractionResponseType.DeferredChannelMessageWithSource);
 		}
 	}
 
@@ -418,7 +469,8 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 				.WithPages(pages)
 				.Build();
 
-			await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction, responseType: InteractionResponseType.DeferredChannelMessageWithSource);
+			await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction,
+				responseType: InteractionResponseType.DeferredChannelMessageWithSource);
 		}
 
 		[SlashCommand("add_tracks", "Add tracks to queue")]
@@ -532,7 +584,8 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 
 			foreach (var track in queue)
 			{
-				var testStr = $"{idx + 1} - {Format.Url($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}";
+				var testStr =
+					$"{idx + 1} - {Format.Url($"{Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(track.Author)}", track.Source ?? "https://example.com")}";
 				text.AppendLine(testStr);
 				++idx;
 			}
@@ -618,7 +671,8 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 			player.Queue.RemoveAt(posInt);
 
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = $"Removed track at index {index}: {Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(Format.Sanitize(track.Author))}");
+				x.Content =
+					$"Removed track at index {index}: {Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(Format.Sanitize(track.Author))}");
 		}
 
 		[SlashCommand("remove_range", "Remove a range of tracks from the queue")]
