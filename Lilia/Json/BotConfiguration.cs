@@ -49,6 +49,8 @@ public class CredentialConfigurations
 	[JsonProperty("osu")] public OsuConfigurations Osu = new();
 
 	[JsonProperty("postgresql")] public PostgreSqlConfigurations PostgreSql = new();
+
+	[JsonProperty("top.gg")] public string TopDotGeeGeeToken;
 }
 
 public class LavalinkConfigurations
