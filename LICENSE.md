@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2022 Tien Dat Pham
+Copyright (c) 2021-present Tien Dat Pham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
