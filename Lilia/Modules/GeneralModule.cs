@@ -49,14 +49,16 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 
 		// dodge 400
 		if (string.IsNullOrWhiteSpace(guildInv)) guildInv = "https://placehold.er";
-		var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 
+		var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 		var isInvitationAllowed = !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic;
+		var isTopGgBotExists = await _client.DblApi.GetBotAsync(botId) != null;
 
 		var componentBuilder = new ComponentBuilder()
 			.WithButton("Interested in me?", style: ButtonStyle.Link, url: botInv, disabled: !isInvitationAllowed)
 			.WithButton("Need supports?", style: ButtonStyle.Link, url: guildInv, disabled: !isValidGuildInviteLink)
 			.WithButton("Want to self host?", style: ButtonStyle.Link, url: "https://github.com/Lilia-Workshop/Lilia")
+			.WithButton("Vote for me on top.gg", style: ButtonStyle.Link, url: $"https://top.gg/bot/{botId}", row: 1, disabled: !isTopGgBotExists)
 			.WithButton("Vote for the original one on top.gg", style: ButtonStyle.Link, url: "https://top.gg/bot/884066006115442708", row: 1);
 
 		var timeDiff = DateTime.Now.Subtract(_client.StartTime);

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using DiscordBotsList.Api;
+using DiscordBotsList.Api.Objects;
 using Fergun.Interactive;
 using Lavalink4NET;
 using Lavalink4NET.Artwork;
@@ -49,13 +51,17 @@ public class LiliaClient
 	private LiliaDatabase _database;
 	private InactivityTrackingService _inactivityTracker;
 	private InteractionService _interactionService;
+
 	private bool _isGlobalCommandRegistrationFinished;
 	private bool _isGlobalCommandRegistrationNotificationLogged;
 	private bool _isLavalinkInitialized;
 	private bool _isPresenceSet;
+	private bool _isTopGgSet;
+
 	private ServiceProvider _serviceProvider;
 	private int _totalShardCount;
 
+	public AuthDiscordBotListApi DblApi;
 	public ArtworkService ArtworkService;
 	public InteractiveService InteractiveService;
 	public IAudioService Lavalink;
@@ -101,7 +107,7 @@ public class LiliaClient
 			.EnableSensitiveDataLogging()
 #endif
 			.EnableDetailedErrors()
-			.UseLoggerFactory(new SerilogLoggerFactory(Log.Logger))
+			.UseLoggerFactory(new SerilogLoggerFactory(Log.Logger, true))
 			.UseNpgsql(connStrBuilder.ToString());
 	}
 
@@ -261,6 +267,34 @@ public class LiliaClient
 	{
 		await Task.Run(async () =>
 		{
+			if (!_isTopGgSet)
+			{
+				Log.Information("Updating top.gg stat");
+				DblApi = new AuthDiscordBotListApi(_client.CurrentUser.Id, BotConfiguration.Credentials.TopDotGeeGeeToken);
+
+				try
+				{
+					var me = await DblApi.GetMeAsync();
+					await me.UpdateStatsAsync(_client.Guilds.Count);
+					Log.Information("Done updating top.gg stat");
+
+					var widgetUrl = new SmallWidgetOptions()
+						.SetType(WidgetType.STATUS)
+						.Build(_client.CurrentUser.Id);
+
+					Log.Information("Widget status URL created: {Url}", widgetUrl);
+				}
+				catch
+				{
+					Log.Warning("Failed to connect to top.gg, skipping");
+				}
+
+				_isTopGgSet = true;
+			}
+		});
+
+		await Task.Run(async () =>
+		{
 			try
 			{
 				if (!_isGlobalCommandRegistrationFinished)
@@ -284,7 +318,7 @@ public class LiliaClient
 			}
 			catch
 			{
-				Log.Information("Command addition failed, will try again later");
+				Log.Warning("Command addition failed, will try again later");
 			}
 		});
 
