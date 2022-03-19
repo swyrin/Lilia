@@ -52,7 +52,8 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 
 		var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 		var isInvitationAllowed = !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic;
-		var isTopGgBotExists = await _client.DblApi.GetBotAsync(botId) != null;
+		var boat = await _client.DblApi.GetBotAsync(botId);
+		var isTopGgBotExists = boat != null;
 
 		var componentBuilder = new ComponentBuilder()
 			.WithButton("Interested in me?", style: ButtonStyle.Link, url: botInv, disabled: !isInvitationAllowed)
