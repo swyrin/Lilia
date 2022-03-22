@@ -9,14 +9,21 @@ namespace Lilia.Commons;
 
 public static class JsonManager<T> where T : BaseJson
 {
-	private static void EnsureFileExists(string filePath, bool createIfNotExist = false)
+	private static void EnsureFileExists(string filePath, bool createIfNotExist = true)
 	{
 		if (File.Exists(filePath)) return;
-		if (!createIfNotExist) return;
 
-		File.Create(filePath!);
-		File.WriteAllText(filePath, JsonConvert.SerializeObject(typeof(T), Formatting.Indented));
-		Log.Logger.Warning("Created JSON file in path {FilePath} since one doesn't exist", filePath);
+		if (createIfNotExist)
+		{
+			File.Create(filePath!).Dispose();
+			File.WriteAllText(filePath, JsonConvert.SerializeObject((T) Activator.CreateInstance(typeof(T)), Formatting.Indented));
+			Log.Logger.Warning("Created JSON file in path {FilePath} since one doesn't exist", filePath);
+		}
+		else
+		{
+			Log.Fatal("{FilePath} not found and not created", filePath);
+			throw new FileNotFoundException("Required JSON file does not exist", filePath);
+		}
 	}
 
 	public static T Read()
