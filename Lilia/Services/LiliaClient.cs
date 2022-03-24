@@ -55,7 +55,6 @@ public class LiliaClient
 	private bool _isGlobalCommandRegistrationFinished;
 	private bool _isGlobalCommandRegistrationNotificationLogged;
 	private bool _isLavalinkInitialized;
-	private bool _isPresenceSet;
 	private bool _isTopGgSet;
 
 	private ServiceProvider _serviceProvider;
@@ -333,35 +332,28 @@ public class LiliaClient
 			}
 		});
 
-		await Task.Run(async () =>
+		Log.Logger.Information("Setting client presence on shard #{ShardId}", client.ShardId);
+
+		var clientActivityConfig = BotConfiguration.Client.Activity;
+
+		if (!Enum.TryParse(clientActivityConfig.Type, out ActivityType activityType))
 		{
-			if (!_isPresenceSet)
-			{
-				Log.Logger.Information("Setting client presence");
+			Log.Logger.Warning("Can not convert \"{Type}\" to a valid activity type, using \"Playing\"", clientActivityConfig.Type);
+			Log.Logger.Warning("Valid options are: ListeningTo, Competing, Playing, Watching");
+			activityType = ActivityType.Playing;
+		}
 
-				var clientActivityConfig = BotConfiguration.Client.Activity;
+		if (!Enum.TryParse(clientActivityConfig.Status, out UserStatus userStatus))
+		{
+			Log.Logger.Warning("Can not convert \"{Status}\" to a valid status, using \"Online\"", clientActivityConfig.Status);
+			Log.Logger.Warning("Valid options are: Online, Invisible, Idle, DoNotDisturb");
+			userStatus = UserStatus.Online;
+		}
 
-				if (!Enum.TryParse(clientActivityConfig.Type, out ActivityType activityType))
-				{
-					Log.Logger.Warning("Can not convert \"{Type}\" to a valid activity type, using \"Playing\"", clientActivityConfig.Type);
-					Log.Logger.Warning("Valid options are: ListeningTo, Competing, Playing, Watching");
-					activityType = ActivityType.Playing;
-				}
+		await client.SetActivityAsync(new Game(BotConfiguration.Client.Activity.Name.Replace("{ShardId}", $"{client.ShardId}"), activityType));
+		await client.SetStatusAsync(userStatus);
 
-				if (!Enum.TryParse(clientActivityConfig.Status, out UserStatus userStatus))
-				{
-					Log.Logger.Warning("Can not convert \"{Status}\" to a valid status, using \"Online\"", clientActivityConfig.Status);
-					Log.Logger.Warning("Valid options are: Online, Invisible, Idle, DoNotDisturb");
-					userStatus = UserStatus.Online;
-				}
-
-				await _client.SetActivityAsync(new Game(BotConfiguration.Client.Activity.Name, activityType));
-				await _client.SetStatusAsync(userStatus);
-
-				Log.Logger.Information("Done setting the client presence");
-				_isPresenceSet = true;
-			}
-		});
+		Log.Logger.Information("Done setting the client presence on shard #{ShardId}", client.ShardId);
 	}
 
 	private Task OnShardConnected(DiscordSocketClient client)
