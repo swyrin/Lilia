@@ -9,7 +9,7 @@ namespace Lilia.Modules;
 
 public class ActivityModule : InteractionModuleBase<ShardedInteractionContext>
 {
-	[SlashCommand("activity", "Create a new activity")]
+	[SlashCommand("activity", "Create a new embedded activity session")]
 	public async Task ActivityActivityCommand(
 		[Summary("target", "The target activity")]
 		DefaultApplications applications = DefaultApplications.Youtube)
