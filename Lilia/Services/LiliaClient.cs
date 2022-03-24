@@ -258,7 +258,7 @@ public class LiliaClient
 
 		Log
 			.ForContext("SourceContext", message.Source)
-			.Write(severity, message.Exception, "{Message:l}", message.Message);
+			.Write(severity, message.Exception, "{Message}", message.Message);
 
 		return Task.CompletedTask;
 	}
@@ -274,7 +274,7 @@ public class LiliaClient
 
 				try
 				{
-					var me = await DblApi.GetMeAsync();
+					var me = await DblApi.GetMeAsync().WaitAsync(TimeSpan.FromSeconds(10));
 					await me.UpdateStatsAsync(_client.Guilds.Count);
 					Log.Information("Done updating top.gg stat");
 

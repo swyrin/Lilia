@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using DiscordBotsList.Api.Objects;
 using Lilia.Commons;
 using Lilia.Services;
 
@@ -52,20 +53,36 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 
 		var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
 		var isInvitationAllowed = !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic;
-		var boat = await _client.DblApi.GetBotAsync(botId);
-		var isTopGgBotExists = boat != null;
+		var isTopGgRequestSuccess = true;
+
+		IDblBot boat;
+		var isTopGgBotExists = true;
+
+		try
+		{
+			boat = await _client.DblApi.GetBotAsync(botId).WaitAsync(TimeSpan.FromSeconds(5));
+			isTopGgBotExists = boat != null;
+		} catch
+		{
+			isTopGgRequestSuccess = false;
+		}
 
 		const ulong liliaId = 884066006115442708;
 
 		var componentBuilder = new ComponentBuilder()
 			.WithButton("Interested in me?", style: ButtonStyle.Link, url: botInv, disabled: !isInvitationAllowed)
 			.WithButton("Need supports?", style: ButtonStyle.Link, url: guildInv, disabled: !isValidGuildInviteLink)
-			.WithButton("Want to self host?", style: ButtonStyle.Link, url: "https://github.com/Lilia-Workshop/Lilia")
-			.WithButton("Vote for me on top.gg", style: ButtonStyle.Link, url: $"https://top.gg/bot/{botId}", row: 1, disabled: !isTopGgBotExists);
+			.WithButton("Want to self host?", style: ButtonStyle.Link, url: "https://github.com/Lilia-Workshop/Lilia");
 
-		if (botId != liliaId)
+		if (isTopGgRequestSuccess)
+		{
 			componentBuilder
-				.WithButton("Vote for the original one on top.gg", style: ButtonStyle.Link, url: "https://top.gg/bot/884066006115442708", row: 1);
+				.WithButton("Vote for me on top.gg", style: ButtonStyle.Link, url: $"https://top.gg/bot/{botId}", row: 1, disabled: !isTopGgBotExists);
+
+			if (botId != liliaId)
+				componentBuilder
+					.WithButton("Vote for the original one on top.gg", style: ButtonStyle.Link, url: "https://top.gg/bot/884066006115442708", row: 1);
+		}
 
 		var timeDiff = DateTime.Now.Subtract(_client.StartTime);
 
@@ -102,6 +119,8 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		var accountAge = DateTimeOffset.Now.Subtract(creationDate);
 		var membershipAge = DateTimeOffset.Now.Subtract(joinDate);
 
+		var mutualGuilds = Context.Client.Guilds.Where(guild => guild.GetUser(user.Id) != null);
+
 		var embedBuilder = Context.User.CreateEmbedWithUserData()
 			.WithAuthor(Format.UsernameAndDiscriminator(user), Context.Client.CurrentUser.GetAvatarUrl())
 			.WithThumbnailUrl(user.GetDisplayAvatarUrl())
@@ -111,7 +130,7 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 			.AddField("Is guild owner", Context.Guild.Owner == user, true)
 			.AddField("Is bot", user.IsBot, true)
 			.AddField("Badge list", $"{user.PublicFlags}", true)
-			.AddField("Mutual guilds with me", string.Join(", ", user.MutualGuilds));
+			.AddField("Mutual guilds with me", string.Join(", ", mutualGuilds));
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
 			x.Embed = embedBuilder.Build());
