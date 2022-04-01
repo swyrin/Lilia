@@ -34,7 +34,11 @@ public class ClientConfigurations
 	[JsonProperty("support_guild_invite_link")]
 	public string SupportGuildInviteLink = "";
 
-	[JsonProperty("token")] public string Token = "";
+	[JsonProperty("token")]
+	public string Token = "";
+
+	[JsonProperty("modmail")]
+	public ModMailConfigurations ModMail = new();
 }
 
 public class ClientActivityConfigurations
@@ -103,5 +107,14 @@ public class OsuConfigurations
 	public string ClientSecret;
 }
 
-	[JsonProperty("client_secret")] public string ClientSecret;
+public class ModMailConfigurations
+{
+	[JsonProperty("enabled")]
+	public bool Enabled;
+
+	[JsonProperty("target_guild_id")]
+	public ulong TargetGuildId;
+
+	[JsonProperty("target_channel_id")]
+	public ulong TargetChannelId;
 }

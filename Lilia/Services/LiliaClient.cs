@@ -156,10 +156,7 @@ public class LiliaClient
 			})
 			.AddSingleton<DiscordShardedClient>()
 			.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordShardedClient>(),
-				new InteractionServiceConfig
-				{
-					LogLevel = LogSeverity.Verbose
-				}))
+				new InteractionServiceConfig {LogLevel = LogSeverity.Verbose}))
 			.AddSingleton(x => new InteractiveService(x.GetRequiredService<DiscordShardedClient>()))
 			.AddSingleton<ILavalinkCache, LavalinkCache>()
 			.AddSingleton<IAudioService, LavalinkNode>()
@@ -169,9 +166,7 @@ public class LiliaClient
 			.AddSingleton<ArtworkService>()
 			.AddSingleton(new InactivityTrackingOptions
 			{
-				PollInterval = TimeSpan.FromMinutes(5),
-				DisconnectDelay = TimeSpan.Zero,
-				TrackInactivity = true
+				PollInterval = TimeSpan.FromMinutes(5), DisconnectDelay = TimeSpan.Zero, TrackInactivity = true
 			})
 			.AddSingleton<InactivityTrackingService>()
 			.AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>(x => new DiscordClientWrapper(x.GetRequiredService<DiscordShardedClient>()))
@@ -226,6 +221,7 @@ public class LiliaClient
 			_client.Log += OnLog;
 			_client.ShardConnected += OnShardConnected;
 			_client.ShardDisconnected += OnShardDisconnected;
+			_client.MessageReceived += OnMessageReceived;
 			InteractiveService.Log += OnLog;
 			_interactionService.Log += OnLog;
 
@@ -436,5 +432,44 @@ public class LiliaClient
 			.Replace("{guild}", guild.Name);
 
 		await ((SocketTextChannel)chn).SendMessageAsync(postProcessedMessage);
+	}
+
+	private async Task OnMessageReceived(SocketMessage msg)
+	{
+		if (msg.Channel.GetChannelType() == ChannelType.DM)
+		{
+			var modmailConfig = BotConfiguration.Client.ModMail;
+			if (!modmailConfig.Enabled) return;
+			if (msg.Author.Id == _client.CurrentUser.Id) return;
+
+			var guild = _client.GetGuild(modmailConfig.TargetGuildId);
+
+			if (guild == null)
+			{
+				Log.Error("Invalid guild for modmail to process");
+				return;
+			}
+
+			var channel = guild.GetChannel(modmailConfig.TargetChannelId);
+
+			if (channel == null || channel.GetChannelType() != ChannelType.Text)
+			{
+				Log.Error("Invalid channel for modmail to process");
+				return;
+			}
+
+			var textChn = (SocketTextChannel)channel;
+
+			var embed = new EmbedBuilder()
+				.WithTitle("A mail has been sent")
+				.WithDescription(msg.Content)
+				.WithColor(Color.DarkGrey)
+				.AddField("Sender", Format.UsernameAndDiscriminator(msg.Author), true)
+				.AddField("ID", msg.Author.Id, true)
+				.AddField("At", msg.CreatedAt.Date.ToLongDateString(), true)
+				.Build();
+
+			await textChn.SendMessageAsync(embed: embed);
+		}
 	}
 }

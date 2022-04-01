@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
+using Discord.Rest;
 using Discord.WebSocket;
 using Fergun.Interactive.Pagination;
 using Lilia.Commons;
@@ -161,6 +163,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 		}
 
 		[SlashCommand("warn_add", "Add a warn to an user")]
+		[RequireUserPermission(GuildPermission.ModerateMembers)]
 		public async Task ModerationGeneralWarnAddCommand(
 			[Summary("user", "The user to add a warn")]
 			SocketGuildUser user,
@@ -221,11 +224,12 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 		}
 
 		[SlashCommand("warn_remove", "Remove a warn from an user")]
+		[RequireUserPermission(GuildPermission.ModerateMembers)]
 		public async Task ModerationGeneralWarnRemoveCommand(
 			[Summary("user", "The user to remove a warn")]
 			SocketGuildUser user,
 			[Summary("reason", "Reason to execute")]
-			string reason = "False warn")
+			string reason = "Good behavior")
 		{
 			await Context.Interaction.DeferAsync();
 
@@ -284,9 +288,11 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 		}
 
 		[SlashCommand("mute", "Mute an user, like Timeout but infinite duration")]
+		[RequireUserPermission(GuildPermission.ModerateMembers)]
 		public async Task ModerationGeneralMuteCommand(
-			[Summary("user", "The user to mute")] SocketGuildUser user,
-			[Summary("reason", "The reason")] string reason = "Excessive rule violation")
+			[Summary("user", "The user to mute")]
+			SocketGuildUser user,
+			[Summary("reason", "The reason")] string reason = "Rule violation")
 		{
 			await Context.Interaction.DeferAsync();
 
@@ -336,9 +342,12 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 		}
 
 		[SlashCommand("unmute", "Unmute an user, like Remove Timeout")]
+		[RequireUserPermission(GuildPermission.ModerateMembers)]
 		public async Task ModerationGeneralUnmuteCommand(
-			[Summary("user", "The user to mute")] SocketGuildUser user,
-			[Summary("reason", "The reason")] string reason = "Good behavior")
+			[Summary("user", "The user to mute")]
+			SocketGuildUser user,
+			[Summary("reason", "The reason")]
+			string reason = "Good behavior")
 		{
 			await Context.Interaction.DeferAsync();
 
@@ -388,80 +397,213 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 		}
 	}
 
-	[Group("ticket", "Commands for sending tickets to moderator")]
-	public class ModerationMessageModule : InteractionModuleBase<SocketInteractionContext>
+	[Group("mail", "You know modmail right?")]
+	public class ModerationMailModule : InteractionModuleBase<ShardedInteractionContext>
 	{
-		[SlashCommand("appeal", "Send an appeal")]
-		[RequireContext(ContextType.DM)]
-		public async Task ModerationModuleMessageAppealCommand()
+		private readonly LiliaClient _client;
+
+		public ModerationMailModule(LiliaClient client)
 		{
-			var modalBuilder = new ModalBuilder();
+			_client = client;
+		}
 
-			modalBuilder
-				.WithTitle("Execution appeal")
-				.WithCustomId("appeal-modal")
-				.AddTextInput("Guild ID", "guild-id", placeholder: "The guild ID where you get executed")
-				.AddTextInput("Executor ID", "receiver-id", placeholder: "The moderator ID who executed you")
-				.AddTextInput("Your appeal", "appeal-text", TextInputStyle.Paragraph, "Your appeal");
+		[SlashCommand("solve", "Mark a mail as solved")]
+		[RequireUserPermission(GuildPermission.ManageGuild)]
+		public async Task ModerationMailSolveCommand(
+			[Summary("messageId", "Embed message ID")]
+			string messageId,
+			[Summary("reason", "Solution's reason")]
+			string reason)
+		{
+			await GenericMailStuffs(messageId, "Solved", reason);
+		}
 
-			await Context.Interaction.RespondWithModalAsync(modalBuilder.Build());
-			var res = (SocketModal)await InteractionUtility.WaitForInteractionAsync(Context.Client, TimeSpan.FromMinutes(10),
-				interaction => interaction.Type == InteractionType.ModalSubmit);
+		[SlashCommand("reject", "Mark a mail as rejected")]
+		[RequireUserPermission(GuildPermission.ManageGuild)]
+		public async Task ModerationMailRejectCommand(
+			[Summary("messageId", "Embed message ID")]
+			string messageId,
+			[Summary("reason", "Rejection's reason")]
+			string reason)
+		{
+			await GenericMailStuffs(messageId, "Rejected", reason);
+		}
 
-			var components = res.Data.Components.ToList();
-			var guildId = components.First(x => x.CustomId == "guild-id").Value;
-			var receiverId = components.First(x => x.CustomId == "receiver-id").Value;
-			var appealText = components.First(x => x.CustomId == "appeal-text").Value;
+		[SlashCommand("reopen", "Reopen a mail")]
+		[RequireUserPermission(GuildPermission.ManageGuild)]
+		public async Task ModerationMailReopenCommand(
+			[Summary("messageId", "Embed message ID")]
+			string messageId,
+			[Summary("reason", "Opening's reason")]
+			string reason)
+		{
+			await GenericMailStuffs(messageId, "Reopened", reason);
+		}
+
+		[SlashCommand("reply", "Reply to the sender of the mail")]
+		[RequireUserPermission(GuildPermission.ManageGuild)]
+		public async Task ModerationMailReplyCommand(
+			[Summary("messageId", "Embed message ID")]
+			string messageId)
+		{
+			await Context.Interaction.DeferAsync();
+
+			var canConvert = ulong.TryParse(messageId, out var id);
+
+			if (!canConvert)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				{
+					x.Content = "Invalid message ID\n" +
+					            "1 - The message must be in **this** channel\n" +
+					            "2 - In case you don't know how to get it: https://discordnet.dev/faq/basics/getting-started.html?tabs=dev-mode#what-is-a-clientuserobject-id";
+				});
+
+				return;
+			}
+
+			var msg = (RestUserMessage) await Context.Channel.GetMessageAsync(id);
+
+			if (msg == null)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				{
+					x.Content = "Invalid message ID\n" +
+					            "The message must be in **this** channel\n" +
+					            "In case you don't know how to get it: https://discordnet.dev/faq/basics/getting-started.html?tabs=dev-mode#what-is-a-clientuserobject-id";
+				});
+
+				return;
+			}
+
+			if (msg.Author.Id != Context.Client.CurrentUser.Id)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "I was not the one to send the target message"; });
+				return;
+			}
+
+			var interactive = _client.InteractiveService;
+
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = "Type your reply in the next message (use image as link, if any)");
+
+			var result = await interactive.NextMessageAsync(x => x.Channel.Id == Context.Channel.Id && x.Author == Context.User);
+
+			if (result.IsTimeout)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+					x.Content = "Timed out");
+
+				return;
+			}
+
+			var replyMsg = result.Value!;
+			var userId = msg.Embeds.First().Fields.First(x => x.Name == "ID").Value;
+
+			var member = Context.Guild.GetUser(Convert.ToUInt64(userId));
+
+			if (member == null)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+					x.Content = "User does not exist in this guild");
+
+				return;
+			}
 
 			try
 			{
-				var guildIdLong = Convert.ToUInt64(guildId);
-				var receiverIdLong = Convert.ToUInt64(receiverId);
+				await member.SendMessageAsync(replyMsg.Content);
 
-				var guild = Context.Client.GetGuild(guildIdLong);
-				await Context.Client.DownloadUsersAsync(new[] {guild});
-
-				if (guild == null)
-				{
-					await res.RespondAsync("I am not in the guild you specified");
-					return;
-				}
-
-				var receiver = guild.GetUser(receiverIdLong);
-
-				if (receiver == null)
-				{
-					await res.RespondAsync("The user you entered does not belong to the guild");
-					return;
-				}
-
-				if (receiver.Id == Context.User.Id || receiver.Id == Context.Client.CurrentUser.Id)
-				{
-					await res.RespondAsync("You can not send to either yourself or me");
-					return;
-				}
-
-				if (receiver.IsBot)
-				{
-					await res.RespondAsync("I can not send messages to a bot, please specify a human user");
-					return;
-				}
-
-				await receiver.SendMessageAsync(embed: Context.User.CreateEmbedWithUserData()
-					.WithTitle("An appeal has been sent to you")
-					.WithDescription(appealText)
-					.WithThumbnailUrl(guild.IconUrl)
-					.WithAuthor(Format.UsernameAndDiscriminator(Context.User), Context.User.GetAvatarUrl())
-					.AddField("Sender", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})")
-					.AddField("Guild to appeal", $"{guild.Name} (ID: {guild.Id}")
-					.Build());
-
-				await res.RespondAsync("Sent the appeal");
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+					x.Content = "Sent the reply to this user");
 			}
 			catch
 			{
-				await res.RespondAsync("Looks like you provided invalid IDs");
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+					x.Content = "Unable to send DM to this user");
 			}
+		}
+
+		private async Task GenericMailStuffs(string messageId, string title, string reason)
+		{
+			await Context.Interaction.DeferAsync(true);
+
+			var canConvert = ulong.TryParse(messageId, out var id);
+
+			if (!canConvert)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				{
+					x.Content = "Invalid message ID\n" +
+					            "1 - The message must be in **this** channel\n" +
+					            "2 - In case you don't know how to get it: https://discordnet.dev/faq/basics/getting-started.html?tabs=dev-mode#what-is-a-clientuserobject-id";
+				});
+
+				return;
+			}
+
+			var msg = (RestUserMessage) await Context.Channel.GetMessageAsync(id);
+
+			if (msg == null)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				{
+					x.Content = "Invalid message ID\n" +
+					            "The message must be in **this** channel\n" +
+					            "In case you don't know how to get it: https://discordnet.dev/faq/basics/getting-started.html?tabs=dev-mode#what-is-a-clientuserobject-id";
+				});
+
+				return;
+			}
+
+			if (msg.Author.Id != Context.Client.CurrentUser.Id)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "I was not the one to send the target message"; });
+				return;
+			}
+
+			if (msg.Embeds.First().Title == title)
+			{
+				await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = $"Already {title.ToLower()}"; });
+				return;
+			}
+
+			switch (msg.Embeds.First().Title)
+			{
+				case "Solved" when title == "Rejected":
+					await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "You can not reject a solved one"; });
+					return;
+				case "Rejected" when title == "Solved":
+					await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "You can not solve a rejected one"; });
+					return;
+				case "Reopened" when title == "A mail has been sent to you":
+				case "Reopened" when title == "Reopened":
+					await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "You can not reopen a reopened one"; });
+					return;
+			}
+
+			var color = title switch
+			{
+				"Solved" => Color.Green,
+				"Rejected" => Color.Red,
+				_ => Color.DarkGrey
+			};
+
+			await msg.ModifyAsync(x =>
+			{
+				x.Embed = new EmbedBuilder()
+					.WithTitle(title)
+					.WithDescription(msg.Content)
+					.WithColor(color)
+					.AddField("Sender", msg.Embeds.First().Fields.First(field => field.Name == "Sender").Value, true)
+					.AddField("At", msg.Embeds.First().Fields.First(field => field.Name == "At").Value, true)
+					.AddField("Reason", reason)
+					.AddField("Moderator", Format.UsernameAndDiscriminator(Context.User), true)
+					.AddField("Execution time", DateTime.Now.ToLongDateTime(), true)
+					.Build();
+			});
+
+			await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = $"Done modifying. Jump link: {msg.GetJumpUrl()}"; });
 		}
 	}
 }
