@@ -4,9 +4,7 @@ namespace Lilia.Enums;
 
 public enum MusicConnectionType
 {
-	[ChoiceDisplay("normal")]
-	Normal,
+	[ChoiceDisplay("normal")] Normal,
 
-	[ChoiceDisplay("queued")]
-	Queued
+	[ChoiceDisplay("queued")] Queued
 }

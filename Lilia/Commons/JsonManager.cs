@@ -16,7 +16,7 @@ public static class JsonManager<T> where T : BaseJson
 		if (createIfNotExist)
 		{
 			File.Create(filePath!).Dispose();
-			File.WriteAllText(filePath, JsonConvert.SerializeObject((T) Activator.CreateInstance(typeof(T)), Formatting.Indented));
+			File.WriteAllText(filePath, JsonConvert.SerializeObject((T)Activator.CreateInstance(typeof(T)), Formatting.Indented));
 			Log.Logger.Warning("Created JSON file in path {FilePath} since one doesn't exist", filePath);
 		}
 		else

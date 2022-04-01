@@ -59,9 +59,9 @@ public class LiliaClient
 
 	private ServiceProvider _serviceProvider;
 	private int _totalShardCount;
+	public ArtworkService ArtworkService;
 
 	public AuthDiscordBotListApi DblApi;
-	public ArtworkService ArtworkService;
 	public InteractiveService InteractiveService;
 	public IAudioService Lavalink;
 	public LyricsService Lyrics;

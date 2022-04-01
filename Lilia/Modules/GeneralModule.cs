@@ -62,7 +62,8 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		{
 			boat = await _client.DblApi.GetBotAsync(botId).WaitAsync(TimeSpan.FromSeconds(5));
 			isTopGgBotExists = boat != null;
-		} catch
+		}
+		catch
 		{
 			isTopGgRequestSuccess = false;
 		}
@@ -77,7 +78,8 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		if (isTopGgRequestSuccess)
 		{
 			componentBuilder
-				.WithButton("Vote for me on top.gg", style: ButtonStyle.Link, url: $"https://top.gg/bot/{botId}", row: 1, disabled: !isTopGgBotExists);
+				.WithButton("Vote for me on top.gg", style: ButtonStyle.Link, url: $"https://top.gg/bot/{botId}", row: 1,
+					disabled: !isTopGgBotExists);
 
 			if (botId != liliaId)
 				componentBuilder

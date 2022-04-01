@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -290,8 +289,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 		[SlashCommand("mute", "Mute an user, like Timeout but infinite duration")]
 		[RequireUserPermission(GuildPermission.ModerateMembers)]
 		public async Task ModerationGeneralMuteCommand(
-			[Summary("user", "The user to mute")]
-			SocketGuildUser user,
+			[Summary("user", "The user to mute")] SocketGuildUser user,
 			[Summary("reason", "The reason")] string reason = "Rule violation")
 		{
 			await Context.Interaction.DeferAsync();
@@ -344,10 +342,8 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 		[SlashCommand("unmute", "Unmute an user, like Remove Timeout")]
 		[RequireUserPermission(GuildPermission.ModerateMembers)]
 		public async Task ModerationGeneralUnmuteCommand(
-			[Summary("user", "The user to mute")]
-			SocketGuildUser user,
-			[Summary("reason", "The reason")]
-			string reason = "Good behavior")
+			[Summary("user", "The user to mute")] SocketGuildUser user,
+			[Summary("reason", "The reason")] string reason = "Good behavior")
 		{
 			await Context.Interaction.DeferAsync();
 
@@ -413,10 +409,8 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 			[Summary("messageId", "Embed message ID")]
 			string messageId,
 			[Summary("reason", "Solution's reason")]
-			string reason)
-		{
+			string reason) =>
 			await GenericMailStuffs(messageId, "Solved", reason);
-		}
 
 		[SlashCommand("reject", "Mark a mail as rejected")]
 		[RequireUserPermission(GuildPermission.ManageGuild)]
@@ -424,10 +418,8 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 			[Summary("messageId", "Embed message ID")]
 			string messageId,
 			[Summary("reason", "Rejection's reason")]
-			string reason)
-		{
+			string reason) =>
 			await GenericMailStuffs(messageId, "Rejected", reason);
-		}
 
 		[SlashCommand("reopen", "Reopen a mail")]
 		[RequireUserPermission(GuildPermission.ManageGuild)]
@@ -435,10 +427,8 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 			[Summary("messageId", "Embed message ID")]
 			string messageId,
 			[Summary("reason", "Opening's reason")]
-			string reason)
-		{
+			string reason) =>
 			await GenericMailStuffs(messageId, "Reopened", reason);
-		}
 
 		[SlashCommand("reply", "Reply to the sender of the mail")]
 		[RequireUserPermission(GuildPermission.ManageGuild)]
@@ -462,7 +452,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 				return;
 			}
 
-			var msg = (RestUserMessage) await Context.Channel.GetMessageAsync(id);
+			var msg = (RestUserMessage)await Context.Channel.GetMessageAsync(id);
 
 			if (msg == null)
 			{
@@ -542,7 +532,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 				return;
 			}
 
-			var msg = (RestUserMessage) await Context.Channel.GetMessageAsync(id);
+			var msg = (RestUserMessage)await Context.Channel.GetMessageAsync(id);
 
 			if (msg == null)
 			{
