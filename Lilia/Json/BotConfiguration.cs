@@ -5,9 +5,11 @@ namespace Lilia.Json;
 
 public class BotConfiguration : BaseJson
 {
-	[JsonProperty("client")] public ClientConfigurations Client = new();
+	[JsonProperty("client")]
+	public ClientConfigurations Client = new();
 
-	[JsonProperty("credentials")] public CredentialConfigurations Credentials = new();
+	[JsonProperty("credentials")]
+	public CredentialConfigurations Credentials = new();
 
 	public BotConfiguration()
 	{
@@ -17,9 +19,11 @@ public class BotConfiguration : BaseJson
 
 public class ClientConfigurations
 {
-	[JsonProperty("activity")] public ClientActivityConfigurations Activity = new();
+	[JsonProperty("activity")]
+	public ClientActivityConfigurations Activity = new();
 
-	[JsonProperty("private_guilds")] public List<ulong> PrivateGuildIds = new();
+	[JsonProperty("private_guilds")]
+	public List<ulong> PrivateGuildIds = new();
 
 	[JsonProperty("shard_count", NullValueHandling = NullValueHandling.Include)]
 	public int ShardCount = 1;
@@ -35,49 +39,69 @@ public class ClientConfigurations
 
 public class ClientActivityConfigurations
 {
-	[JsonProperty("name")] public string Name = "you";
+	[JsonProperty("name")]
+	public string Name = "you";
 
-	[JsonProperty("status")] public string Status = "DoNotDisturb";
+	[JsonProperty("status")]
+	public string Status = "DoNotDisturb";
 
-	[JsonProperty("type")] public string Type = "Watching";
+	[JsonProperty("type")]
+	public string Type = "Watching";
 }
 
 public class CredentialConfigurations
 {
-	[JsonProperty("lavalink")] public LavalinkConfigurations Lavalink = new();
+	[JsonProperty("lavalink")]
+	public LavalinkConfigurations Lavalink = new();
 
-	[JsonProperty("osu")] public OsuConfigurations Osu = new();
+	[JsonProperty("osu")]
+	public OsuConfigurations Osu = new();
 
-	[JsonProperty("postgresql")] public PostgreSqlConfigurations PostgreSql = new();
+	[JsonProperty("postgresql")]
+	public PostgreSqlConfigurations PostgreSql = new();
 
-	[JsonProperty("top.gg")] public string TopDotGeeGeeToken;
+	[JsonProperty("top.gg")]
+	public string TopDotGeeGeeToken;
 }
 
 public class LavalinkConfigurations
 {
-	[JsonProperty("host")] public string Host = "swyrin.me";
+	[JsonProperty("host")]
+	public string Host = "swyrin.me";
 
-	[JsonProperty("password")] public string Password = "youshallnotpass";
+	[JsonProperty("password")]
+	public string Password = "youshallnotpass";
 
-	[JsonProperty("port")] public int Port = 2333;
+	[JsonProperty("port")]
+	public int Port = 2333;
 }
 
 public class PostgreSqlConfigurations
 {
-	[JsonProperty("database_name")] public string DatabaseName;
+	[JsonProperty("database_name")]
+	public string DatabaseName;
 
-	[JsonProperty("host")] public string Host = "localhost";
+	[JsonProperty("host")]
+	public string Host = "localhost";
 
-	[JsonProperty("password")] public string Password = "thisisnottheend";
+	[JsonProperty("password")]
+	public string Password = "thisisnottheend";
 
-	[JsonProperty("port")] public int Port = 5432;
+	[JsonProperty("port")]
+	public int Port = 5432;
 
-	[JsonProperty("username")] public string Username;
+	[JsonProperty("username")]
+	public string Username;
 }
 
 public class OsuConfigurations
 {
-	[JsonProperty("client_id")] public long ClientId;
+	[JsonProperty("client_id")]
+	public long ClientId;
+
+	[JsonProperty("client_secret")]
+	public string ClientSecret;
+}
 
 	[JsonProperty("client_secret")] public string ClientSecret;
 }
