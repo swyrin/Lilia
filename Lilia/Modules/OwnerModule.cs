@@ -5,10 +5,10 @@ using Serilog;
 
 namespace Lilia.Modules;
 
+[RequireOwner]
 public class OwnerModule : InteractionModuleBase<ShardedInteractionContext>
 {
 	[SlashCommand("shutdown", "Shutdown the bot")]
-	[RequireOwner]
 	public async Task OwnerShutdownCommand()
 	{
 		await Context.Interaction.DeferAsync();
