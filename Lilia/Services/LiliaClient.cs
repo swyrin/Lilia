@@ -12,6 +12,7 @@ using DiscordBotsList.Api.Objects;
 using Fergun.Interactive;
 using Lavalink4NET;
 using Lavalink4NET.Artwork;
+using Lavalink4NET.Cluster;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Logging.Microsoft;
 using Lavalink4NET.Lyrics;
@@ -136,7 +137,6 @@ public class LiliaClient
 
 	private ServiceProvider GetRequiredServices()
 	{
-		var lavalinkConfig = BotConfiguration.Credentials.Lavalink;
 		_database = new LiliaDatabase();
 		_totalShardCount = BotConfiguration.Client.ShardCount;
 
@@ -152,14 +152,15 @@ public class LiliaClient
 				UseInteractionSnowflakeDate = false,
 				AlwaysDownloadUsers = true,
 				UseSystemClock = false,
-				ConnectionTimeout = 24 * 60 * 60 * 1000
+				ConnectionTimeout = 24 * 60 * 60 * 1000,
+				FormatUsersInBidirectionalUnicode = false
 			})
 			.AddSingleton<DiscordShardedClient>()
 			.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordShardedClient>(),
 				new InteractionServiceConfig {LogLevel = LogSeverity.Verbose}))
 			.AddSingleton(x => new InteractiveService(x.GetRequiredService<DiscordShardedClient>()))
 			.AddSingleton<ILavalinkCache, LavalinkCache>()
-			.AddSingleton<IAudioService, LavalinkNode>()
+			.AddSingleton<IAudioService, LavalinkCluster>()
 			.AddSingleton<DiscordSocketClient>()
 			.AddSingleton<LyricsOptions>()
 			.AddSingleton<LyricsService>()
@@ -171,13 +172,23 @@ public class LiliaClient
 			.AddSingleton<InactivityTrackingService>()
 			.AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>(x => new DiscordClientWrapper(x.GetRequiredService<DiscordShardedClient>()))
 			.AddMicrosoftExtensionsLavalinkLogging()
-			.AddSingleton(new LavalinkNodeOptions
+			.AddSingleton(new LavalinkClusterOptions
 			{
-				RestUri = $"http://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
-				WebSocketUri = $"ws://{lavalinkConfig.Host}:{lavalinkConfig.Port}",
-				Password = lavalinkConfig.Password,
-				DebugPayloads = true,
-				DisconnectOnStop = false
+				Nodes = BotConfiguration.Credentials.LavalinkNodes.Select(config =>
+				{
+					var protocol = "http" + (config.IsSecure ? 's' : string.Empty);
+
+					return new LavalinkNodeOptions
+					{
+						RestUri = $"{protocol}://{config.Host}:{config.Port}",
+						WebSocketUri = $"ws://{config.Host}:{config.Port}",
+						Password = config.Password,
+						DebugPayloads = true,
+						DisconnectOnStop = false
+					};
+				}).ToList(),
+				StayOnline = true,
+				LoadBalacingStrategy = LoadBalancingStrategies.RoundRobinStrategy
 			})
 			.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
 			.AddDefaultSerializer()
@@ -464,7 +475,7 @@ public class LiliaClient
 				.WithTitle("A mail has been sent")
 				.WithDescription(msg.Content)
 				.WithColor(Color.DarkGrey)
-				.AddField("Sender", Format.UsernameAndDiscriminator(msg.Author), true)
+				.AddField("Sender", $"{msg.Author}", true)
 				.AddField("ID", msg.Author.Id, true)
 				.AddField("At", msg.CreatedAt.Date.ToLongDateString(), true)
 				.Build();

@@ -46,7 +46,7 @@ public class ClientActivityConfigurations
 
 public class CredentialConfigurations
 {
-	[JsonProperty("lavalink")] public LavalinkConfigurations Lavalink = new();
+	[JsonProperty("lavalink_nodes")] public List<LavalinkNodeConfigurations> LavalinkNodes = new();
 
 	[JsonProperty("osu")] public OsuConfigurations Osu = new();
 
@@ -55,8 +55,10 @@ public class CredentialConfigurations
 	[JsonProperty("top.gg")] public string TopDotGeeGeeToken;
 }
 
-public class LavalinkConfigurations
+public class LavalinkNodeConfigurations
 {
+	[JsonProperty("is_secure")] public bool IsSecure;
+
 	[JsonProperty("host")] public string Host = "swyrin.me";
 
 	[JsonProperty("password")] public string Password = "youshallnotpass";
