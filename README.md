@@ -10,10 +10,11 @@ Lilia is a Discord bot created as my pet project for learning, aiming to be a go
   - [x] Embedded activity creation
   - [x] osu! commands
   - [x] Music commands
-  - [x] Guild-specific configuration commands
+  - [x] Guild configuration commands
   - [x] General purposes commands
-  - [x] Command for bot owner(s)
+  - [x] Bot owner(s) commands
   - [x] Moderation commands
+  - [x] Moderation mail (single server only)
 
 - Invite: [Click me!](https://discord.com/api/oauth2/authorize?client_id=884066006115442708&permissions=1514282020055&scope=bot%20applications.commands)
 
