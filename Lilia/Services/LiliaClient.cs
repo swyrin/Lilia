@@ -129,9 +129,15 @@ public class LiliaClient
 			Log.Logger.Warning("Source code can be seen here: https://github.com/Lilia-Workshop/Lilia");
 			Log.Logger.Warning("Changelogs in case you miss: https://github.com/Lilia-Workshop/Lilia/releases");
 		}
-		else
+		else if (currentVersion == sourceVersion)
 		{
 			Log.Logger.Information("You are using latest version");
+		}
+		else
+		{
+			Log.Logger.Information("Look like you have made some changes to the code");
+			Log.Logger.Information("Consider pushing this to main code base so that our code can be better :D");
+			Log.Logger.Information("Main repo is here: https://github.com/Lilia-Workshop/Lilia");
 		}
 	}
 
