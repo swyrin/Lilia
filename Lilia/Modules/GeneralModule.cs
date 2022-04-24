@@ -92,7 +92,7 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 			.WithTitle("Something about me :D")
 			.WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl())
 			.WithDescription(
-				$"Hi, I am {Format.Bold(Format.UsernameAndDiscriminator(Context.Client.CurrentUser))}, a bot running on the source code of {Format.Bold("Lilia")} written by {Format.Bold("Swyrin#7193")}")
+				$"Hi, I am {Format.Bold($"{Context.Client.CurrentUser}")}, a bot running on the source code of {Format.Bold("Lilia")} written by {Format.Bold("Swyrin#7193")}")
 			.AddField("Server count", $"{Context.Client.Guilds.Count}", true)
 			.AddField("Member count", $"{memberCount}", true)
 			.AddField("Uptime",
@@ -124,7 +124,7 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		var mutualGuilds = Context.Client.Guilds.Where(guild => guild.GetUser(user.Id) != null);
 
 		var embedBuilder = Context.User.CreateEmbedWithUserData()
-			.WithAuthor(Format.UsernameAndDiscriminator(user), Context.Client.CurrentUser.GetAvatarUrl())
+			.WithAuthor($"{user}", Context.Client.CurrentUser.GetAvatarUrl())
 			.WithThumbnailUrl(user.GetDisplayAvatarUrl())
 			.WithDescription($"User ID: {user.Id}")
 			.AddField("Account age", $"{accountAge.ToShortReadableTimeSpan()} (since {creationDate.ToShortDateTime()})")

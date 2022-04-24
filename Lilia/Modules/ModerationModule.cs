@@ -57,7 +57,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 					continue;
 				}
 
-				var execLine = $"Banning {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}";
+				var execLine = $"Banning {Format.Bold($"{mentionedMember}")}";
 				stringBuilder.AppendLine(execLine);
 
 				try
@@ -66,7 +66,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 				}
 				catch
 				{
-					stringBuilder.AppendLine($"Missing permission to ban {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}");
+					stringBuilder.AppendLine($"Missing permission to ban {Format.Bold($"{mentionedMember}")}");
 				}
 
 				var now = DateTime.Now;
@@ -76,7 +76,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 					.WithTitle($"You have been banned from guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
 					.WithThumbnailUrl(Context.Guild.IconUrl)
 					.AddField("Reason", reason, true)
-					.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator} (ID: {Context.User.Id})", true)
+					.AddField("Moderator", $"{Context.Interaction.User} (ID: {Context.User.Id})", true)
 					.AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
 					.AddField("What to do now?",
 						$"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod ticket appeal")} with provided IDs");
@@ -122,7 +122,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 					continue;
 				}
 
-				var execLine = $"Kicking {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}";
+				var execLine = $"Kicking {Format.Bold($"{mentionedMember}")}";
 				stringBuilder.AppendLine(execLine);
 
 				try
@@ -131,7 +131,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 				}
 				catch
 				{
-					stringBuilder.AppendLine($"Missing permission to kick {Format.Bold(Format.UsernameAndDiscriminator(mentionedMember))}");
+					stringBuilder.AppendLine($"Missing permission to kick {Format.Bold($"{mentionedMember}")}");
 				}
 
 				var now = DateTime.Now;
@@ -141,7 +141,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 					.WithTitle($"You have been kicked from guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
 					.WithThumbnailUrl(Context.Guild.IconUrl)
 					.AddField("Reason", reason, true)
-					.AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})", true)
+					.AddField("Moderator", $"{Context.User} (ID: {Context.User.Id})", true)
 					.AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
 					.AddField("What to do now?",
 						$"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod ticket appeal")} with provided IDs");
@@ -211,7 +211,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 				.WithTitle($"You were warned in guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
 				.WithThumbnailUrl(Context.Guild.IconUrl)
 				.AddField("Reason", reason, true)
-				.AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})", true)
+				.AddField("Moderator", $"{user} (ID: {Context.User.Id})", true)
 				.AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
 				.AddField("What to do now?",
 					$"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod ticket appeal")} with provided IDs");
@@ -276,7 +276,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 				.WithTitle($"You have been removed a warn in guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
 				.WithThumbnailUrl(Context.Guild.IconUrl)
 				.AddField("Reason", reason, true)
-				.AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})", true)
+				.AddField("Moderator", $"{user} (ID: {Context.User.Id})", true)
 				.AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
 				.AddField("What to do now?", "Nothing");
 
@@ -330,7 +330,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 				.WithTitle($"You have been muted in guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
 				.WithThumbnailUrl(Context.Guild.IconUrl)
 				.AddField("Reason", reason, true)
-				.AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})", true)
+				.AddField("Moderator", $"{user} (ID: {Context.User.Id})", true)
 				.AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
 				.AddField("What to do now?",
 					$"If you believe this was a mistake, you can try sending an appeal using {Format.Code("/mod ticket appeal")} with provided IDs");
@@ -383,7 +383,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 				.WithTitle($"You have been unmuted in guild \"{Context.Guild.Name}\" (ID: {Context.Guild.Id})")
 				.WithThumbnailUrl(Context.Guild.IconUrl)
 				.AddField("Reason", reason, true)
-				.AddField("Moderator", $"{Format.UsernameAndDiscriminator(Context.User)} (ID: {Context.User.Id})",
+				.AddField("Moderator", $"{Context.User} (ID: {Context.User.Id})",
 					true)
 				.AddField("Execution time", $"{now.ToLongDateString()}, {now.ToLongTimeString()}")
 				.AddField("What to do now?", "Nothing");
@@ -567,6 +567,8 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 					await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "You can not solve a rejected one"; });
 					return;
 				case "Reopened" when title == "A mail has been sent to you":
+					await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "You can not reopen a pending one"; });
+					return;
 				case "Reopened" when title == "Reopened":
 					await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "You can not reopen a reopened one"; });
 					return;
@@ -588,7 +590,7 @@ public class ModerationModule : InteractionModuleBase<ShardedInteractionContext>
 					.AddField("Sender", msg.Embeds.First().Fields.First(field => field.Name == "Sender").Value, true)
 					.AddField("At", msg.Embeds.First().Fields.First(field => field.Name == "At").Value, true)
 					.AddField("Reason", reason)
-					.AddField("Moderator", Format.UsernameAndDiscriminator(Context.User), true)
+					.AddField("Moderator", $"{Context.User}", true)
 					.AddField("Execution time", DateTime.Now.ToLongDateTime(), true)
 					.Build();
 			});

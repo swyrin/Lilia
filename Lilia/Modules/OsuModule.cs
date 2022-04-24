@@ -145,7 +145,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
 		{
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+				x.Content = $"The requested user {Format.Bold($"{user}")} doesn't exist in my database");
 
 			return;
 		}
@@ -165,7 +165,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
 		{
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+				x.Content = $"The requested user {Format.Bold($"{user}")} doesn't exist in my database");
 
 			return;
 		}
@@ -185,7 +185,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		if (string.IsNullOrWhiteSpace(dbUser.OsuUsername))
 		{
 			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = $"The requested user {Format.Bold(Format.UsernameAndDiscriminator(user))} doesn't exist in my database");
+				x.Content = $"The requested user {Format.Bold($"{user}")} doesn't exist in my database");
 
 			return;
 		}
@@ -245,7 +245,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 		return scores;
 	}
 
-	private async Task OsuProfileProcessAsync(IUser osuUser, GameMode omode)
+	private async Task OsuProfileProcessAsync(IGlobalUser osuUser, GameMode omode)
 	{
 		var embedBuilder = Context.Interaction.User.CreateEmbedWithUserData()
 			.WithAuthor(
@@ -409,7 +409,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 	{
 		try
 		{
-			IUser osuUser;
+			IGlobalUser osuUser;
 			GameMode omode;
 
 			if (profileSearchMode == OsuUserProfileSearchMode.Default)
