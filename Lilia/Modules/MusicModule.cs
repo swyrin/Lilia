@@ -368,52 +368,40 @@ public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 			}
 		}
 
-		[SlashCommand("lyrics", "Check lyrics of current song")]
-		public async Task MusicPlaybackLyricsCommand()
+		[SlashCommand("lyrics", "Check lyrics of a track")]
+		public async Task MusicPlaybackLyricsCommand(
+			[Summary("artist", "Artist name")] string artist,
+			[Summary("track_name", "Track name")] string trackName)
 		{
 			await Context.Interaction.DeferAsync();
 
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-
-			var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-
-			if (player!.CurrentTrack == null)
+			try
 			{
-				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = "No track is played right now");
+				var lyrics = await _client.Lyrics.GetLyricsAsync(artist, trackName);
 
-				return;
+				if (string.IsNullOrWhiteSpace(lyrics))
+				{
+					await Context.Interaction.ModifyOriginalResponseAsync(x =>
+						x.Content =
+							$"No lyrics found for: {Format.Bold(Format.Sanitize(artist))} by {Format.Bold(Format.Sanitize(trackName))}");
+
+					return;
+				}
+
+				var paginator = new StaticPaginatorBuilder()
+					.AddUser(Context.User)
+					.WithPages(LiliaUtilities.CreatePagesFromString(lyrics))
+					.Build();
+
+				await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction,
+					responseType: InteractionResponseType.DeferredChannelMessageWithSource);
 			}
-
-			if (player!.CurrentTrack.IsLiveStream)
-			{
-				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = "Streams can't have lyrics");
-
-				return;
-			}
-
-			var track = player.CurrentTrack;
-			var lyrics = await _client.Lyrics.GetLyricsAsync(track.Author, track.Title);
-
-			if (string.IsNullOrWhiteSpace(lyrics))
+			catch
 			{
 				await Context.Interaction.ModifyOriginalResponseAsync(x =>
 					x.Content =
-						$"No lyrics found for track: {Format.Bold(Format.Sanitize(track.Title ?? "Unknown"))} by {Format.Bold(Format.Sanitize(track.Author ?? "Unknown"))}");
-
-				return;
+						$"Can not get lyrics for: {Format.Bold(Format.Sanitize(artist))} by {Format.Bold(Format.Sanitize(trackName))}");
 			}
-
-			var paginator = new StaticPaginatorBuilder()
-				.AddUser(Context.User)
-				.WithPages(LiliaUtilities.CreatePagesFromString(lyrics))
-				.Build();
-
-			await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction,
-				responseType: InteractionResponseType.DeferredChannelMessageWithSource);
 		}
 	}
 
