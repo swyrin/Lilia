@@ -243,7 +243,7 @@ public class LiliaClient
 			_interactionService.Log += OnLog;
 
 			Log.Logger.Information("Building command modules");
-			await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
+			await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
 
 			Log.Logger.Information("Connecting and waiting for shutdown");
 			await _client.LoginAsync(TokenType.Bot, BotConfiguration.Client.Token);
