@@ -22,386 +22,382 @@ namespace Lilia.Modules;
 [Group("music", "Music commands")]
 public class MusicModule : InteractionModuleBase<ShardedInteractionContext>
 {
-	[Group("playback", "Music playback commands")]
-	public class MusicPlaybackModule : InteractionModuleBase<ShardedInteractionContext>
-	{
-		private readonly LiliaClient _client;
-		private readonly LiliaDatabaseContext _dbCtx;
+	private readonly LiliaClient _client;
+	private readonly LiliaDatabaseContext _dbCtx;
 
-		public MusicPlaybackModule(LiliaClient client, LiliaDatabase database)
+	public MusicModule(LiliaClient client, LiliaDatabase database)
+	{
+		_client = client;
+		_dbCtx = database.GetContext();
+	}
+
+	[SlashCommand("connect", "Connect to your current voice channel")]
+	public async Task MusicPlaybackConnectCommand(
+		[Summary("connection_type", "Connection type")]
+		MusicConnectionType connectionType = MusicConnectionType.Normal)
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+
+		var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
+		var existedPlayerType = player is QueuedLavalinkPlayer ? "queued player" : "normal player";
+		var newPlayerType = connectionType == MusicConnectionType.Queued ? "queued player" : "normal player";
+
+		if (player != null)
 		{
-			_client = client;
-			_dbCtx = database.GetContext();
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = $"Already connected as {existedPlayerType}");
+
+			return;
 		}
 
-		[SlashCommand("connect", "Connect to your current voice channel")]
-		public async Task MusicPlaybackConnectCommand(
-			[Summary("connection_type", "Connection type")]
-			MusicConnectionType connectionType = MusicConnectionType.Normal)
+		if (connectionType == MusicConnectionType.Queued)
+			await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id,
+				((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
+		else
+			await _client.Lavalink.JoinAsync(Context.Guild.Id, ((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
+
+		await Context.Interaction.ModifyOriginalResponseAsync(x =>
+			x.Content = $"Done establishing the connection as {newPlayerType}");
+	}
+
+	[SlashCommand("disconnect", "Leave current voice channel")]
+	public async Task MusicPlaybackDisconnectCommand()
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+
+		var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
+		_client.Lavalink.TrackStarted -= mmu.OnTrackStarted;
+		_client.Lavalink.TrackStuck -= mmu.OnTrackStuck;
+		_client.Lavalink.TrackEnd -= mmu.OnTrackEnd;
+		_client.Lavalink.TrackException -= mmu.OnTrackException;
+
+		await player!.DisconnectAsync();
+
+		await Context.Interaction.ModifyOriginalResponseAsync(x =>
+			x.Content = "Left the voice channel");
+	}
+
+	[SlashCommand("play_stream", "Play a stream")]
+	public async Task MusicPlaybackPlayStreamCommand(
+		[Summary("stream_url", "Stream URL")] string streamUrl)
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+		var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
+
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+		if (!await mmu.EnsureClientInVoiceAsync()) return;
+		if (!await mmu.EnsureNormalPlayerAsync()) return;
+
+		if (!Uri.IsWellFormedUriString(streamUrl, UriKind.Absolute))
 		{
-			await Context.Interaction.DeferAsync();
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = "I need a valid stream URL to function");
 
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
+			return;
+		}
 
-			var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-			var existedPlayerType = player is QueuedLavalinkPlayer ? "queued player" : "normal player";
-			var newPlayerType = connectionType == MusicConnectionType.Queued ? "queued player" : "normal player";
+		var track = await _client.Lavalink.GetTrackAsync(streamUrl);
 
-			if (player != null)
-			{
+		if (track == null)
+		{
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = $"Unable to get the stream from {streamUrl}");
+
+			return;
+		}
+
+		await player!.PlayAsync(track);
+
+		await Context.Interaction.ModifyOriginalResponseAsync(x =>
+			x.Content = $"Now streaming from {streamUrl}");
+
+		var dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
+		dbGuild.RadioStartTime = DateTime.UtcNow;
+		await _dbCtx.SaveChangesAsync();
+	}
+
+	[SlashCommand("play_queue", "Play queued tracks")]
+	public async Task MusicPlaybackPlayQueueCommand()
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+		if (!await mmu.EnsureClientInVoiceAsync()) return;
+		if (!await mmu.EnsureQueuedPlayerAsync()) return;
+		if (!await mmu.EnsureQueueIsNotEmptyAsync()) return;
+
+		var queuedPlayer = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
+		var track = queuedPlayer!.Queue.Dequeue();
+
+		await queuedPlayer.PlayAsync(track, false);
+
+		_client.Lavalink.TrackStarted += mmu.OnTrackStarted;
+		_client.Lavalink.TrackStuck += mmu.OnTrackStuck;
+		_client.Lavalink.TrackEnd += mmu.OnTrackEnd;
+		_client.Lavalink.TrackException += mmu.OnTrackException;
+	}
+
+	[SlashCommand("now_playing", "View now playing track")]
+	public async Task MusicPlaybackNowPlayingCommand()
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+		if (!await mmu.EnsureClientInVoiceAsync()) return;
+
+		var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
+		var track = player!.CurrentTrack;
+
+		if (track == null)
+		{
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = "Unable to get the playing track");
+
+			return;
+		}
+
+		var isStream = track.IsLiveStream;
+		var art = await _client.ArtworkService.ResolveAsync(track);
+
+		var dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
+
+		await Context.Interaction.ModifyOriginalResponseAsync(x =>
+			x.Embed = Context.User.CreateEmbedWithUserData()
+				.WithAuthor("Currently playing track", Context.Client.CurrentUser.GetAvatarUrl())
+				.WithThumbnailUrl(art?.OriginalString ?? "")
+				.AddField("Title", Format.Sanitize(track.Title))
+				.AddField("Author", Format.Sanitize(track.Author), true)
+				.AddField("Source", Format.Sanitize(track.Source ?? "Unknown"), true)
+				.AddField(isStream ? "Playtime" : "Position", isStream
+					? DateTime.UtcNow.Subtract(dbGuild.RadioStartTime).ToLongReadableTimeSpan()
+					: $"{player.Position.RelativePosition:g}/{track.Duration:g}", true)
+				.AddField("Is looping", player is QueuedLavalinkPlayer lavalinkPlayer
+					? $"{lavalinkPlayer.IsLooping}"
+					: "This is not a queued player", true)
+				.AddField("Is paused", $"{player.State == PlayerState.Paused}", true).Build());
+	}
+
+	[SlashCommand("skip", "Skip this track")]
+	public async Task MusicPlaybackSkipCommand()
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+		if (!await mmu.EnsureClientInVoiceAsync()) return;
+		if (!await mmu.EnsureQueuedPlayerAsync()) return;
+
+		var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
+		var track = player!.CurrentTrack;
+
+		if (track == null)
+		{
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = "Unable to get the track, maybe because I am not playing anything");
+
+			return;
+		}
+
+		await player.SkipAsync();
+
+		await Context.Interaction.ModifyOriginalResponseAsync(x =>
+			x.Content = $"Skipped - {Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(Format.Sanitize(track.Author))}");
+	}
+
+	[SlashCommand("stop", "Stop this session")]
+	public async Task MusicPlaybackStopCommand()
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+		if (!await mmu.EnsureClientInVoiceAsync()) return;
+
+		var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
+		await player!.StopAsync();
+
+		await Context.Interaction.ModifyOriginalResponseAsync(x =>
+			x.Content = "Stopped this session, the queue will be cleaned");
+	}
+
+	[SlashCommand("pause", "Pause this session")]
+	public async Task MusicPlaybackPauseCommand()
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+		if (!await mmu.EnsureClientInVoiceAsync()) return;
+
+		var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
+
+		if (player!.State == PlayerState.Paused)
+		{
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = "Paused earlier");
+
+			return;
+		}
+
+		await player.PauseAsync();
+
+		await Context.Interaction.ModifyOriginalResponseAsync(x =>
+			x.Content = "Pausing");
+	}
+
+	[SlashCommand("resume", "Resume this session")]
+	public async Task MusicPlaybackResumeCommand()
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+		if (!await mmu.EnsureClientInVoiceAsync()) return;
+
+		var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
+
+		if (player!.State != PlayerState.Paused)
+		{
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = "Resumed earlier");
+
+			return;
+		}
+
+		await player.ResumeAsync();
+
+		await Context.Interaction.ModifyOriginalResponseAsync(x =>
+			x.Content = "Resuming");
+	}
+
+	[SlashCommand("loop", "Toggle current track loop")]
+	public async Task MusicPlaybackLoopCommand()
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+		if (!await mmu.EnsureClientInVoiceAsync()) return;
+		if (!await mmu.EnsureQueuedPlayerAsync()) return;
+
+		var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
+		var track = player!.CurrentTrack;
+
+		if (track == null)
+		{
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = "Unable to get the track, maybe because I am not playing anything");
+
+			return;
+		}
+
+		player.IsLooping = !player.IsLooping;
+
+		await Context.Interaction.ModifyOriginalResponseAsync(x =>
+			x.Content =
+				$"{(player.IsLooping ? "Looping" : "Removed the loop of")} the track: {Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(Format.Sanitize(track.Author))}");
+	}
+
+	[SlashCommand("change_player", "Change current player")]
+	public async Task MusicPlaybackChangePlayerCommand(
+		[Summary("connection_type", "Connection type")]
+		MusicConnectionType connectionType = MusicConnectionType.Normal)
+	{
+		await Context.Interaction.DeferAsync();
+
+		var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
+		if (!await mmu.EnsureUserInVoiceAsync()) return;
+		if (!await mmu.EnsureClientInVoiceAsync()) return;
+
+		var oldPlayer = _client.Lavalink.GetPlayer(Context.Guild.Id);
+
+		if (oldPlayer!.State is not PlayerState.NotPlaying)
+		{
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content = "Can not change the player because there is a pending track");
+
+			return;
+		}
+
+		switch (oldPlayer)
+		{
+			case QueuedLavalinkPlayer when connectionType == MusicConnectionType.Queued:
 				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = $"Already connected as {existedPlayerType}");
+					x.Content = "Already connected as queued player");
 
 				return;
-			}
 
-			if (connectionType == MusicConnectionType.Queued)
-				await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id,
-					((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
-			else
+			case QueuedLavalinkPlayer:
+				await oldPlayer.DisconnectAsync();
+				await oldPlayer.DestroyAsync();
 				await _client.Lavalink.JoinAsync(Context.Guild.Id, ((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
 
-			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = $"Done establishing the connection as {newPlayerType}");
-		}
-
-		[SlashCommand("disconnect", "Leave current voice channel")]
-		public async Task MusicPlaybackDisconnectCommand()
-		{
-			await Context.Interaction.DeferAsync();
-
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-
-			var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-			_client.Lavalink.TrackStarted -= mmu.OnTrackStarted;
-			_client.Lavalink.TrackStuck -= mmu.OnTrackStuck;
-			_client.Lavalink.TrackEnd -= mmu.OnTrackEnd;
-			_client.Lavalink.TrackException -= mmu.OnTrackException;
-
-			await player!.DisconnectAsync();
-
-			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = "Left the voice channel");
-		}
-
-		[SlashCommand("play_stream", "Play a stream")]
-		public async Task MusicPlaybackPlayStreamCommand(
-			[Summary("stream_url", "Stream URL")] string streamUrl)
-		{
-			await Context.Interaction.DeferAsync();
-
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-			if (!await mmu.EnsureNormalPlayerAsync()) return;
-
-			if (!Uri.IsWellFormedUriString(streamUrl, UriKind.Absolute))
-			{
 				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = "I need a valid stream URL to function");
+					x.Content = "Switched to normal player");
+				break;
+
+			case not null when connectionType == MusicConnectionType.Normal:
+				await Context.Interaction.ModifyOriginalResponseAsync(x =>
+					x.Content = "Already connected as normal player");
 
 				return;
-			}
+			case not null:
+				await oldPlayer.DisconnectAsync();
+				await oldPlayer.DestroyAsync();
+				await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id,
+					((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
 
-			var track = await _client.Lavalink.GetTrackAsync(streamUrl);
-
-			if (track == null)
-			{
 				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = $"Unable to get the stream from {streamUrl}");
-
-				return;
-			}
-
-			await player!.PlayAsync(track);
-
-			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = $"Now streaming from {streamUrl}");
-
-			var dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
-			dbGuild.RadioStartTime = DateTime.UtcNow;
-			await _dbCtx.SaveChangesAsync();
+					x.Content = "Switched to queued player");
+				break;
 		}
+	}
 
-		[SlashCommand("play_queue", "Play queued tracks")]
-		public async Task MusicPlaybackPlayQueueCommand()
+	[SlashCommand("lyrics", "Check lyrics of a track")]
+	public async Task MusicPlaybackLyricsCommand(
+		[Summary("artist", "Artist name")] string artist,
+		[Summary("track_name", "Track name")] string trackName)
+	{
+		await Context.Interaction.DeferAsync();
+
+		try
 		{
-			await Context.Interaction.DeferAsync();
+			var lyrics = await _client.Lyrics.GetLyricsAsync(artist, trackName);
 
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-			if (!await mmu.EnsureQueuedPlayerAsync()) return;
-			if (!await mmu.EnsureQueueIsNotEmptyAsync()) return;
-
-			var queuedPlayer = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
-			var track = queuedPlayer!.Queue.Dequeue();
-
-			await queuedPlayer.PlayAsync(track, false);
-
-			_client.Lavalink.TrackStarted += mmu.OnTrackStarted;
-			_client.Lavalink.TrackStuck += mmu.OnTrackStuck;
-			_client.Lavalink.TrackEnd += mmu.OnTrackEnd;
-			_client.Lavalink.TrackException += mmu.OnTrackException;
-		}
-
-		[SlashCommand("now_playing", "View now playing track")]
-		public async Task MusicPlaybackNowPlayingCommand()
-		{
-			await Context.Interaction.DeferAsync();
-
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-
-			var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-			var track = player!.CurrentTrack;
-
-			if (track == null)
-			{
-				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = "Unable to get the playing track");
-
-				return;
-			}
-
-			var isStream = track.IsLiveStream;
-			var art = await _client.ArtworkService.ResolveAsync(track);
-
-			var dbGuild = _dbCtx.GetGuildRecord(Context.Guild);
-
-			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Embed = Context.User.CreateEmbedWithUserData()
-					.WithAuthor("Currently playing track", Context.Client.CurrentUser.GetAvatarUrl())
-					.WithThumbnailUrl(art?.OriginalString ?? "")
-					.AddField("Title", Format.Sanitize(track.Title))
-					.AddField("Author", Format.Sanitize(track.Author), true)
-					.AddField("Source", Format.Sanitize(track.Source ?? "Unknown"), true)
-					.AddField(isStream ? "Playtime" : "Position", isStream
-						? DateTime.UtcNow.Subtract(dbGuild.RadioStartTime).ToLongReadableTimeSpan()
-						: $"{player.Position.RelativePosition:g}/{track.Duration:g}", true)
-					.AddField("Is looping", player is QueuedLavalinkPlayer lavalinkPlayer
-						? $"{lavalinkPlayer.IsLooping}"
-						: "This is not a queued player", true)
-					.AddField("Is paused", $"{player.State == PlayerState.Paused}", true).Build());
-		}
-
-		[SlashCommand("skip", "Skip this track")]
-		public async Task MusicPlaybackSkipCommand()
-		{
-			await Context.Interaction.DeferAsync();
-
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-			if (!await mmu.EnsureQueuedPlayerAsync()) return;
-
-			var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
-			var track = player!.CurrentTrack;
-
-			if (track == null)
-			{
-				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = "Unable to get the track, maybe because I am not playing anything");
-
-				return;
-			}
-
-			await player.SkipAsync();
-
-			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = $"Skipped - {Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(Format.Sanitize(track.Author))}");
-		}
-
-		[SlashCommand("stop", "Stop this session")]
-		public async Task MusicPlaybackStopCommand()
-		{
-			await Context.Interaction.DeferAsync();
-
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-
-			var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-			await player!.StopAsync();
-
-			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = "Stopped this session, the queue will be cleaned");
-		}
-
-		[SlashCommand("pause", "Pause this session")]
-		public async Task MusicPlaybackPauseCommand()
-		{
-			await Context.Interaction.DeferAsync();
-
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-
-			var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-
-			if (player!.State == PlayerState.Paused)
-			{
-				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = "Paused earlier");
-
-				return;
-			}
-
-			await player.PauseAsync();
-
-			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = "Pausing");
-		}
-
-		[SlashCommand("resume", "Resume this session")]
-		public async Task MusicPlaybackResumeCommand()
-		{
-			await Context.Interaction.DeferAsync();
-
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-
-			var player = _client.Lavalink.GetPlayer(Context.Guild.Id);
-
-			if (player!.State != PlayerState.Paused)
-			{
-				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = "Resumed earlier");
-
-				return;
-			}
-
-			await player.ResumeAsync();
-
-			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content = "Resuming");
-		}
-
-		[SlashCommand("loop", "Toggle current track loop")]
-		public async Task MusicPlaybackLoopCommand()
-		{
-			await Context.Interaction.DeferAsync();
-
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-			if (!await mmu.EnsureQueuedPlayerAsync()) return;
-
-			var player = _client.Lavalink.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id);
-			var track = player!.CurrentTrack;
-
-			if (track == null)
-			{
-				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = "Unable to get the track, maybe because I am not playing anything");
-
-				return;
-			}
-
-			player.IsLooping = !player.IsLooping;
-
-			await Context.Interaction.ModifyOriginalResponseAsync(x =>
-				x.Content =
-					$"{(player.IsLooping ? "Looping" : "Removed the loop of")} the track: {Format.Bold(Format.Sanitize(track.Title))} by {Format.Bold(Format.Sanitize(track.Author))}");
-		}
-
-		[SlashCommand("change_player", "Change current player")]
-		public async Task MusicPlaybackChangePlayerCommand(
-			[Summary("connection_type", "Connection type")]
-			MusicConnectionType connectionType = MusicConnectionType.Normal)
-		{
-			await Context.Interaction.DeferAsync();
-
-			var mmu = new MusicModuleUtils(Context.Interaction, _client.Lavalink.GetPlayer(Context.Guild.Id));
-			if (!await mmu.EnsureUserInVoiceAsync()) return;
-			if (!await mmu.EnsureClientInVoiceAsync()) return;
-
-			var oldPlayer = _client.Lavalink.GetPlayer(Context.Guild.Id);
-
-			if (oldPlayer!.State is not PlayerState.NotPlaying)
-			{
-				await Context.Interaction.ModifyOriginalResponseAsync(x =>
-					x.Content = "Can not change the player because there is a pending track");
-
-				return;
-			}
-
-			switch (oldPlayer)
-			{
-				case QueuedLavalinkPlayer when connectionType == MusicConnectionType.Queued:
-					await Context.Interaction.ModifyOriginalResponseAsync(x =>
-						x.Content = "Already connected as queued player");
-
-					return;
-
-				case QueuedLavalinkPlayer:
-					await oldPlayer.DisconnectAsync();
-					await oldPlayer.DestroyAsync();
-					await _client.Lavalink.JoinAsync(Context.Guild.Id, ((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
-
-					await Context.Interaction.ModifyOriginalResponseAsync(x =>
-						x.Content = "Switched to normal player");
-					break;
-
-				case not null when connectionType == MusicConnectionType.Normal:
-					await Context.Interaction.ModifyOriginalResponseAsync(x =>
-						x.Content = "Already connected as normal player");
-
-					return;
-				case not null:
-					await oldPlayer.DisconnectAsync();
-					await oldPlayer.DestroyAsync();
-					await _client.Lavalink.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id,
-						((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.Id, true);
-
-					await Context.Interaction.ModifyOriginalResponseAsync(x =>
-						x.Content = "Switched to queued player");
-					break;
-			}
-		}
-
-		[SlashCommand("lyrics", "Check lyrics of a track")]
-		public async Task MusicPlaybackLyricsCommand(
-			[Summary("artist", "Artist name")] string artist,
-			[Summary("track_name", "Track name")] string trackName)
-		{
-			await Context.Interaction.DeferAsync();
-
-			try
-			{
-				var lyrics = await _client.Lyrics.GetLyricsAsync(artist, trackName);
-
-				if (string.IsNullOrWhiteSpace(lyrics))
-				{
-					await Context.Interaction.ModifyOriginalResponseAsync(x =>
-						x.Content =
-							$"No lyrics found for: {Format.Bold(Format.Sanitize(artist))} by {Format.Bold(Format.Sanitize(trackName))}");
-
-					return;
-				}
-
-				var paginator = new StaticPaginatorBuilder()
-					.AddUser(Context.User)
-					.WithPages(LiliaUtilities.CreatePagesFromString(lyrics))
-					.Build();
-
-				await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction,
-					responseType: InteractionResponseType.DeferredChannelMessageWithSource);
-			}
-			catch
+			if (string.IsNullOrWhiteSpace(lyrics))
 			{
 				await Context.Interaction.ModifyOriginalResponseAsync(x =>
 					x.Content =
-						$"Can not get lyrics for: {Format.Bold(Format.Sanitize(artist))} by {Format.Bold(Format.Sanitize(trackName))}");
+						$"No lyrics found for: {Format.Bold(Format.Sanitize(artist))} by {Format.Bold(Format.Sanitize(trackName))}");
+
+				return;
 			}
+
+			var paginator = new StaticPaginatorBuilder()
+				.AddUser(Context.User)
+				.WithPages(LiliaUtilities.CreatePagesFromString(lyrics))
+				.Build();
+
+			await _client.InteractiveService.SendPaginatorAsync(paginator, Context.Interaction,
+				responseType: InteractionResponseType.DeferredChannelMessageWithSource);
+		}
+		catch
+		{
+			await Context.Interaction.ModifyOriginalResponseAsync(x =>
+				x.Content =
+					$"Can not get lyrics for: {Format.Bold(Format.Sanitize(artist))} by {Format.Bold(Format.Sanitize(trackName))}");
 		}
 	}
 
