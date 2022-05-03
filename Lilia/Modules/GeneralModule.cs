@@ -55,12 +55,11 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		var isInvitationAllowed = !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic;
 		var isTopGgRequestSuccess = true;
 
-		IDblBot boat;
 		var isTopGgBotExists = true;
 
 		try
 		{
-			boat = await _client.DblApi.GetBotAsync(botId).WaitAsync(TimeSpan.FromSeconds(5));
+			var boat = await _client.DblApi.GetBotAsync(botId).WaitAsync(TimeSpan.FromSeconds(5));
 			isTopGgBotExists = boat != null;
 		}
 		catch
@@ -87,20 +86,23 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		}
 
 		var timeDiff = DateTime.Now.Subtract(_client.StartTime);
+		var app = await Context.Client.GetApplicationInfoAsync();
 
 		var embedBuilder = Context.User.CreateEmbedWithUserData()
 			.WithTitle("Something about me :D")
 			.WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl())
 			.WithDescription(
-				$"Hi, I am {Format.Bold($"{Context.Client.CurrentUser}")}, a bot running on the source code of {Format.Bold("Lilia")} written by {Format.Bold("Swyrin#7193")}")
+				$"Hi, I am {Format.Bold($"{Context.Client.CurrentUser}")}, a bot running on the source code of {Format.Bold("Lilia")}" +
+				$"written by {Format.Bold($"{app.Owner}")}")
 			.AddField("Server count", $"{Context.Client.Guilds.Count}", true)
 			.AddField("Member count", $"{memberCount}", true)
 			.AddField("Uptime",
 				$"{Format.Bold(timeDiff.ToLongReadableTimeSpan())} since {_client.StartTime.ToLongDateString()}, {_client.StartTime.ToLongTimeString()}")
 			.AddField("Version", $"{Assembly.GetExecutingAssembly().GetName().Version}", true)
 			.AddField("Command count", $"{(await Context.Client.GetShardFor(Context.Guild).GetGlobalApplicationCommandsAsync()).Count}", true)
-			.AddField("How to invite me?", $"- Click the {Format.Bold("Interested in me?")} button below\n" +
-			                               $"- Click on me then choose {Format.Bold("Add to Server")} if it exists");
+			.AddField("How to invite me?",
+				$"- Click the {Format.Bold("Interested in me?")} button below\n" +
+				$"- Click on me then choose {Format.Bold("Add to Server")} if it exists");
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
 		{
