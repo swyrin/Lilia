@@ -339,7 +339,7 @@ public class LiliaClient
 		{
 			if (!_isLavalinkInitialized)
 			{
-				Log.Logger.Information("Trying to connect to Lavalink server");
+				Log.Logger.Information("Trying to connect to Lavalink server(s)");
 				await Lavalink.InitializeAsync();
 				if (!_inactivityTracker.IsTracking) _inactivityTracker.BeginTracking();
 				_isLavalinkInitialized = true;
