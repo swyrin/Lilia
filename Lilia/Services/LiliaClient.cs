@@ -182,12 +182,13 @@ public class LiliaClient
 			{
 				Nodes = BotConfiguration.Credentials.LavalinkNodes.Select(config =>
 				{
-					var protocol = "http" + (config.IsSecure ? 's' : string.Empty);
+					var httpProtocol = "http" + (config.IsSecure ? 's' : string.Empty);
+					var wsProtocol = "ws" + (config.IsSecure ? 's' : string.Empty);
 
 					return new LavalinkNodeOptions
 					{
-						RestUri = $"{protocol}://{config.Host}:{config.Port}",
-						WebSocketUri = $"ws://{config.Host}:{config.Port}",
+						RestUri = $"{httpProtocol}://{config.Host}:{config.Port}",
+						WebSocketUri = $"{wsProtocol}://{config.Host}:{config.Port}",
 						Password = config.Password,
 						DebugPayloads = true,
 						DisconnectOnStop = false
