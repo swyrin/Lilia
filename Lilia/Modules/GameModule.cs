@@ -12,7 +12,7 @@ public class GameModule : InteractionModuleBase<ShardedInteractionContext>
 		await Context.Interaction.DeferAsync();
 
 		var t = Random.Shared.Next(0, 1);
-		var r = new[] {"Head", "Tail"};
+		var r = new[] { "Head", "Tail" };
 
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
 			x.Content = $"The coin turned {r[t]}");
@@ -20,7 +20,8 @@ public class GameModule : InteractionModuleBase<ShardedInteractionContext>
 
 	[SlashCommand("pick", "Pick a choice from given pool of choices")]
 	public async Task GamePickCommand(
-		[Summary("choices", "List of choices, separated by '|'")] string pool)
+		[Summary("choices", "List of choices, separated by '|'")]
+		string pool)
 	{
 		await Context.Interaction.DeferAsync();
 

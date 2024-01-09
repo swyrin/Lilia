@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using DiscordBotsList.Api.Objects;
 using Lilia.Commons;
 using Lilia.Services;
 
@@ -52,7 +51,7 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		if (string.IsNullOrWhiteSpace(guildInv)) guildInv = "https://placehold.er";
 
 		var isValidGuildInviteLink = guildInv.IsDiscordValidGuildInvite();
-		var isInvitationAllowed = !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic;
+		var isInvitationAllowed = !(await Context.Client.GetApplicationInfoAsync()).IsBotPublic ?? false;
 		var isTopGgRequestSuccess = true;
 
 		var isTopGgBotExists = true;
@@ -146,7 +145,7 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		await Context.Interaction.DeferAsync(true);
 
 		var guild = Context.Guild;
-		await Context.Client.DownloadUsersAsync(new[] {guild});
+		await Context.Client.DownloadUsersAsync(new[] { guild });
 		var members = Context.Guild.Users.ToList();
 
 		var creationDate = guild.CreatedAt.DateTime;

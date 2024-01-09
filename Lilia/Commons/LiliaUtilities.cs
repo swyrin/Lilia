@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -88,7 +88,7 @@ public static class LiliaUtilities
 
 		foreach (var line in lines)
 		{
-			if (idx != 0 && idx % fixedPageSplit == 0 || text.Length + line.Length > threshold)
+			if ((idx != 0 && idx % fixedPageSplit == 0) || text.Length + line.Length > threshold)
 			{
 				pages.Add(new PageBuilder().WithText($"{text}"));
 				text.Clear();
