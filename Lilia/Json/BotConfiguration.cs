@@ -1,96 +1,103 @@
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Lilia.Json;
 
-public class BotConfiguration : BaseJson
+public class BotConfiguration
 {
-	[JsonProperty("client")] public ClientConfigurations Client = new();
+	[JsonPropertyName("client")]
+	public ClientConfigurations Client = new();
 
-	[JsonProperty("credentials")] public CredentialConfigurations Credentials = new();
-
-	public BotConfiguration()
-	{
-		FilePath = "config.json";
-	}
+	[JsonPropertyName("credentials")]
+	public CredentialConfigurations Credentials = new();
 }
 
 public class ClientConfigurations
 {
-	[JsonProperty("activity")] public ClientActivityConfigurations Activity = new();
+	[JsonPropertyName("activity")]
+	public ClientActivityConfigurations Activity = new();
 
-	[JsonProperty("modmail")] public ModMailConfigurations ModMail = new();
+	[JsonPropertyName("private_guilds")]
+	public List<ulong> PrivateGuildIds = new();
 
-	[JsonProperty("private_guilds")] public List<ulong> PrivateGuildIds = new();
-
-	[JsonProperty("shard_count", NullValueHandling = NullValueHandling.Include)]
+	[JsonPropertyName("shard_count")]
 	public int ShardCount = 1;
 
-	[JsonProperty("slash_commands_for_global")]
+	[JsonPropertyName("slash_commands_for_global")]
 	public bool SlashCommandsForGlobal = true;
 
-	[JsonProperty("support_guild_invite_link")]
+	[JsonPropertyName("support_guild_invite_link")]
 	public string SupportGuildInviteLink = "";
 
-	[JsonProperty("token")] public string Token = "";
+	[JsonPropertyName("token")]
+	public string Token = "";
 }
 
 public class ClientActivityConfigurations
 {
-	[JsonProperty("name")] public string Name = "you";
+	[JsonPropertyName("name")]
+	public string Name = "you";
 
-	[JsonProperty("status")] public string Status = "DoNotDisturb";
+	[JsonPropertyName("status")]
+	public string Status = "DoNotDisturb";
 
-	[JsonProperty("type")] public string Type = "Watching";
+	[JsonPropertyName("type")]
+	public string Type = "Watching";
 }
 
 public class CredentialConfigurations
 {
-	[JsonProperty("lavalink_nodes")] public List<LavalinkNodeConfigurations> LavalinkNodes = new();
+	[JsonPropertyName("lavalink_nodes")]
+	public List<LavalinkNodeConfigurations> LavalinkNodes = new();
 
-	[JsonProperty("osu")] public OsuConfigurations Osu = new();
+	[JsonPropertyName("osu")]
+	public OsuConfigurations Osu = new();
 
-	[JsonProperty("postgresql")] public PostgreSqlConfigurations PostgreSql = new();
+	[JsonPropertyName("postgresql")]
+	public PostgreSqlConfigurations PostgreSql = new();
 
-	[JsonProperty("top.gg")] public string TopDotGeeGeeToken;
+	[JsonPropertyName("top.gg")]
+	public string TopDotGeeGeeToken;
 }
 
 public class LavalinkNodeConfigurations
 {
-	[JsonProperty("is_secure")] public bool IsSecure;
+	[JsonPropertyName("is_secure")]
+	public bool IsSecure;
 
-	[JsonProperty("host")] public string Host = "swyrin.me";
+	[JsonPropertyName("host")]
+	public string Host = "swyrin.me";
 
-	[JsonProperty("password")] public string Password = "youshallnotpass";
+	[JsonPropertyName("password")]
+	public string Password = "youshallnotpass";
 
-	[JsonProperty("port")] public int Port = 2333;
+	[JsonPropertyName("port")]
+	public int Port = 2333;
 }
 
 public class PostgreSqlConfigurations
 {
-	[JsonProperty("database_name")] public string DatabaseName;
+	[JsonPropertyName("database_name")]
+	public string DatabaseName;
 
-	[JsonProperty("host")] public string Host = "localhost";
+	[JsonPropertyName("host")]
+	public string Host = "localhost";
 
-	[JsonProperty("password")] public string Password = "thisisnottheend";
+	[JsonPropertyName("password")]
+	public string Password = "thisisnottheend";
 
-	[JsonProperty("port")] public int Port = 5432;
+	[JsonPropertyName("port")]
+	public int Port = 5432;
 
-	[JsonProperty("username")] public string Username;
+	[JsonPropertyName("username")]
+	public string Username;
 }
 
 public class OsuConfigurations
 {
-	[JsonProperty("client_id")] public long ClientId;
+	[JsonPropertyName("client_id")]
+	public long ClientId;
 
-	[JsonProperty("client_secret")] public string ClientSecret;
-}
-
-public class ModMailConfigurations
-{
-	[JsonProperty("enabled")] public bool Enabled;
-
-	[JsonProperty("target_channel_id")] public ulong TargetChannelId;
-
-	[JsonProperty("target_guild_id")] public ulong TargetGuildId;
+	[JsonPropertyName("client_secret")]
+	public string ClientSecret;
 }

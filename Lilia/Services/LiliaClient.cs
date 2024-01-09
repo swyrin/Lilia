@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -71,7 +73,7 @@ public class LiliaClient
 	static LiliaClient()
 	{
 		Log.Information("Loading configuration");
-		BotConfiguration = JsonManager<BotConfiguration>.Read();
+		BotConfiguration = JsonSerializer.Deserialize<BotConfiguration>(File.ReadAllText("config.json"));
 
 		var isGuildRegExists = BotConfiguration.Client.PrivateGuildIds.Any();
 		var isGlobalRegExists = BotConfiguration.Client.SlashCommandsForGlobal;
@@ -207,7 +209,6 @@ public class LiliaClient
 			_client.Log += OnLog;
 			_client.ShardConnected += OnShardConnected;
 			_client.ShardDisconnected += OnShardDisconnected;
-			_client.MessageReceived += OnMessageReceived;
 			InteractiveService.Log += OnLog;
 			_interactionService.Log += OnLog;
 
@@ -418,44 +419,5 @@ public class LiliaClient
 			.Replace("{guild}", guild.Name);
 
 		await ((SocketTextChannel)chn).SendMessageAsync(postProcessedMessage);
-	}
-
-	private async Task OnMessageReceived(SocketMessage msg)
-	{
-		if (msg.Channel.GetChannelType() == ChannelType.DM)
-		{
-			var modmailConfig = BotConfiguration.Client.ModMail;
-			if (!modmailConfig.Enabled) return;
-			if (msg.Author.Id == _client.CurrentUser.Id) return;
-
-			var guild = _client.GetGuild(modmailConfig.TargetGuildId);
-
-			if (guild == null)
-			{
-				Log.Error("Invalid guild for modmail to process");
-				return;
-			}
-
-			var channel = guild.GetChannel(modmailConfig.TargetChannelId);
-
-			if (channel == null || channel.GetChannelType() != ChannelType.Text)
-			{
-				Log.Error("Invalid channel for modmail to process");
-				return;
-			}
-
-			var textChn = (SocketTextChannel)channel;
-
-			var embed = new EmbedBuilder()
-				.WithTitle("A mail has been sent")
-				.WithDescription(msg.Content)
-				.WithColor(Color.DarkGrey)
-				.AddField("Sender", $"{msg.Author}", true)
-				.AddField("ID", msg.Author.Id, true)
-				.AddField("At", msg.CreatedAt.Date.ToLongDateString(), true)
-				.Build();
-
-			await textChn.SendMessageAsync(embed: embed);
-		}
 	}
 }

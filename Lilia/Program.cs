@@ -1,6 +1,9 @@
-﻿using System;
+using System;
+using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Lilia.Json;
 using Lilia.Services;
 using Serilog;
 
@@ -24,7 +27,26 @@ internal static class Program
 		Log.Logger.Warning("Consider appending \"-c Release\" when running/building the code");
 #endif
 
+		await EnsureConfigFile();
+
 		Log.Logger.Debug("Starting");
 		await new LiliaClient().RunAsync();
+	}
+
+	private static async Task EnsureConfigFile()
+	{
+		const string fileName = "config.json";
+
+		if (!File.Exists(fileName))
+		{
+			var jsonString = JsonSerializer.Serialize(new BotConfiguration());
+			await File.WriteAllTextAsync(fileName, jsonString);
+
+			var ex = new FileNotFoundException("Config file not found. The program has generated a new one");
+
+			Log.Error(ex, "The program ran into an error.");
+
+			throw ex;
+		}
 	}
 }
