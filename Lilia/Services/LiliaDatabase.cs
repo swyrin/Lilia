@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Lilia.Database;
 using Microsoft.EntityFrameworkCore;
 using Serilog;

@@ -1,4 +1,4 @@
-﻿namespace Lilia.Database.Models;
+namespace Lilia.Database.Models;
 
 public class DbUser
 {

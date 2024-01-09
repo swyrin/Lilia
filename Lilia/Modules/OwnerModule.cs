@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Discord.Interactions;
 using Lilia.Services;
 using Serilog;

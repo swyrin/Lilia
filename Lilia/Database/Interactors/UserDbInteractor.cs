@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Discord;
 using Lilia.Database.Models;
 
@@ -13,7 +13,7 @@ public static class UserDbInteractor
 
 		if (user != default) return user;
 
-		user = new DbUser {Id = discordUser.Id, OsuMode = string.Empty, OsuUsername = string.Empty, WarnCount = 0};
+		user = new DbUser { Id = discordUser.Id, OsuMode = string.Empty, OsuUsername = string.Empty, WarnCount = 0 };
 
 		users.Add(user);
 		ctx.SaveChanges();

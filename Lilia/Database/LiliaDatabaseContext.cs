@@ -1,4 +1,4 @@
-﻿using Lilia.Database.Models;
+using Lilia.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lilia.Database;
