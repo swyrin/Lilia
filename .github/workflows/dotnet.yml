@@ -30,16 +30,16 @@ jobs:
 
       - name: Create artifacts (Windows)
         run: |
-          dotnet build Lilia -a x86 -c Release --no-self-contained --nologo --output Build/Win_x86
-          dotnet build Lilia -a x64 -c Release --no-self-contained --nologo --output Build/Win_x64
+          dotnet publish Lilia --os win -a x86 -c Release --no-self-contained --nologo --output Build/Win_x86
+          dotnet publish Lilia --os win -a x64 -c Release --no-self-contained --nologo --output Build/Win_x64
 
       - name: Create artifacts (Mac)
         run: |
-          dotnet build Lilia --os osx -a x64 -c Release --no-self-contained --nologo --output Build/Mac_x64
+          dotnet publish Lilia --os osx -a x64 -c Release --no-self-contained --nologo --output Build/Mac_x64
 
       - name: Create artifacts (Linux)
         run: |
-          dotnet build Lilia --os linux -a x64 -c Release --no-self-contained --nologo --output Build/Linux_x64
+          dotnet publish Lilia --os linux -a x64 -c Release --no-self-contained --nologo --output Build/Linux_x64
 
       - name: Package the build files
         run: |
