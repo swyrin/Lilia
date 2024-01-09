@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -111,36 +111,6 @@ public class LiliaClient
 			.UseNpgsql(connStrBuilder.ToString());
 	}
 
-	private static async Task CheckForUpdatesAsync()
-	{
-		Log.Logger.Information("Checking for updates");
-
-		using HttpClient client = new();
-
-		var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-		var sourceVersionStr = await client.GetStringAsync("https://raw.githubusercontent.com/Lilia-Workshop/Lilia/master/version.txt");
-		var sourceVersion = Version.Parse(sourceVersionStr);
-
-		Log.Logger.Debug("Current version: {CurrentVersion}  - Latest version: {SourceVersion}", currentVersion, sourceVersion);
-
-		if (currentVersion < sourceVersion)
-		{
-			Log.Logger.Warning("You need to update your bot because there are \"breaking\" changes in the code");
-			Log.Logger.Warning("Source code can be seen here: https://github.com/Lilia-Workshop/Lilia");
-			Log.Logger.Warning("Changelogs in case you miss: https://github.com/Lilia-Workshop/Lilia/releases");
-		}
-		else if (currentVersion == sourceVersion)
-		{
-			Log.Logger.Information("You are using latest version");
-		}
-		else
-		{
-			Log.Logger.Information("Look like you have made some changes to the code");
-			Log.Logger.Information("Consider pushing this to main code base so that our code can be better :D");
-			Log.Logger.Information("Main repo is here: https://github.com/Lilia-Workshop/Lilia");
-		}
-	}
-
 	private ServiceProvider GetRequiredServices()
 	{
 		_database = new LiliaDatabase();
@@ -212,8 +182,6 @@ public class LiliaClient
 
 	public async Task RunAsync()
 	{
-		await CheckForUpdatesAsync();
-
 		Log.Logger.Information("Setting up client");
 		StartTime = DateTime.Now;
 
