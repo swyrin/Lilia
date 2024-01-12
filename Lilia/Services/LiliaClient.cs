@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -12,18 +12,8 @@ using Discord.WebSocket;
 using DiscordBotsList.Api;
 using DiscordBotsList.Api.Objects;
 using Fergun.Interactive;
-using Lavalink4NET;
-using Lavalink4NET.Artwork;
-using Lavalink4NET.Cluster;
-using Lavalink4NET.DiscordNet;
-using Lavalink4NET.Logging.Microsoft;
-using Lavalink4NET.Lyrics;
-using Lavalink4NET.MemoryCache;
-using Lavalink4NET.Tracking;
-using Lilia.Commons;
 using Lilia.Database;
 using Lilia.Database.Interactors;
-using Lilia.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,7 +42,6 @@ public class LiliaClient
 	private DiscordShardedClient _client;
 
 	private LiliaDatabase _database;
-	private InactivityTrackingService _inactivityTracker;
 	private InteractionService _interactionService;
 
 	private bool _isGlobalCommandRegistrationFinished;
@@ -62,12 +51,9 @@ public class LiliaClient
 
 	private ServiceProvider _serviceProvider;
 	private int _totalShardCount;
-	public ArtworkService ArtworkService;
 
 	public AuthDiscordBotListApi DblApi;
 	public InteractiveService InteractiveService;
-	public IAudioService Lavalink;
-	public LyricsService Lyrics;
 	public DateTime StartTime;
 
 	static LiliaClient()
@@ -135,40 +121,9 @@ public class LiliaClient
 			})
 			.AddSingleton<DiscordShardedClient>()
 			.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordShardedClient>(),
-				new InteractionServiceConfig {LogLevel = LogSeverity.Verbose}))
+				new InteractionServiceConfig { LogLevel = LogSeverity.Verbose }))
 			.AddSingleton(x => new InteractiveService(x.GetRequiredService<DiscordShardedClient>()))
-			.AddSingleton<ILavalinkCache, LavalinkCache>()
-			.AddSingleton<IAudioService, LavalinkCluster>()
 			.AddSingleton<DiscordSocketClient>()
-			.AddSingleton<LyricsOptions>()
-			.AddSingleton<LyricsService>()
-			.AddSingleton<ArtworkService>()
-			.AddSingleton(new InactivityTrackingOptions
-			{
-				PollInterval = TimeSpan.FromMinutes(5), DisconnectDelay = TimeSpan.Zero, TrackInactivity = true
-			})
-			.AddSingleton<InactivityTrackingService>()
-			.AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>(x => new DiscordClientWrapper(x.GetRequiredService<DiscordShardedClient>()))
-			.AddMicrosoftExtensionsLavalinkLogging()
-			.AddSingleton(new LavalinkClusterOptions
-			{
-				Nodes = BotConfiguration.Credentials.LavalinkNodes.Select(config =>
-				{
-					var httpProtocol = "http" + (config.IsSecure ? 's' : string.Empty);
-					var wsProtocol = "ws" + (config.IsSecure ? 's' : string.Empty);
-
-					return new LavalinkNodeOptions
-					{
-						RestUri = $"{httpProtocol}://{config.Host}:{config.Port}",
-						WebSocketUri = $"{wsProtocol}://{config.Host}:{config.Port}",
-						Password = config.Password,
-						DebugPayloads = true,
-						DisconnectOnStop = false
-					};
-				}).ToList(),
-				StayOnline = true,
-				LoadBalacingStrategy = LoadBalancingStrategies.RoundRobinStrategy
-			})
 			.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
 			.AddDefaultSerializer()
 			.AddDefaultRequestHandler()
@@ -192,10 +147,6 @@ public class LiliaClient
 			_client = _serviceProvider.GetRequiredService<DiscordShardedClient>();
 			InteractiveService = _serviceProvider.GetRequiredService<InteractiveService>();
 			_interactionService = _serviceProvider.GetRequiredService<InteractionService>();
-			Lavalink = _serviceProvider.GetRequiredService<IAudioService>();
-			Lyrics = _serviceProvider.GetRequiredService<LyricsService>();
-			ArtworkService = _serviceProvider.GetRequiredService<ArtworkService>();
-			_inactivityTracker = _serviceProvider.GetRequiredService<InactivityTrackingService>();
 
 			Log.Logger.Information("Registering event handlers");
 			_client.ShardReady += OnShardReady;
@@ -301,17 +252,6 @@ public class LiliaClient
 			catch
 			{
 				Log.Warning("Command addition failed, will try again later");
-			}
-		});
-
-		await Task.Run(async () =>
-		{
-			if (!_isLavalinkInitialized)
-			{
-				Log.Logger.Information("Trying to connect to Lavalink server(s)");
-				await Lavalink.InitializeAsync();
-				if (!_inactivityTracker.IsTracking) _inactivityTracker.BeginTracking();
-				_isLavalinkInitialized = true;
 			}
 		});
 
