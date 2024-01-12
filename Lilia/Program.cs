@@ -42,7 +42,7 @@ internal static class Program
 			var jsonString = JsonSerializer.Serialize(new BotConfiguration());
 			await File.WriteAllTextAsync(fileName, jsonString);
 
-			var ex = new FileNotFoundException("Config file not found. The program has generated a new one");
+			var ex = new FileNotFoundException("Config file not found. The program has generated a new one.");
 
 			Log.Error(ex, "The program ran into an error.");
 
