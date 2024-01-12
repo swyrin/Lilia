@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Lilia.Attributes;
 using Lilia.Commons;
 using Lilia.Services;
 
@@ -176,4 +177,23 @@ public class GeneralModule : InteractionModuleBase<ShardedInteractionContext>
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
 			x.Embed = embedBuilder.Build());
 	}
+
+    [SlashCommand("activity", "Create a new embedded activity session")]
+    [RequireMemberInVoice]
+    public async Task ActivityActivityCommand(
+        [Summary("target", "The target activity")]
+        DefaultApplications applications = DefaultApplications.Youtube)
+    {
+        await Context.Interaction.DeferAsync();
+
+        var invite = await ((SocketGuildUser)Context.User).VoiceState!.Value.VoiceChannel.CreateInviteToApplicationAsync(applications, maxUses: null,
+            isTemporary: true, isUnique: true);
+        await Context.Interaction.ModifyOriginalResponseAsync(x =>
+        {
+            x.Embed = Context.User.CreateEmbedWithUserData()
+                .WithAuthor("Activity invite created", Context.Client.CurrentUser.GetAvatarUrl())
+                .WithDescription($"Invite to {applications} in {Format.Bold(invite.Channel.Name)}: {invite.Url}")
+                .Build();
+        });
+    }
 }
