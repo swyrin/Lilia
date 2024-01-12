@@ -18,6 +18,6 @@ public class OwnerModule : InteractionModuleBase<ShardedInteractionContext>
 		await Context.Interaction.ModifyOriginalResponseAsync(x =>
 			x.Content = "Goodbye");
 
-		LiliaClient.Cts.Cancel();
+		await LiliaClient.Cts.CancelAsync();
 	}
 }
