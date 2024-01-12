@@ -1,14 +1,15 @@
 using Discord.Interactions;
 
-namespace Lilia.Enums;
-
-public enum OsuUserProfileSearchType
+namespace Lilia.Enums
 {
-	[ChoiceDisplay("profile")] Profile,
+    public enum OsuUserProfileSearchType
+    {
+        [ChoiceDisplay("profile")] Profile,
 
-	[ChoiceDisplay("best_plays")] Best,
+        [ChoiceDisplay("best_plays")] Best,
 
-	[ChoiceDisplay("first_place_plays")] First,
+        [ChoiceDisplay("first_place_plays")] First,
 
-	[ChoiceDisplay("recent_plays")] Recent
+        [ChoiceDisplay("recent_plays")] Recent
+    }
 }

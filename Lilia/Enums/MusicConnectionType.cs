@@ -1,10 +1,11 @@
 using Discord.Interactions;
 
-namespace Lilia.Enums;
-
-public enum MusicConnectionType
+namespace Lilia.Enums
 {
-	[ChoiceDisplay("normal")] Normal,
+    public enum MusicConnectionType
+    {
+        [ChoiceDisplay("normal")] Normal,
 
-	[ChoiceDisplay("queued")] Queued
+        [ChoiceDisplay("queued")] Queued
+    }
 }

@@ -1,12 +1,13 @@
 using Discord.Interactions;
 
-namespace Lilia.Enums;
-
-public enum MusicSource
+namespace Lilia.Enums
 {
-	[ChoiceDisplay("soundcloud")] SoundCloud,
+    public enum MusicSource
+    {
+        [ChoiceDisplay("soundcloud")] SoundCloud,
 
-	[ChoiceDisplay("youtube")] YouTube,
+        [ChoiceDisplay("youtube")] YouTube,
 
-	[ChoiceDisplay("raw")] None
+        [ChoiceDisplay("raw")] None
+    }
 }
