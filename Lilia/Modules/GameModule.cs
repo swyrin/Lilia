@@ -6,7 +6,7 @@ namespace Lilia.Modules;
 
 public class GameModule : InteractionModuleBase<ShardedInteractionContext>
 {
-	[SlashCommand("flip", "Flip the coin")]
+	[SlashCommand("coinflip", "Flip the coin")]
 	public async Task GameCoinflipCommand()
 	{
 		await Context.Interaction.DeferAsync();

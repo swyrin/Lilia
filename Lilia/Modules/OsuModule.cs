@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +15,6 @@ using Lilia.Services;
 using OsuSharp.Domain;
 using OsuSharp.Exceptions;
 using OsuSharp.Interfaces;
-using IUser = OsuSharp.Interfaces.IUser;
 
 namespace Lilia.Modules;
 
@@ -256,7 +255,7 @@ public class OsuModule : InteractionModuleBase<ShardedInteractionContext>
 			.WithDescription($"This user is currently {(osuUser.IsOnline ? "online" : "offline/invisible")}")
 			.AddField("Join date", $"{osuUser.JoinDate:g}", true)
 			.AddField("Play count - play time",
-				$"{osuUser.Statistics.PlayCount} with {TimeSpan.FromSeconds(osuUser.Statistics.PlayTime).ToShortReadableTimeSpan()} of playtime",
+				$"{osuUser.Statistics.PlayCount} with {TimeSpan.FromSeconds(osuUser.Statistics.PlayTime ?? 0).ToShortReadableTimeSpan()} of playtime",
 				true)
 			.AddField("Total PP",
 				$"{osuUser.Statistics.Pp} ({osuUser.Country.Name}: #{osuUser.Statistics.CountryRank} - GLB: #{osuUser.Statistics.GlobalRank})")
