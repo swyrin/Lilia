@@ -3,31 +3,32 @@ using Lilia.Database;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace Lilia.Services;
-
-public class LiliaDatabase
+namespace Lilia.Services
 {
-	public LiliaDatabase()
-	{
-		Log.Logger.Information("Setting up databases");
-		using var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
+    public class LiliaDatabase
+    {
+        public LiliaDatabase()
+        {
+            Log.Logger.Information("Setting up databases");
+            using var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
 
-		while (context.Database.GetPendingMigrations().Any())
-		{
-			var migrationContext = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
-			migrationContext.Database.Migrate();
-			migrationContext.SaveChanges();
-			migrationContext.Dispose();
-		}
+            while (context.Database.GetPendingMigrations().Any())
+            {
+                var migrationContext = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
+                migrationContext.Database.Migrate();
+                migrationContext.SaveChanges();
+                migrationContext.Dispose();
+            }
 
-		context.SaveChanges();
-	}
+            context.SaveChanges();
+        }
 
-	public LiliaDatabaseContext GetContext()
-	{
-		var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
-		context.Database.SetCommandTimeout(30);
+        public LiliaDatabaseContext GetContext()
+        {
+            var context = new LiliaDatabaseContext(LiliaClient.OptionsBuilder.Options);
+            context.Database.SetCommandTimeout(30);
 
-		return context;
-	}
+            return context;
+        }
+    }
 }
