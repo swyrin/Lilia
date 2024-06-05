@@ -1,52 +1,59 @@
-using System;
-using System.IO;
-using System.Reflection;
-using System.Text.Json;
-using System.Threading.Tasks;
+using DSharpPlus;
+using DSharpPlus.Extensions;
+using Lilia;
 using Lilia.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
-namespace Lilia
-{
-    internal static class Program
-    {
-        private static async Task Main()
-        {
-            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            Console.Title = $"Lilia v{currentVersion}";
-
-            Log.Logger = new LoggerConfiguration()
-                .Enrich.WithProperty("SourceContext", "Lilia")
-                .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
-                .MinimumLevel.Verbose()
-                .CreateLogger();
-
+// what a boilerplate
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithProperty("SourceContext", "Lilia")
+    .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
 #if DEBUG
-            Log.Logger.Warning("Unless you are testing the code, you should NOT see this on production");
-            Log.Logger.Warning("Consider appending \"-c Release\" when running/building the code");
+    .MinimumLevel.Debug()
+#else
+    .MinimumLevel.Information()
 #endif
+    .CreateLogger();
 
-            await EnsureConfigFile();
+ClientConfiguration clientConfig = new();
 
-            Log.Logger.Debug("Starting");
-            await new LiliaClient().RunAsync();
-        }
+await Host
+    .CreateDefaultBuilder()
+#if DEBUG
+    .UseEnvironment("Testing")
+#else
+    .UseEnvironment("Production")
+#endif
+    .UseSerilog()
+    .UseConsoleLifetime()
+    .ConfigureHostConfiguration(x =>
+    {
+        x.AddEnvironmentVariables();
+        x.AddJsonFile("config.json", reloadOnChange: true, optional: false);
+    })
+    .ConfigureServices((hostBuilderCtx, services) =>
+    {
+        // easier to retrieve stuffs I guess?
+        services.AddSingleton(services);
 
-        private static async Task EnsureConfigFile()
-        {
-            const string fileName = "config.json";
+        // Just Serilog.
+        // more like Doki Doki Logging Club.
+        services.AddLogging(logging => logging.ClearProviders().AddSerilog());
 
-            if (!File.Exists(fileName))
-            {
-                var jsonString = JsonSerializer.Serialize(new BotConfiguration());
-                await File.WriteAllTextAsync(fileName, jsonString);
+        // what?
+        hostBuilderCtx.Configuration.GetSection(nameof(ClientConfiguration)).Bind(clientConfig);
 
-                var ex = new FileNotFoundException("Config file not found. The program has generated a new one.");
+        // yes.
+        services.AddHostedService<LiliaService>()
+            .AddDiscordClient(clientConfig.Token, DiscordIntents.AllUnprivileged);
 
-                Log.Error(ex, "The program ran into an error.");
+        // the database
+        services.AddDbContext<DatabaseService>();
+    })
+    .RunConsoleAsync();
 
-                throw ex;
-            }
-        }
-    }
-}
+await Log.CloseAndFlushAsync();
